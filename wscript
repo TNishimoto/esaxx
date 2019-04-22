@@ -17,6 +17,11 @@ def build(bld):
        name         = 'enum_substring',
        target       = 'enum_substring',
        includes     = '.')
+  task2= bld(features='cxx cprogram',
+       source       = 'enumMaximumSubstring.cpp',
+       name         = 'enum_substring2',
+       target       = 'enum_substring2',
+       includes     = '.')
 
 def dist_hook():
   import os
