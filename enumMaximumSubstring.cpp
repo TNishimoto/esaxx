@@ -1,4 +1,10 @@
+// License: MIT http://opensource.org/licenses/MIT
+/*
+  This code is copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it.
+*/
+
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -7,27 +13,32 @@
 
 using namespace std;
 
-int readFile(const char* fn, vector<int>& T){
-  FILE* fp = fopen(fn, "rb");
-  if (fp == NULL){
+int readFile(const char *fn, vector<char> &T)
+{
+  FILE *fp = fopen(fn, "rb");
+  if (fp == NULL)
+  {
     cerr << "cannot open " << fn << endl;
     return -1;
   }
 
-  if (fseek(fp, 0, SEEK_END) != 0){
+  if (fseek(fp, 0, SEEK_END) != 0)
+  {
     cerr << "cannot fseek " << fn << endl;
     fclose(fp);
     return -1;
   }
   int n = ftell(fp);
   rewind(fp);
-  if (n < 0){
+  if (n < 0)
+  {
     cerr << "cannot ftell " << fn << endl;
     fclose(fp);
     return -1;
   }
   T.resize(n);
-  if (fread(&T[0], sizeof(unsigned char), (size_t)n, fp) != (size_t) n){
+  if (fread(&T[0], sizeof(unsigned char), (size_t)n, fp) != (size_t)n)
+  {
     cerr << "fread error " << fn << endl;
     fclose(fp);
     return -1;
@@ -37,104 +48,98 @@ int readFile(const char* fn, vector<int>& T){
   return 0;
 }
 
-int getID(const string& str, unordered_map<string, int>& word2id){
-  unordered_map<string, int>::const_iterator it = word2id.find(str);
-  if (it == word2id.end()){
-    int newID = (int)word2id.size();
-    word2id[str] = newID;
-    return newID;
-  } else {
-    return it->second;
-  }
-}
+int main(int argc, char *argv[])
+{
 
-void printSnipet(const vector<int>& T, const int beg, const int len, const vector<string>& id2word){
-  for (int i = 0; i < len; ++i){
-    int c = T[beg + i];
-    if (id2word.size() > 0){
-      cout << id2word[c] << " ";
-    } else {
-      cout << (isspace((char)c) ? '_' : (char)c);
-    }
-  }
-}
-
-int main(int argc, char* argv[]){
   cmdline::parser p;
-  p.add("word", 'w', "word type");
+  p.add<string>("input_file", 'i', "input file name", true);
+  p.add<string>("output_file", 'o', "output file name", true);
 
-  if (!p.parse(argc, argv)){
-    cerr << p.error() << endl
-	 << p.usage() << endl;
+  p.add<bool>("print", 'p', "print info", false, true);
+
+  p.parse_check(argc, argv);
+  string inputFile = p.get<string>("input_file");
+  string outputFile = p.get<string>("output_file");
+  bool isPrint = p.get<bool>("print");
+
+  vector<char> T;                 // input text
+  readFile(inputFile.c_str(), T); // read file into T
+  int64_t n = T.size();
+
+  vector<int64_t> SA(n); // suffix array
+  vector<int64_t> L(n);  // left boundaries of internal node
+  vector<int64_t> R(n);  // right boundaries of internal node
+  vector<int64_t> D(n);  // depths of internal node
+
+  int64_t alphaSize = 0x100; // This can be very large
+  int64_t nodeNum = 0;
+
+  if (esaxx(T.begin(), SA.begin(),
+            L.begin(), R.begin(), D.begin(),
+            n, alphaSize, nodeNum) == -1)
+  {
     return -1;
   }
 
-  if (p.rest().size() > 0){
-    cerr << p.usage() << endl;
-    return -1;
+  int64_t size = T.size();
+
+  vector<int64_t> rank(size);
+  int64_t r = 0;
+  for (int64_t i = 0; i < size; i++)
+  {
+    if (i == 0 || T[(SA[i] + size - 1) % size] != T[(SA[i - 1] + size - 1) % size])
+    {
+      r++;
+    }
+    rank[i] = r;
   }
 
-  vector<int> T;
+  if (isPrint)
+  {
+    std::cout << "Maximal substrings in the file" << std::endl;
+    std::cout << "id"
+              << "\t"
+              << "occ"
+              << "\t"
+              << "SA[i]"
+              << "\t"
+              << "length"
+              << "\t"
+              << "string" << std::endl;
+  }
 
-  bool isWord = p.exist("word");
-  unordered_map<string, int> word2id;
-  istreambuf_iterator<char> isit(cin);
-  istreambuf_iterator<char> end;
+  vector<stool::LCPInterval> buffer;
+  ofstream os(outputFile, ios::out | ios::binary);
+  if (!os)
+    return 1;
 
-  size_t origLen = 0;
-  if (isWord){
-    string word;
-    while (isit != end){
-      char c = *isit++;
-      if (!isspace(c)){
-	word += c;
-      } else if (word.size() > 0){
-	T.push_back(getID(word, word2id));
-	word = "";
+  for (int64_t i = 0; i < nodeNum; ++i)
+  {
+    stool::LCPInterval interval(L[i], R[i], D[i]);
+    int64_t len = D[i];
+    if ((rank[interval.j - 1] - rank[interval.i] == 0))
+    {
+      continue;
+    }
+    buffer.push_back(interval);
+    if (buffer.size() > 8192)
+    {
+      os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval) * buffer.size());
+      buffer.clear();
+    }
+
+    if (isPrint)
+    {
+      cout << i << "\t" << interval.j - interval.i << "\t" << interval.i << "\t" << interval.lcp << "\t";
+      int64_t begin = SA[interval.i];
+      for (int64_t j = 0; j < len; ++j)
+      {
+        cout << T[begin + j];
       }
-      ++origLen;
+      cout << endl;
     }
-    if (word.size() > 0){
-      T.push_back(getID(word, word2id));
-    }
-  } else {
-    while (isit != end){
-      T.push_back((unsigned char)(*isit++));
-    }
-    origLen = T.size();
   }
-
-  vector<string> id2word(word2id.size());
-  for (unordered_map<string, int>::const_iterator it = word2id.begin();
-       it != word2id.end(); ++it){
-    id2word[it->second] = it->first;
-  }
-
-  vector<int> SA(T.size());
-  vector<int> L (T.size());
-  vector<int> R (T.size());
-  vector<int> D (T.size());
-
-  int k = (isWord) ? (int)id2word.size() : 0x100;
-  if (isWord){
-    cerr << "origN:" << origLen << endl;
-  }
-  cerr << "    n:" << T.size() << endl;
-  cerr << "alpha:" << k        << endl;
-
-  int nodeNum = 0;
-  if (esaxx(T.begin(), SA.begin(), 
-	    L.begin(), R.begin(), D.begin(), 
-	    (int)T.size(), k, nodeNum) == -1){
-    return -1;
-  }
-  cerr << " node:" << nodeNum << endl;
-
-  for (int i = 0; i < nodeNum; ++i){
-    cout << i << "\t" << R[i] - L[i] << "\t"  << D[i] << "\t";
-    printSnipet(T, SA[L[i]], D[i], id2word);
-    cout << endl;
-  }
-
-  return 0;
+  os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval) * buffer.size());
+  buffer.clear();
+  os.close();
 }

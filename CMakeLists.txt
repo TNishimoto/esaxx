@@ -10,16 +10,15 @@ endif(APPLE)
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
+#libdivsufsort directory is here.
+#Please modify it appropriately.
+LINK_DIRECTORIES(~/lib)
 
-#LINK_DIRECTORIES(~/lib)
-#include_directories(~/include)
-#FILE(GLOB SOURCES ./src/*.cpp)
-#include_directories(src)
+add_executable(enumSubstring.out enumSubstring.cpp esa.hxx mycode.hpp divsufsort.h divsufsort64.h)
+add_executable(enumMaximumSubstring.out enumMaximumSubstring.cpp esa.hxx mycode.hpp divsufsort.h divsufsort64.h)
+target_link_libraries(enumSubstring.out divsufsort divsufsort64)
+target_link_libraries(enumMaximumSubstring.out divsufsort divsufsort64)
 
-add_executable(enumSubstring.out enumSubstring.cpp esa.hxx sais.hxx)
-add_executable(enumMaximumSubstring.out enumMaximumSubstring.cpp esa.hxx sais.hxx)
-
-#target_link_libraries(a.out divsufsort divsufsort64 sdsl)
 
 
 
