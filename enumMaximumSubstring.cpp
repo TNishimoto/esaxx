@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
   ofstream os(outputFile, ios::out | ios::binary);
   if (!os)
     return 1;
-
+  uint64_t maximumSubstringCount = 0;
   for (int64_t i = 0; i < nodeNum; ++i)
   {
     stool::LCPInterval interval(L[i], R[i], D[i]);
@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
     {
       continue;
     }
+    maximumSubstringCount++;
     buffer.push_back(interval);
     if (buffer.size() > 8192)
     {
@@ -130,16 +131,30 @@ int main(int argc, char *argv[])
 
     if (isPrint)
     {
-      cout << i << "\t" << interval.j - interval.i << "\t" << interval.i << "\t" << interval.lcp << "\t";
-      int64_t begin = SA[interval.i];
-      for (int64_t j = 0; j < len; ++j)
+      if (maximumSubstringCount < 1000)
       {
-        cout << T[begin + j];
+        cout << i << "\t" << interval.j - interval.i << "\t" << interval.i << "\t" << interval.lcp << "\t";
+        int64_t begin = SA[interval.i];
+        for (int64_t j = 0; j < len; ++j)
+        {
+          cout << T[begin + j];
+        }
+        cout << endl;
+      }else if(maximumSubstringCount == 1000){
+        std::cout << "etc.." << std::endl;
       }
-      cout << endl;
     }
   }
   os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval) * buffer.size());
   buffer.clear();
   os.close();
+
+  std::cout << "\033[36m";
+  std::cout << "=============RESULT===============" << std::endl;
+  std::cout << "File: " << inputFile << std::endl;
+  std::cout << "Output: " << outputFile << std::endl;
+  std::cout << "The length of the input text: " << T.size() << std::endl;
+  std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
+  std::cout << "==================================" << std::endl;
+  std::cout << "\033[39m" << std::endl;
 }
