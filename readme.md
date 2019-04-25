@@ -52,7 +52,7 @@ options:
 echo -n GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT > sample.txt  
   
 $ ./enumSubstring.out -i sample.txt -o sample.interval -p 1
-The internal nodes of the suffix tree of the file  
+>The internal nodes of the suffix tree of the file  
 >| id              | occurrence      | range(SA)       | string length   | string |  
 >|:----------------|:----------------|:----------------|:----------------|:-------|
 >| 0               | 4               | 2..5            | 2               | AC  |  
@@ -83,24 +83,25 @@ The internal nodes of the suffix tree of the file
 
 $ ./enumMaximalSubstring.out -i sample.txt -o sample.ms -p 1
 >Maximal substrings in the file
->id              occurrence      range(SA)       string length   string  
->1               4               2..5            2               AC  
->2               4               5..8            2               AG  
->3               3               8..10           2               AT  
->4               10              1..10           1               A  
->5               4               10..13          2               CA  
->6               7               10..16          1               C  
->7               3               18..20          4               GAGG  
->8               6               16..21          2               GA  
->9               3               22..24          4               GGAC  
->10              3               25..27          3               GGG  
->11              7               22..28          2               GG  
->12              3               28..30          2               GT  
->13              15              16..30          1               G  
->14              4               32..35          2               TG  
->15              7               30..36          1               T  
->16              37              0..36           0  
->17              1               20..20          36              GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$(special end character)  
+>| id              | occurrence      | range(SA)       | string length   | string |  
+>|:----------------|:----------------|:----------------|:----------------|:-------|
+>|1                |4                |2..5             |2                |AC   |
+>|2                |4                |5..8             |2                |AG   |
+>|3                |3                |8..10            |2                |AT   |
+>|4                |10               |1..10            |1                |A   |
+>|5                |4                |10..13           |2                |CA   |
+>|6                |7                |10..16           |1                |C   |
+>|7                |3                |18..20           |4                |GAGG  | 
+>|8                |6                |16..21           |2                |GA   |
+>|9                |3                |22..24           |4                |GGAC   |
+>|10               |3                |25..27           |3                |GGG   |
+>|11               |7                |22..28           |2                |GG   |
+>|12               |3                |28..30           |2                |GT   |
+>|13               |15               |16..30           |1                |G   |
+>|14               |4                |32..35           |2                |TG   |
+>|15               |7                |30..36           |1                |T   |
+>|16               |37               |0..36            |0   | |
+>|17               |1                |20..20           |36               |GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$(special end character)   |
   
 >----------RESULT----------  
 >File: sample.txt  
@@ -110,21 +111,22 @@ $ ./enumMaximalSubstring.out -i sample.txt -o sample.ms -p 1
 >----------RESULT----------  
 
 $ ./print.out -i sample.txt -l sample.ms  
->id              occurrence      range(SA)       string length   string  
->0               4               2..5            2               AC  
->1               4               5..8            2               AG  
->2               3               8..10           2               AT  
->3               10              1..10           1               A  
->4               4               10..13          2               CA  
->5               7               10..16          1               C  
->6               3               18..20          4               GAGG  
->7               6               16..21          2               GA  
->8               3               22..24          4               GGAC  
->9               3               25..27          3               GGG  
->10              7               22..28          2               GG  
->11              3               28..30          2               GT  
->12              15              16..30          1               G  
->13              4               32..35          2               TG  
->14              7               30..36          1               T  
->15              37              0..36           0  
->16              1               20..20          36              GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$(special end character)  
+>| id              | occurrence      | range(SA)       | string length   | string |  
+>|:----------------|:----------------|:----------------|:----------------|:-------|
+>|1                |4                |2..5             |2                |AC   |
+>|2                |4                |5..8             |2                |AG   |
+>|3                |3                |8..10            |2                |AT   |
+>|4                |10               |1..10            |1                |A   |
+>|5                |4                |10..13           |2                |CA   |
+>|6                |7                |10..16           |1                |C   |
+>|7                |3                |18..20           |4                |GAGG  | 
+>|8                |6                |16..21           |2                |GA   |
+>|9                |3                |22..24           |4                |GGAC   |
+>|10               |3                |25..27           |3                |GGG   |
+>|11               |7                |22..28           |2                |GG   |
+>|12               |3                |28..30           |2                |GT   |
+>|13               |15               |16..30           |1                |G   |
+>|14               |4                |32..35           |2                |TG   |
+>|15               |7                |30..36           |1                |T   |
+>|16               |37               |0..36            |0   | |
+>|17               |1                |20..20           |36               |GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$(special end character)   | 
