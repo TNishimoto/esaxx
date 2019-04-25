@@ -100,7 +100,7 @@ $ ./enumMaximalSubstring.out -i sample.txt -o sample.ms -p 1
 >15              7               30..36          1               T  
 >16              37              0..36           0  
 >17              1               20..20          36              GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$(special end character)  
-
+  
 >----------RESULT----------  
 >File: sample.txt  
 >Output: sample.ms  
