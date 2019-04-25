@@ -73,6 +73,7 @@ The internal nodes of the suffix tree of the file
 >| 15              | 4               | 32..35          | 2               | TG  |  
 >| 16              | 7               | 30..36          | 1               | T  |  
 >| 17              | 37              | 0..36           | 0  | |  
+  
 >----------RESULT----------  
 >File: sample.txt  
 >Output: sample.interval  
