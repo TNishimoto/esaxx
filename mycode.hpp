@@ -5,20 +5,40 @@
 #include "divsufsort.h"
 #include "divsufsort64.h"
 
-namespace stool{
+using namespace std;
+namespace stool
+{
+
+template <typename index_type>
 class LCPInterval
 {
-  public:
-    uint64_t i;
-    uint64_t j;
-    uint64_t lcp;
-    LCPInterval(){}
-    LCPInterval(uint64_t _i, uint64_t _j, uint64_t _lcp)
-    {
-    this->i = _i;
-    this->j = _j;
-    this->lcp = _lcp;
-    }
+public:
+	index_type i;
+	index_type j;
+	index_type lcp;
+	LCPInterval() {}
+	LCPInterval(index_type _i, index_type _j, index_type _lcp)
+	{
+		this->i = _i;
+		this->j = _j;
+		this->lcp = _lcp;
+	}
+
+	template <typename sa_type>
+	void print(uint64_t id, vector<char> &text, sa_type &sa)
+	{
+		cout << id << "\t\t" << (this->j - this->i + 1) << "\t\t" << this->i << ".." << this->j << "\t\t" << this->lcp << "\t\t";
+		int64_t begin = sa[this->i];
+		for (int64_t j = 0; j < this->lcp; ++j)
+		{
+			if(text[begin + j] != 0){
+				cout << text[begin + j];
+			}else{
+				cout << "$(special end character)";
+			}
+		}
+		cout << endl;
+	}
 };
 
 /**
@@ -29,61 +49,117 @@ class LCPInterval
  * @param k The alphabet size.
  * @return 0 if no error occurred, -1 or -2 otherwise.
  */
-template<typename string_type, typename sarray_type, typename index_type>
-int saisxx(string_type T, sarray_type SA, index_type n){
-
-}
-template <>
-int saisxx<std::vector<char>::iterator, std::vector<int32_t>::iterator,int32_t>(std::vector<char>::iterator T, std::vector<int32_t>::iterator SA, int32_t n){
-  //if((n < 0) || (k <= 0)) { return -1; }
-  if(n <= 1) { if(n == 1) { SA[0] = 0; } return 0; }
-
-  int err = divsufsort((const unsigned char *)&T[0], (int32_t *)&SA[0], n);
-  return err;
-}
-template <>
-int saisxx<std::vector<char>::iterator, std::vector<int64_t>::iterator,int64_t>(std::vector<char>::iterator T, std::vector<int64_t>::iterator SA, int64_t n){
-  //if((n < 0) || (k <= 0)) { return -1; }
-  if(n <= 1) { if(n == 1) { SA[0] = 0; } return 0; }
-
-  int err = divsufsort64((const unsigned char *)&T[0], (int64_t *)&SA[0], n);
-  return err;
-}
-
-/*
-template <typename ITEM, typename ITERATOR>
-static uint64_t online_write(ofstream &os, ITEM &item)
+template <typename string_type, typename sarray_type, typename index_type>
+int saisxx(string_type T, sarray_type SA, index_type n)
 {
-		uint64_t count = 0;
-		vector<ITEM> buffer;
-		uint64_t print_counter = 0;
-		std::cout << "Writing " << msg << std::flush;
-		while (beginIt != endIt)
+}
+template <>
+int saisxx<std::vector<char>::iterator, std::vector<int32_t>::iterator, int32_t>(std::vector<char>::iterator T, std::vector<int32_t>::iterator SA, int32_t n)
+{
+	if (n > 0 && T[n - 1] != 0)
+	{
+		throw std::logic_error("The last character of the input text must be '0'");
+	}
+	//if((n < 0) || (k <= 0)) { return -1; }
+	if (n <= 1)
+	{
+		if (n == 1)
 		{
-			ITEM item = *beginIt;
-			buffer.push_back(item);
-			count++;
-			if(print_counter != 0){
-				--print_counter;
-			}else{
-				std::cout << "." << std::flush;
-				print_counter = 100000;
-			}
+			SA[0] = 0;
+		}
+		return 0;
+	}
 
-			if (buffer.size() > bufferSize)
-			{
-				os.write((const char *)(&buffer[0]), sizeof(ITEM) * buffer.size());
-				buffer.clear();
-			}
+	int err = divsufsort((const unsigned char *)&T[0], (int32_t *)&SA[0], n);
+	return err;
+}
+template <>
+int saisxx<std::vector<char>::iterator, std::vector<int64_t>::iterator, int64_t>(std::vector<char>::iterator T, std::vector<int64_t>::iterator SA, int64_t n)
+{
+	//if((n < 0) || (k <= 0)) { return -1; }
+	if (n > 0 && T[n - 1] != 0)
+	{
+		throw std::logic_error("The last character of the input text must be '0'");
+	}
 
-			++beginIt;
+	if (n <= 1)
+	{
+		if (n == 1)
+		{
+			SA[0] = 0;
+		}
+		return 0;
+	}
+
+	int err = divsufsort64((const unsigned char *)&T[0], (int64_t *)&SA[0], n);
+	return err;
+}
+
+template <typename T>
+static vector<T> load(string filename)
+{
+
+	ifstream stream;
+	stream.open(filename, ios::binary);
+
+	vector<T> vec;
+
+	if (!stream)
+	{
+		std::cerr << "error reading file " << endl;
+		throw - 1;
+	}
+	uint64_t len;
+	stream.seekg(0, ios::end);
+	uint64_t n = (unsigned long)stream.tellg();
+	stream.seekg(0, ios::beg);
+	len = n / sizeof(T);
+
+	vec.resize(len);
+	stream.read((char *)&(vec)[0], len * sizeof(T));
+	return vec;
+}
+
+static vector<char> load_text(string filename)
+{
+
+	ifstream stream;
+	stream.open(filename, ios::binary);
+
+	vector<char> vec;
+
+	if (!stream)
+	{
+		std::cerr << "error reading file " << endl;
+		throw - 1;
+	}
+	uint64_t len;
+	stream.seekg(0, ios::end);
+	uint64_t n = (unsigned long)stream.tellg();
+	stream.seekg(0, ios::beg);
+	len = n / sizeof(char);
+
+	vec.resize(len+1, 0);
+	stream.read((char *)&(vec)[0], len * sizeof(char));
+
+	for(uint64_t i=0;i<len;i++){
+		if(vec[i] == 0){
+			throw std::logic_error("The input text must not contain '0' character!");
 		}		
-		os.write((const char *)(&buffer[0]), sizeof(ITEM) * buffer.size());
-		buffer.clear();
-		std::cout << "[END]" << std::endl;
-		return count;
+	}
+	return vec;
 }
-*/
 
 
+vector<int64_t> construct_sa(vector<char> &text)
+{
+	vector<int64_t> SA;
+	int64_t n = text.size();
+	SA.resize(n);
+
+	divsufsort64((const unsigned char *)&text[0], (int64_t *)&SA[0], n);
+
+	return SA;
 }
+
+} // namespace stool

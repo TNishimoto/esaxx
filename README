@@ -32,3 +32,13 @@ alpha:256
 $ enum_substring -w < wiki.txt > 
 
 Daisuke Okanohara <daisuke dot okanohara at gmail.com> 
+
+----------------------------
+
+Changes by this fork
+
+- This program uses libdivsufsort to construct suffix array.  
+- This program is built by CMake.  
+- The default size of the type of interger is 64bits.  
+- The input file must not contain the '0' character.
+- I added the code outputting maximal substrings in an input file (enumMaximalSubstring.cpp). The code is copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it. Thank you.  

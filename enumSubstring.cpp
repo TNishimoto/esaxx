@@ -4,6 +4,7 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -11,81 +12,103 @@
 #include "esa.hxx"
 
 using namespace std;
+using INDEXTYPE = int64_t;
 
-
-
-int readFile(const char *fn, vector<char> &T)
-{
-  FILE *fp = fopen(fn, "rb");
-  if (fp == NULL)
-  {
-    cerr << "cannot open " << fn << endl;
-    return -1;
-  }
-
-  if (fseek(fp, 0, SEEK_END) != 0)
-  {
-    cerr << "cannot fseek " << fn << endl;
-    fclose(fp);
-    return -1;
-  }
-  int n = ftell(fp);
-  rewind(fp);
-  if (n < 0)
-  {
-    cerr << "cannot ftell " << fn << endl;
-    fclose(fp);
-    return -1;
-  }
-  T.resize(n);
-  if (fread(&T[0], sizeof(unsigned char), (size_t)n, fp) != (size_t)n)
-  {
-    cerr << "fread error " << fn << endl;
-    fclose(fp);
-    return -1;
-  }
-
-  fclose(fp);
-  return 0;
-}
 int main(int argc, char *argv[])
 {
 
   cmdline::parser p;
   p.add<string>("input_file", 'i', "input file name", true);
+  p.add<string>("output_file", 'o', "output file name", false, "");
+
+  p.add<bool>("print", 'p', "print info", false, true);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
+  string outputFile = p.get<string>("output_file");
+  bool isPrint = p.get<bool>("print");
 
-  vector<char> T;                 // input text
-  readFile(inputFile.c_str(), T); // read file into T
-  int32_t n = T.size();
+  if (outputFile.size() == 0)
+  {
+    outputFile = inputFile + ".interval";
+  }
 
-  vector<int32_t> SA(n); // suffix array
-  vector<int32_t> L(n);  // left boundaries of internal node
-  vector<int32_t> R(n);  // right boundaries of internal node
-  vector<int32_t> D(n);  // depths of internal node
+  vector<char> T = stool::load_text(inputFile); // input text
+  INDEXTYPE n = T.size();
 
-  int32_t alphaSize = 0x100; // This can be very large
-  int32_t nodeNum = 0;
+  vector<INDEXTYPE> SA(n); // suffix array
+  vector<INDEXTYPE> L(n);  // left boundaries of internal node
+  vector<INDEXTYPE> R(n);  // right boundaries of internal node
+  vector<INDEXTYPE> D(n);  // depths of internal node
 
+  INDEXTYPE alphaSize = 0x100; // This can be very large
+  INDEXTYPE nodeNum = 0;
+
+  // Computing internal nodes of the suffix tree of the input file.
   if (esaxx(T.begin(), SA.begin(),
             L.begin(), R.begin(), D.begin(),
             n, alphaSize, nodeNum) == -1)
   {
     return -1;
   }
-  for (int i = 0; i < nodeNum; ++i)
+
+  INDEXTYPE size = T.size();
+
+  if (isPrint)
   {
-    int len = D[i];
-    cout << R[i] - L[i] << "\t" << D[i] << "\t";
-    int begin = SA[L[i]];
-    for (int j = 0; j < len; ++j)
-    {
-      cout << T[begin + j];
-    }
-    cout << endl;
+    std::cout << "The internal nodes of the suffix tree of the file" << std::endl;
+    std::cout << "id"
+              << "\t\t"
+              << "occurrence"
+              << "\t"
+              << "range(SA)"
+              << "\t"
+              << "string length"
+              << "\t"
+              << "string" << std::endl;
   }
 
-  return 0;
+  vector<stool::LCPInterval<INDEXTYPE>> buffer;
+  ofstream os(outputFile, ios::out | ios::binary);
+  if (!os)
+    return 1;
+  INDEXTYPE nodeCount = 0;
+
+  // Writing and Printing internal nodes.
+  for (INDEXTYPE i = 0; i < nodeNum; ++i)
+  {
+    stool::LCPInterval<INDEXTYPE> interval(L[i], R[i], D[i]);
+    INDEXTYPE len = D[i];
+    nodeCount++;
+    buffer.push_back(interval);
+    if (buffer.size() > 8192)
+    {
+      os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
+      buffer.clear();
+    }
+
+    if (isPrint)
+    {
+      if (nodeCount < 1000)
+      {
+        interval.print(i, T, SA);
+      }
+      else if (nodeCount == 1000)
+      {
+        std::cout << "etc.." << std::endl;
+      }
+    }
+  }
+  os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
+  buffer.clear();
+  os.close();
+
+  std::cout << "\033[36m";
+  std::cout << "=============RESULT===============" << std::endl;
+  std::cout << "File: " << inputFile << std::endl;
+  std::cout << "Output: " << outputFile << std::endl;
+  std::cout << "The length of the input text: " << T.size() << std::endl;
+  std::cout << "The number of the internal nodes of the suffix tree of the input file: " << nodeCount << std::endl;
+  std::cout << "==================================" << std::endl;
+  std::cout << "\033[39m" << std::endl;
 }
