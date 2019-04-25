@@ -53,6 +53,7 @@ echo -n GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT > sample.txt
   
 $ ./enumSubstring.out -i sample.txt -o sample.interval -p 1
 >The internal nodes of the suffix tree of the file  
+>  
 >| id              | occurrence      | range(SA)       | string length   | string |  
 >|:----------------|:----------------|:----------------|:----------------|:-------|
 >| 0               | 4               | 2..5            | 2               | AC  |  
@@ -83,6 +84,7 @@ $ ./enumSubstring.out -i sample.txt -o sample.interval -p 1
 
 $ ./enumMaximalSubstring.out -i sample.txt -o sample.ms -p 1
 >Maximal substrings in the file
+>  
 >| id              | occurrence      | range(SA)       | string length   | string |  
 >|:----------------|:----------------|:----------------|:----------------|:-------|
 >|1                |4                |2..5             |2                |AC   |
