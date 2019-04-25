@@ -1,6 +1,6 @@
 // License: MIT http://opensource.org/licenses/MIT
 /*
-  This code is copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it.
+  This code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it.
 */
 
 #include <iostream>
@@ -104,11 +104,11 @@ int main(int argc, char *argv[])
   os.close();
 
   std::cout << "\033[36m";
-  std::cout << "=============RESULT===============" << std::endl;
+  std::cout << "___________RESULT___________" << std::endl;
   std::cout << "File: " << inputFile << std::endl;
   std::cout << "Output: " << outputFile << std::endl;
   std::cout << "The length of the input text: " << T.size() << std::endl;
   std::cout << "The number of the internal nodes of the suffix tree of the input file: " << nodeCount << std::endl;
-  std::cout << "==================================" << std::endl;
+  std::cout << "_________________________________" << std::endl;
   std::cout << "\033[39m" << std::endl;
 }
