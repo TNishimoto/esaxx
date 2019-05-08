@@ -21,10 +21,18 @@ int main(int argc, char *argv[])
   p.add<string>("input_file", 'i', "input file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
   p.add<bool>("print", 'p', "print info", false, true);
+  p.add<string>("format", 'f', "output format", false, "csv");
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
+  string format = p.get<string>("format");
+
+  if (format != "binary")
+  {
+    format = "csv";
+  }
+
   bool isPrint = p.get<bool>("print");
 
   if (outputFile.size() == 0)
@@ -89,6 +97,8 @@ int main(int argc, char *argv[])
   INDEXTYPE id = 0;
 
   // Filtering internal nodes and writing and printing maximal substrings.
+  INDEXTYPE line_id = 0;
+
   for (INDEXTYPE i = 0; i < nodeNum; ++i)
   {
     stool::LCPInterval<INDEXTYPE> interval(L[i], R[i], D[i]);
@@ -102,7 +112,18 @@ int main(int argc, char *argv[])
     buffer.push_back(interval);
     if (buffer.size() > 8192)
     {
-      os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
+      if (format == "binary")
+      {
+        os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
+      }
+      else
+      {
+        for (uint64_t z = 0; z < buffer.size(); z++)
+        {
+          os << buffer[z].getCSVLine(line_id, T, SA) << std::endl;
+          line_id++;
+        }
+      }
       buffer.clear();
     }
 
@@ -120,16 +141,27 @@ int main(int argc, char *argv[])
   }
   stool::LCPInterval<INDEXTYPE> interval(SA_first_index, SA_first_index, T.size());
   id++;
-   maximumSubstringCount++;
-  if (isPrint)
+  maximumSubstringCount++;
+  if (isPrint && interval.lcp < 1000)
   {
     interval.print(id, T, SA);
   }
   buffer.push_back(interval);
 
-
-
-  os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
+  if (format == "binary")
+  {
+    os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
+  }
+  else
+  {
+    for (uint64_t z = 0; z < buffer.size(); z++)
+    {
+      os << buffer[z].getCSVLine(line_id, T, SA);
+      if (z + 1 < buffer.size())
+        os << std::endl;
+      line_id++;
+    }
+  }
   buffer.clear();
   os.close();
 
@@ -137,6 +169,7 @@ int main(int argc, char *argv[])
   std::cout << "___________RESULT___________" << std::endl;
   std::cout << "File: " << inputFile << std::endl;
   std::cout << "Output: " << outputFile << std::endl;
+  std::cout << "Output format: " << format << std::endl;
   std::cout << "The length of the input text: " << T.size() << std::endl;
   std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
   std::cout << "_________________________________" << std::endl;

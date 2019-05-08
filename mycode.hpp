@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <string>
 #include <vector>
@@ -39,6 +40,25 @@ public:
 		}
 		cout << endl;
 	}
+	template <typename sa_type>
+	string getCSVLine(uint64_t id, vector<char> &text, sa_type &sa){
+		string tmp="";
+		string intervalText = this->getText(text, sa);
+		tmp = std::to_string(id) + "," + std::to_string(this->j - this->i + 1) + "," + std::to_string(this->i) + "," + std::to_string(this->j) + "," + intervalText;
+		return tmp;
+	}
+
+	template <typename sa_type>
+	string getText(vector<char> &text, sa_type &sa){
+		string intervalText = "";
+		int64_t begin = sa[this->i];
+		for (int64_t j = 0; j < this->lcp; ++j)
+		{
+			intervalText.push_back(text[begin + j]);
+		}
+		return intervalText;
+	}
+
 };
 
 /**

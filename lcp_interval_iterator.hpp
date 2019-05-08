@@ -19,17 +19,13 @@ class LCPIntervalIterator
     INDEXTYPE nodeNum;
     stool::LCPInterval<INDEXTYPE> _current_interval;
     uint64_t _current_i = 0;
-    //INDEXTYPE SA_first_index = 0;
-    //INDEXTYPE _size;
 
 public:
     LCPIntervalIterator() = default;
 
-    LCPIntervalIterator(vector<INDEXTYPE> &_L, vector<INDEXTYPE> &_R, vector<INDEXTYPE> &_D, INDEXTYPE _nodeNum,bool isBegin) : L(_L), R(_R), D(_D)
+    LCPIntervalIterator(vector<INDEXTYPE> &_L, vector<INDEXTYPE> &_R, vector<INDEXTYPE> &_D, INDEXTYPE _nodeNum, bool isBegin) : L(_L), R(_R), D(_D)
     {
         this->nodeNum = _nodeNum;
-        //this->SA_first_index = _SA_first_index;
-        //this->_size = _n;
         if (isBegin)
         {
             this->_current_interval = stool::LCPInterval<INDEXTYPE>(L[this->_current_i], R[this->_current_i], D[this->_current_i]);
@@ -63,12 +59,53 @@ public:
         //std::cout << _current_i << "/"
         return _current_i != rhs._current_i;
     }
+    bool isEnd()
+    {
+        return _current_i == UINT64_MAX;
+    }
+};
+
+template <typename INDEXTYPE>
+class MSIntervalIterator
+{
+    LCPIntervalIterator<INDEXTYPE> &lcp_iterator;
+    vector<INDEXTYPE> &rank;
+    //stool::LCPInterval<INDEXTYPE> _current_interval;
+
+    MSIntervalIterator &operator++()
+    {
+        while (!lcp_iterator.isEnd())
+        {
+            ++lcp_iterator;
+            stool::LCPInterval<INDEXTYPE> interval = *lcp_iterator;
+            if ((rank[interval.j - 1] - rank[interval.i] == 0))
+            {
+            }
+            else
+            {
+                break;
+            }
+        }
+        return *this;
+    }
+    stool::LCPInterval<INDEXTYPE> operator*()
+    {
+        return this->_current_interval;
+    }
+    bool operator!=(const MSIntervalIterator &rhs)
+    {
+        return this->lcp_iterator != rhs.lcp_iterator;
+    }
+    bool isEnd()
+    {
+        return this->lcp_iterator.isEnd();
+    }
 };
 
 template <typename INDEXTYPE>
 class LCPIntervalIteratorGenerator
 {
-    public:
+public:
     //vector<char> &T;
     vector<INDEXTYPE> SA; // suffix array
     vector<INDEXTYPE> L;  // left boundaries of internal node
@@ -80,7 +117,8 @@ class LCPIntervalIteratorGenerator
     LCPIntervalIterator<INDEXTYPE> *_end;
 
 public:
-    ~LCPIntervalIteratorGenerator(){
+    ~LCPIntervalIteratorGenerator()
+    {
         delete this->_end;
     }
 
@@ -120,5 +158,89 @@ public:
         return *this->_end;
     }
 };
+
+template <typename INDEXTYPE>
+class MSIntervalIteratorGenerator
+{
+    LCPIntervalIteratorGenerator<INDEXTYPE> lcp_interval_iterator_generator;
+    vector<INDEXTYPE> rank;
+
+    public:
+    MSIntervalIteratorGenerator(vector<char> &T)
+    {
+        
+        this->_end = new LCPIntervalIterator<INDEXTYPE>(this->L, this->R, this->D, this->nodeNum, false);
+    }
+};
+
+template <typename INDEXTYPE>
+vector<INDEXTYPE> constructMSVec(vector<INDEXTYPE> &L, vector<INDEXTYPE> &R, vector<INDEXTYPE> &D)
+{
+    std::unordered_map<INDEXTYPE, INDEXTYPE> mapper;
+
+    INDEXTYPE size = L.size();
+    vector<INDEXTYPE> r;
+    r.resize(size, std::numeric_limits<INDEXTYPE>::max());
+
+    for (INDEXTYPE i = 0; i < size; i++)
+    {
+        INDEXTYPE width = R[i] - L[i] + 1;
+        INDEXTYPE x = (1 + R[i]) - width;
+        while (width > 0)
+        {
+            auto it = mapper.find(x);
+            if (it != mapper.end())
+            {
+                INDEXTYPE childID = *it;
+                INDEXTYPE childWidth = R[childID] - L[childID] + 1;
+                r[childID] = i;
+                width -= childWidth;
+                x = (1 + R[i]) - width;
+                mapper.erase(x);
+            }
+            else
+            {
+                break;
+            }
+        }
+        mapper[L[i]] = i;
+    }
+    return r;
+}
+
+template <typename INDEXTYPE>
+vector<INDEXTYPE> constructParentVec(vector<INDEXTYPE> &L, vector<INDEXTYPE> &R, vector<INDEXTYPE> &D)
+{
+    std::unordered_map<INDEXTYPE, INDEXTYPE> mapper;
+
+    INDEXTYPE size = L.size();
+    vector<INDEXTYPE> r;
+    r.resize(size, std::numeric_limits<INDEXTYPE>::max());
+
+    for (INDEXTYPE i = 0; i < size; i++)
+    {
+        INDEXTYPE width = R[i] - L[i] + 1;
+        INDEXTYPE x = (1 + R[i]) - width;
+        while (width > 0)
+        {
+            auto it = mapper.find(x);
+            if (it != mapper.end())
+            {
+                INDEXTYPE childID = *it;
+                INDEXTYPE childWidth = R[childID] - L[childID] + 1;
+                r[childID] = i;
+                width -= childWidth;
+                x = (1 + R[i]) - width;
+                mapper.erase(x);
+            }
+            else
+            {
+                break;
+            }
+        }
+        mapper[L[i]] = i;
+    }
+    return r;
+}
 
 } // namespace stool
