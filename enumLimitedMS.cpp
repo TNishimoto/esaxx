@@ -16,9 +16,39 @@ using INDEXTYPE = int64_t;
 
 using LCPPair = std::pair<stool::LCPInterval<INDEXTYPE>,std::pair<uint64_t,uint64_t>>;
 
+double kai(double a, double b, double c, double d){
+    double sum_ab = a + b;
+    double sum_cd = c + d;
+    double sum_ac = a + c;
+    double sum_bd = b + d;
+    double sum_abcd = a + b + c + d;
+
+    double expected_a = sum_ab * (sum_ac / sum_abcd);
+    double expected_b = sum_ab * (sum_bd / sum_abcd);
+    double expected_c = sum_cd * (sum_ac / sum_abcd);
+    double expected_d = sum_cd * (sum_bd / sum_abcd);
+
+    double kai_a = ((a - expected_a) * (a - expected_a)) / expected_a;
+    double kai_b = ((b - expected_b) * (b - expected_b)) / expected_b;
+    double kai_c = ((c - expected_c) * (c - expected_c)) / expected_c;
+    double kai_d = ((d - expected_d) * (d - expected_d)) / expected_d;
+    return kai_a + kai_b + kai_c + kai_d;
+}
+bool kaip(double a, double b, double c, double d){
+    double sum_ab = a + b;
+    double sum_cd = c + d;
+    double sum_ac = a + c;
+    double sum_bd = b + d;
+    double sum_abcd = a + b + c + d;
+
+    double expected_a = sum_ab * (sum_ac / sum_abcd);
+    double expected_b = sum_ab * (sum_bd / sum_abcd);
+    bool b_a = a >= expected_a;
+    return b_a;
+}
 
 template <typename sa_type>
-string toString(LCPPair& item, vector<char> &text, sa_type &sa){
+string toString(LCPPair& item, vector<char> &text, sa_type &sa, std::pair<uint64_t,uint64_t> &sum_info){
         string result = "";
         uint64_t sum_y = item.second.first + item.second.second;
         uint64_t plus_count_y = item.second.first;
@@ -27,11 +57,21 @@ string toString(LCPPair& item, vector<char> &text, sa_type &sa){
         uint64_t minus_value = item.second.second;
         string line = item.first.getText(text, sa);
 
-        //result += std::to_string(y_value) + "," + std::to_string(plus_value) + "," + std::to_string(minus_value) + "," + std::to_string(sum_y) + "," + std::to_string(item.first.lcp) + "," + translate( line);
-        result += std::to_string(y_value) + "," + line;
+        uint64_t other_true_sum = sum_info.first - plus_value;
+        uint64_t other_false_sum = sum_info.second - minus_value;
+
+        double kai_value = kai(plus_value, minus_value, other_true_sum, other_false_sum);
+        bool bb = kaip(plus_value, minus_value, other_true_sum, other_false_sum);
+        string b1 = (bb ? "+" : "-");
+
+        result += std::to_string(kai_value) + "," + b1 + ","+ std::to_string(plus_value) + "," + std::to_string(minus_value) + "," + std::to_string(other_true_sum) + "," + std::to_string(other_false_sum) + "," + line;
         
         return result;
 }
+
+
+
+
 vector<char> getInputText(string filepath)
 {
     std::ifstream ifs(filepath);
@@ -193,7 +233,7 @@ int main(int argc, char *argv[])
         }
         rank[i] = r;
     }
-
+    /*
     if (isPrint)
     {
         std::cout << "Maximal substrings in the file" << std::endl;
@@ -207,6 +247,7 @@ int main(int argc, char *argv[])
                   << "\t"
                   << "string" << std::endl;
     }
+    */
 
     vector<LCPPair> buffer;
 
@@ -219,16 +260,23 @@ int main(int argc, char *argv[])
     // Filtering internal nodes and writing and printing maximal substrings.
     INDEXTYPE line_id = 0;
 
+    uint64_t true_sum = 0;
+    uint64_t false_sum = 0;
+
+
     for (INDEXTYPE i = 0; i < nodeNum; ++i)
     {
         stool::LCPInterval<INDEXTYPE> interval(L[i], R[i], D[i]);
         INDEXTYPE len = D[i];
-        if ((rank[interval.j - 1] - rank[interval.i] == 0 || !isOK(interval, SA, excludedPositions)))
+        if ((rank[interval.j - 1] - rank[interval.i] == 0 || !isOK(interval, SA, excludedPositions)) || interval.lcp == 0 )
         {
             continue;
         }
         std::pair<uint64_t,uint64_t> freq = getFrequency(interval, SA, border);
-        if ( freq.first + freq.second >= occ_threshold && interval.lcp >= len_threshold && (interval.lcp*(freq.first + freq.second) >= occlen_threshold ))
+        true_sum += freq.first;
+        false_sum += freq.second;
+
+        if ( freq.first + freq.second >= occ_threshold && interval.lcp >= len_threshold && (interval.lcp*(freq.first + freq.second) >= occlen_threshold) )
         {
         }else{
             continue;
@@ -242,35 +290,28 @@ int main(int argc, char *argv[])
 
     }
 
+    std::pair<uint64_t, uint64_t> zikoPair = std::pair<uint64_t, uint64_t>(true_sum, false_sum);
+
+
     std::sort(buffer.begin(), buffer.end(),
-              [](const LCPPair &x, const LCPPair &y) {
-                  uint64_t sum_x = x.second.first + x.second.second;
-                  uint64_t plus_count_x = x.second.first;
-                  double x_value = (double)plus_count_x / (double)sum_x;
-
-                  uint64_t sum_y = y.second.first + y.second.second;
-                  uint64_t plus_count_y = y.second.first;
-                  double y_value = (double)plus_count_y / (double)sum_y ;
-                  if(plus_count_x == 0 && plus_count_y == 0){
-                      return sum_x < sum_y; 
-                  }else{
-                      return x_value > y_value;
-                  }
+              [&](const LCPPair &x, const LCPPair &y) {
+                  double kai_x = kai(x.second.first, x.second.second, true_sum - x.second.first, false_sum - x.second.second);
+                  double kai_y = kai(y.second.first, y.second.second, true_sum - y.second.first, false_sum - y.second.second);
+                  return kai_y < kai_x;
               });
+    string column0 = "Kai";
+    string column1 = "Bias";
+    string column2 = "MS(TRUE)";
+    string column3 = "MS(FALSE)";
+    string column4 = "Others(TRUE)";
+    string column5 = "Others(FALSE)";
+    string column6 = "Maximal_substring";
 
-    os << "Positive example ratio, maximal substring" << std::endl;
-    //os << "Positive example ratio, the number of positive examples, the number of negative example, the number of occurrences, the length of maximal substring, maximal substring" << std::endl;
+    os << column0 << "," << column1 << ", " << column2 << ", " << column3 << ", " << column4 << ", " << column5 << "," << column6 << std::endl;
     for (uint64_t z = 0; z < buffer.size(); z++)
     {
         LCPPair &item = buffer[z];
-
-        uint64_t sum_y = item.second.first + item.second.second;
-        uint64_t plus_count_y = item.second.first;
-        double y_value = (double)plus_count_y / (double)sum_y;
-        uint64_t plus_value = item.second.first;
-        uint64_t minus_value = item.second.second;
-
-        os << toString(item, T, SA);
+        os << toString(item, T, SA, zikoPair);
         if (z + 1 < buffer.size())
             os << std::endl;
     }

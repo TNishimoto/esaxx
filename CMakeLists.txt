@@ -20,8 +20,8 @@ target_link_libraries(enumSubstring.out divsufsort divsufsort64)
 add_executable(enumMaximalSubstring.out enumMaximalSubstring.cpp esa.hxx mycode.hpp divsufsort.h divsufsort64.h)
 target_link_libraries(enumMaximalSubstring.out divsufsort divsufsort64)
 
-#add_executable(enumLimitedMS.out enumLimitedMS.cpp esa.hxx mycode.hpp divsufsort.h divsufsort64.h)
-#target_link_libraries(enumLimitedMS.out divsufsort divsufsort64)
+add_executable(enumLimitedMS.out enumLimitedMS.cpp esa.hxx mycode.hpp divsufsort.h divsufsort64.h)
+target_link_libraries(enumLimitedMS.out divsufsort divsufsort64)
 
 #add_executable(intv.out intv.cpp esa.hxx mycode.hpp divsufsort.h divsufsort64.h)
 #target_link_libraries(intv.out divsufsort divsufsort64)
