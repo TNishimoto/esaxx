@@ -19,9 +19,10 @@ Daisuke Okanohara (daisuke dot okanohara at gmail.com)
 - The input file must not contain the '0' character.
 - I added the code outputting maximal substrings in an input file (enumMaximalSubstring.cpp). The code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it. Thank you.  
 
-## Executions
+## Executions && Examples
 
-enumMaximalSubstring.out  
+### enumMaximalSubstring.out  
+
 This program computes all maximal substring of the input file.  
 usage: ./enumMaximalSubstring.out --input_file=string [options] ...  
 options:  
@@ -30,27 +31,7 @@ options:
   -p, --print          print info (bool [=1])  
   -?, --help           print this message  
 
-enumSubstring.out  
-This program computes all internal nodes of the suffix tree of the input file.  
-usage: ./enumSubstring.out --input_file=string [options] ...  
-options:  
-  -i, --input_file     input file name (string)  
-  -o, --output_file    output file name (string [=])  
-  -p, --print          print info (bool [=1])  
-  -?, --help           print this message  
-
-print.out
-This program shows the above output files.  
-usage: ./print.out --input_file=string --lcp_interval_file=string [options] ...  
-options:  
-  -i, --input_file           input file name (string)  
-  -l, --lcp_interval_file    LCP interval file name (string)  
-  -?, --help                 print this message  
-
-## Example
-
-echo -n GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT > sample.txt  
-  
+$ echo -n GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT > sample.txt  
 $ ./enumSubstring.out -i sample.txt -o sample.interval -p 1
 >The internal nodes of the suffix tree of the file  
 >  
@@ -80,7 +61,18 @@ $ ./enumSubstring.out -i sample.txt -o sample.interval -p 1
 >Output: sample.interval  
 >The length of the input text: 36  
 >The number of the internal nodes of the suffix tree of the input file: 18  
->----------RESULT----------  
+>----------RESULT----------
+
+
+### enumSubstring.out  
+
+This program computes all internal nodes of the suffix tree of the input file.  
+usage: ./enumSubstring.out --input_file=string [options] ...  
+options:  
+  -i, --input_file     input file name (string)  
+  -o, --output_file    output file name (string [=])  
+  -p, --print          print info (bool [=1])  
+  -?, --help           print this message  
 
 $ ./enumMaximalSubstring.out -i sample.txt -o sample.ms -p 1
 >Maximal substrings in the file
@@ -112,6 +104,15 @@ $ ./enumMaximalSubstring.out -i sample.txt -o sample.ms -p 1
 >The number of maximum substrings: 17  
 >----------RESULT----------  
 
+### print.out
+
+This program shows the above output files.  
+usage: ./print.out --input_file=string --lcp_interval_file=string [options] ...  
+options:  
+  -i, --input_file           input file name (string)  
+  -l, --lcp_interval_file    LCP interval file name (string)  
+  -?, --help                 print this message  
+
 $ ./print.out -i sample.txt -l sample.ms  
 >| id              | occurrence      | range(SA)       | string length   | string |  
 >|:----------------|:----------------|:----------------|:----------------|:-------|
@@ -132,3 +133,59 @@ $ ./print.out -i sample.txt -l sample.ms
 >|15               |7                |30..36           |1                |T   |
 >|16               |37               |0..36            |0   | |
 >|17               |1                |20..20           |36               |GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$(special end character)   | 
+
+### enumKaiMaximalSubstring.out
+
+This program receives positive texts and negative texts, and outputs each kai squared value of maximal substrings in the texts. 
+The kai squared value of a maximal substring could be large when the most of occurrences of the maximal substring exists in positive (or negative) texts. 
+
+usage: ./enumKaiMaximalSubstring.out --input_file=string [options] ... 
+options:
+  -i, --input_file          input file name (string)
+  -o, --output_file         output file name (string [=])
+  -p, --print               print info (bool [=1])
+  -a, --occ_threshold       the threshold of occurrences (long long [=0])
+  -b, --len_threshold       the threshold of length (long long [=0])
+  -c, --occlen_threshold    the threshold of occ length (long long [=0])
+  -?, --help                print this message
+
+The input_file is the set of positive texts and negative texts.   
+Each line in the file rerpesents a positive or negative text.  
+The first character of each line is "+" or "-" and the remaining characters is the text of the line.  
+The first character of the line is "+" if the text is positive instance; otherwise it is "-".  
+
+The following text is an example of the input file for this program.  
+>+GTAAGTATTTTTCAGCTTTTCATT  
+>+TGTTTCAGCCTTAGTCATTATCG  
+>+AGCTTTTCATTCTGACTGCAACGG  
+>+CGTCCTGGATCTTTATTAGATCG  
+>+AGCTTTTCATTCTGACTGCAACGG  
+>-TCTCACTAAGATAAGCGACTGTCT  
+>-CACACACGCACCCACACAGCCACA  
+>-AATTGATTTTTCAGCAGCATTCG  
+>-GTTGATAGAACACTAACCCTTCAG  
+>-TAACATTTTGCGCCCTTTAAATAT
+
+Caution 1 : Negative texts must follow positive texts in the file.  
+Caution 2 : Positive and negative texts cannot contain the following characters: '+', '-', '(char)0', and '(char)1'  
+
+$ ./enumKaiMaximalSubstring.out -i ../sample_texts/kai_text.txt
+
+>|Kai_squared    |Bias   | MS(TRUE)     |  MS(FALSE)     | Others(TRUE)  |Others(FALSE) | Maximal_substring |  
+>|:--------------|:------|:-------------|:---------------|:--------------|:-------------|:------------------|
+>|9.704153       | -     | 0            |10              |423            |431           |CAC|  
+>|7.745184       | -     | 0            |8               |423            |433           |ACA|  
+>|5.795348       | -     | 0            |6               |423            |435           |CACA|  
+>|5.258488       | -     | 4            |14              |419            |427           |AC|  
+>|5.243108       | +     | 5            |0               |418            |441           |TCATT|  
+>|4.823834       | -     | 0            |5               |423            |436           |ACAC|  
+>|4.759463       | +     | 49           |32              |374            |409           |T|  
+
+>___________RESULT___________  
+>File: ../sample_texts/kai_text.txt  
+>Output: ../sample_texts/kai_text.txt.0.0.0.csv  
+>Occurrence threshold: 0  
+>Length threshold: 0  
+>Occurrence*Length threshold: 0  
+>The length of the input text: 257  
+>_________________________________

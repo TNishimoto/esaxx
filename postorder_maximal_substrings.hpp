@@ -22,7 +22,6 @@ class PostorderMSIterator
     PostorderMSIterator(const vector<INDEXTYPE> &_L, const vector<INDEXTYPE> &_R, const vector<INDEXTYPE> &_D, INDEXTYPE _index) : L(_L), R(_R), D(_D), index(_index)
     {
     }
-
     PostorderMSIterator &operator++()
     {
         if (index + 1 < this->L.size())
@@ -35,11 +34,11 @@ class PostorderMSIterator
         }
         return *this;
     }
-    stool::LCPInterval<INDEXTYPE> operator*()
+    stool::LCPInterval<INDEXTYPE> operator*() const
     {
         return stool::LCPInterval<INDEXTYPE>(L[index], R[index], D[index]);
     }
-    bool operator!=(const PostorderMSIterator &rhs)
+    bool operator!=(const PostorderMSIterator &rhs) const
     {
         return index != rhs.index;
     }
@@ -48,25 +47,30 @@ template <typename INDEXTYPE>
 class PostorderMaximalSubstrings
 {
 
-    vector<INDEXTYPE> L; // left boundaries of internal node
-    vector<INDEXTYPE> R; // right boundaries of internal node
-    vector<INDEXTYPE> D; // depths of internal node
-    vector<INDEXTYPE> rank;
+    const vector<INDEXTYPE> L; // left boundaries of internal node
+    const vector<INDEXTYPE> R; // right boundaries of internal node
+    const vector<INDEXTYPE> D; // depths of internal node
 
 public:
     PostorderMaximalSubstrings()
     {
     }
+    PostorderMaximalSubstrings(vector<INDEXTYPE> _L, vector<INDEXTYPE> _R, vector<INDEXTYPE> _D) : L(_L), R(_R), D(_D)
+    {
+    }
+
     template <typename TEXT>
     static PostorderMaximalSubstrings<INDEXTYPE> construct(vector<TEXT> &text, vector<INDEXTYPE> &SA)
     {
-        PostorderMaximalSubstrings<INDEXTYPE> r;
         INDEXTYPE n = text.size();
         SA.resize(n);
+        vector<INDEXTYPE> L(n);
+        vector<INDEXTYPE> R(n);
+        vector<INDEXTYPE> D(n);
         //r.SA.resize(n);
-        r.L.resize(n);
-        r.R.resize(n);
-        r.D.resize(n);
+        L.resize(n);
+        R.resize(n);
+        D.resize(n);
         vector<INDEXTYPE> rank(n);
         INDEXTYPE alphaSize = 0x100; // This can be very large
         INDEXTYPE nodeNum = 0;
@@ -74,7 +78,7 @@ public:
 
         // Computing internal nodes of the suffix tree of the input file.
         if (esaxx(text.begin(), SA.begin(),
-                  r.L.begin(), r.R.begin(), r.D.begin(),
+                  L.begin(), R.begin(), D.begin(),
                   n, alphaSize, nodeNum) == -1)
         {
             throw logic_error("error");
@@ -96,47 +100,54 @@ public:
         for (INDEXTYPE i = 0; i < nodeNum; i++)
         {
             //stool::LCPInterval<INDEXTYPE> interval(r.L[i], r.R[i], r.D[i]);
-            if ((rank[r.R[i] - 1] - rank[r.L[i]] == 0))
+            if ((rank[R[i] - 1] - rank[L[i]] == 0))
             {
                 continue;
             }
             else
             {
-                r.L[y] = r.L[i];
-                r.R[y] = r.R[i];
-                r.D[y] = r.D[i];
+                L[y] = L[i];
+                R[y] = R[i];
+                D[y] = D[i];
                 y++;
             }
         }
         y;
-        r.L.resize(y+1);        
-        r.R.resize(y+1);
-        r.D.resize(y+1);
+        L.resize(y+1);        
+        R.resize(y+1);
+        D.resize(y+1);
         while(y >= 1){
-            r.L[y] = r.L[y-1];
-            r.R[y] = r.R[y-1];
-            r.D[y] = r.D[y-1];
+            L[y] = L[y-1];
+            R[y] = R[y-1];
+            D[y] = D[y-1];
             y--;
         }
 
-        r.L[0] = (SA_first_index);
-        r.R[0] = (SA_first_index);
-        r.D[0] = (n);
+        L[0] = (SA_first_index);
+        R[0] = (SA_first_index);
+        D[0] = (n);
+
+
+        PostorderMaximalSubstrings<INDEXTYPE> r(std::move(L), std::move(R), std::move(D) );
         return r;
     }
 
-    PostorderMSIterator<INDEXTYPE> begin()
+    PostorderMSIterator<INDEXTYPE> begin() const
     {
         auto it = PostorderMSIterator<INDEXTYPE>(this->L, this->R, this->D, 0);
         return it;
     }
-    PostorderMSIterator<INDEXTYPE> end()
+    PostorderMSIterator<INDEXTYPE> end() const
     {
         auto it = PostorderMSIterator<INDEXTYPE>(this->L, this->R, this->D, std::numeric_limits<INDEXTYPE>::max());
         return it;
     }
-    INDEXTYPE size(){
+    INDEXTYPE size() const {
         return this->L.size();
+    }
+    stool::LCPInterval<INDEXTYPE> operator[](INDEXTYPE i) {
+        return stool::LCPInterval<INDEXTYPE>(L[i], R[i], D[i]);
+        
     }
 };
 

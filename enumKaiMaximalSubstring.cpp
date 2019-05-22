@@ -17,7 +17,10 @@ using INDEXTYPE = int64_t;
 
 using LCPPair = std::pair<stool::LCPInterval<INDEXTYPE>, std::pair<uint64_t, uint64_t>>;
 
-double kai(double a, double b, double c, double d)
+// Computes the kai squared value of the input values.
+// The first return value is the kai squared value. 
+// The second return value is true if a is larger than or equal to the expected value of a; otherwise it is false. 
+std::pair<double, bool> get_kai_squared_value(double a, double b, double c, double d)
 {
     double sum_ab = a + b;
     double sum_cd = c + d;
@@ -34,47 +37,38 @@ double kai(double a, double b, double c, double d)
     double kai_b = ((b - expected_b) * (b - expected_b)) / expected_b;
     double kai_c = ((c - expected_c) * (c - expected_c)) / expected_c;
     double kai_d = ((d - expected_d) * (d - expected_d)) / expected_d;
-    return kai_a + kai_b + kai_c + kai_d;
-}
-bool kaip(double a, double b, double c, double d)
-{
-    double sum_ab = a + b;
-    double sum_cd = c + d;
-    double sum_ac = a + c;
-    double sum_bd = b + d;
-    double sum_abcd = a + b + c + d;
-
-    double expected_a = sum_ab * (sum_ac / sum_abcd);
-    double expected_b = sum_ab * (sum_bd / sum_abcd);
-    bool b_a = a >= expected_a;
-    return b_a;
+    double result = kai_a + kai_b + kai_c + kai_d;
+    return std::pair<double, bool>(result, a >= expected_a);
 }
 
-template <typename sa_type>
-string toString(LCPPair &item, vector<char> &text, sa_type &sa, uint64_t positive_sum, uint64_t negative_sum)
+
+template <typename sa_type, typename index_type>
+string toCSVLine(LCPPair &item, vector<char> &text, sa_type &sa, index_type positive_sum, index_type negative_sum, string delimiter)
 {
     string result = "";
-    uint64_t sum_y = item.second.first + item.second.second;
-    uint64_t plus_count_y = item.second.first;
+    index_type sum_y = item.second.first + item.second.second;
+    index_type plus_count_y = item.second.first;
     double y_value = (double)plus_count_y / (double)sum_y;
-    uint64_t plus_value = item.second.first;
-    uint64_t minus_value = item.second.second;
+    index_type plus_value = item.second.first;
+    index_type minus_value = item.second.second;
     string line = item.first.getText(text, sa);
 
-    uint64_t other_positive_sum = positive_sum - plus_value;
-    uint64_t other_negative_sum = negative_sum - minus_value;
+    index_type other_positive_sum = positive_sum - plus_value;
+    index_type other_negative_sum = negative_sum - minus_value;
 
-    double kai_value = kai(plus_value, minus_value, other_positive_sum, other_negative_sum);
-    bool bb = kaip(plus_value, minus_value, other_positive_sum, other_negative_sum);
-    string b1 = (bb ? "+" : "-");
+    std::pair<double, bool> r = get_kai_squared_value(plus_value, minus_value, other_positive_sum, other_negative_sum);
+    string b1 = (r.second ? "+" : "-");
 
-    result += std::to_string(kai_value) + "," + b1 + "," + std::to_string(plus_value) + "," + std::to_string(minus_value) + "," + std::to_string(other_positive_sum) + "," + std::to_string(other_negative_sum) + "," + line;
+    result += std::to_string(r.first) + delimiter + b1 + delimiter + std::to_string(plus_value) + delimiter + std::to_string(minus_value) + delimiter + std::to_string(other_positive_sum) + delimiter + std::to_string(other_negative_sum) + delimiter + line;
 
     return result;
 }
 
-vector<char> getInputText(string filepath)
+template <typename index_type>
+std::pair<vector<char>, index_type> getInputText(string filepath)
 {
+    vector<char> text;
+
     std::ifstream ifs(filepath);
     bool inputFileExist = ifs.is_open();
     if (!inputFileExist)
@@ -84,42 +78,31 @@ vector<char> getInputText(string filepath)
     }
 
     std::string tmp;
-    vector<char> result;
+    //vector<char> result;
     std::cout << "Loading the input text..." << std::endl;
 
     while (getline(ifs, tmp))
     {
         for (char c : tmp)
         {
-            result.push_back(c);
+            text.push_back(c);
         }
-        result.push_back((char)1);
+        text.push_back((char)1);
     }
-    result.pop_back();
-    result.push_back((char)0);
-    return result;
-}
-vector<INDEXTYPE> constructExcludedPositionRanks(vector<char> &text)
-{
-    vector<INDEXTYPE> tmp;
-    //vector<INDEXTYPE> result;
-    tmp.resize(text.size(), UINT64_MAX);
+    text.pop_back();
+    text.push_back((char)0);
 
-    uint64_t prev = 0;
-    uint64_t rank = 0;
+    index_type border = text.size();
     for (uint64_t i = 0; i < text.size(); i++)
     {
-        if (text[i] == (char)1 || text[i] == '+' || text[i] == '-')
+        if (text[i] == '-')
         {
-            for (uint64_t j = prev; j < i; j++)
-            {
-                tmp[j] = rank;
-            }
-            rank++;
-            prev = i;
+            border = i;
+            break;
         }
     }
-    return tmp;
+    std::pair<vector<char>, index_type> r(std::move(text), border);
+    return r;
 }
 INDEXTYPE getBorderPosition(vector<char> &text)
 {
@@ -133,33 +116,58 @@ INDEXTYPE getBorderPosition(vector<char> &text)
     }
     return text.size();
 }
-template <typename sa_type>
-bool isOK(stool::LCPInterval<INDEXTYPE> &interval, sa_type &sa, vector<INDEXTYPE> &excludedPositions)
+template <typename index_type>
+vector<bool> constructForbiddenIndexesForMaximalSubstrings(vector<char> &text, vector<index_type> &sa, stool::PostorderMaximalSubstrings<index_type> &ms)
 {
-    INDEXTYPE start_pos = sa[interval.i];
-    INDEXTYPE end_pos = sa[interval.i] + interval.lcp - 1;
-
-    bool b1, b2;
-
-    if (start_pos == 0)
+    vector<index_type> excludedPositions;
+    excludedPositions.resize(text.size(), UINT64_MAX);
+    uint64_t prev = 0;
+    uint64_t rank = 0;
+    for (uint64_t i = 0; i < text.size(); i++)
     {
-        if (excludedPositions[0] == 0)
+        if (text[i] == (char)1 || text[i] == '+' || text[i] == '-')
         {
-            b1 = true;
+            for (uint64_t j = prev; j < i; j++)
+            {
+                excludedPositions[j] = rank;
+            }
+            rank++;
+            prev = i;
+        }
+    }
+
+    vector<bool> result_vec;
+    result_vec.resize(ms.size(), true);
+
+    for(index_type i=0;i<ms.size();i++)
+    {
+        stool::LCPInterval<index_type> interval = ms[i];
+        index_type start_pos = sa[interval.i];
+        index_type end_pos = sa[interval.i] + interval.lcp - 1;
+
+        bool b1, b2;
+
+        if (start_pos == 0)
+        {
+            if (excludedPositions[0] == 0)
+            {
+                b1 = true;
+            }
+            else
+            {
+                b1 = false;
+            }
         }
         else
         {
-            b1 = false;
+            b1 = (excludedPositions[start_pos] - excludedPositions[start_pos - 1]) == 0;
         }
+        b2 = (excludedPositions[end_pos] - excludedPositions[start_pos]) == 0;
+        result_vec[i] = b1 && b2 && (interval.lcp > 0);
     }
-    else
-    {
-        b1 = (excludedPositions[start_pos] - excludedPositions[start_pos - 1]) == 0;
-    }
-    b2 = (excludedPositions[end_pos] - excludedPositions[start_pos]) == 0;
-
-    return b1 && b2;
+    return result_vec;
 }
+
 template <typename sa_type>
 std::pair<uint64_t, uint64_t> getFrequency(stool::LCPInterval<INDEXTYPE> &interval, sa_type &sa, uint64_t border)
 {
@@ -208,27 +216,29 @@ int main(int argc, char *argv[])
         outputFile = inputFile + "." + std::to_string(occ_threshold) + "." + std::to_string(len_threshold) + "." + std::to_string(occlen_threshold) + ".csv";
     }
 
-    vector<char> T = getInputText(inputFile); // input text
-    vector<INDEXTYPE> excludedPositions = constructExcludedPositionRanks(T);
-    uint64_t border = getBorderPosition(T);
+    std::pair<vector<char>,INDEXTYPE> pr = getInputText<INDEXTYPE>(inputFile); // input text
+    vector<char> &T = pr.first;
     INDEXTYPE n = T.size();
     vector<INDEXTYPE> SA; // suffix array
-    stool::PostorderMaximalSubstrings<INDEXTYPE> iterator = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, SA);
+    stool::PostorderMaximalSubstrings<INDEXTYPE> maximal_substrings = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, SA);
+    vector<bool> filterVec = constructForbiddenIndexesForMaximalSubstrings(T, SA, maximal_substrings);
 
     ofstream os(outputFile, ios::out | ios::binary);
     if (!os)
         return 1;
     vector<LCPPair> buffer;
-    uint64_t positive_sum = 0;
-    uint64_t negative_sum = 0;
+    INDEXTYPE positive_sum = 0;
+    INDEXTYPE negative_sum = 0;
 
-    for (auto interval : iterator)
+    for(INDEXTYPE i=0;i<maximal_substrings.size();i++)
     {
-        if (!isOK(interval, SA, excludedPositions) || interval.lcp == 0)
+        stool::LCPInterval<INDEXTYPE> interval = maximal_substrings[i];
+        if (!filterVec[i])
         {
             continue;
         }
-        std::pair<uint64_t, uint64_t> freq = getFrequency(interval, SA, border);
+
+        std::pair<uint64_t, uint64_t> freq = getFrequency(interval, SA, pr.second);
         positive_sum += freq.first;
         negative_sum += freq.second;
         if (freq.first + freq.second >= occ_threshold && interval.lcp >= len_threshold && (interval.lcp * (freq.first + freq.second) >= occlen_threshold))
@@ -243,11 +253,11 @@ int main(int argc, char *argv[])
 
     std::sort(buffer.begin(), buffer.end(),
               [&](const LCPPair &x, const LCPPair &y) {
-                  double kai_x = kai(x.second.first, x.second.second, positive_sum - x.second.first, negative_sum - x.second.second);
-                  double kai_y = kai(y.second.first, y.second.second, positive_sum - y.second.first, negative_sum - y.second.second);
-                  return kai_y < kai_x;
+                  std::pair<double, bool> kai_x = get_kai_squared_value(x.second.first, x.second.second, positive_sum - x.second.first, negative_sum - x.second.second);
+                  std::pair<double, bool> kai_y = get_kai_squared_value(y.second.first, y.second.second, positive_sum - y.second.first, negative_sum - y.second.second);
+                  return kai_y.first < kai_x.first;
               });
-    string column0 = "Kai";
+    string column0 = "Kai_squared";
     string column1 = "Bias";
     string column2 = "MS(TRUE)";
     string column3 = "MS(FALSE)";
@@ -256,13 +266,19 @@ int main(int argc, char *argv[])
     string column6 = "Maximal_substring";
 
     os << column0 << "," << column1 << ", " << column2 << ", " << column3 << ", " << column4 << ", " << column5 << "," << column6 << std::endl;
+    if(buffer.size() < 1000){
+        std::cout << column0 << "\t" << column1 << "\t" << column2 << "\t" << column3 << "\t" << column4 << "\t" << column5 << "\t" << column6 << std::endl;
+    }
     for (uint64_t z = 0; z < buffer.size(); z++)
     {
         LCPPair &item = buffer[z];
-        os << toString(item, T, SA, positive_sum, negative_sum);
-        if (z + 1 < buffer.size())
-            os << std::endl;
+        string csvLine = toCSVLine(item, T, SA, positive_sum, negative_sum, ",");
+        os << csvLine;
+        if(buffer.size() < 1000){
+            std::cout << toCSVLine(item, T, SA, positive_sum, negative_sum, "\t") << std::endl;
+        }            
     }
+    os << std::endl;
     buffer.clear();
     os.close();
 
