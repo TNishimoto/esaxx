@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include "cmdline.h"
 #include "esa.hxx"
+#include "postorder_maximal_substrings.hpp"
 
 using namespace std;
 using INDEXTYPE = int64_t;
@@ -48,7 +49,7 @@ bool kaip(double a, double b, double c, double d){
 }
 
 template <typename sa_type>
-string toString(LCPPair& item, vector<char> &text, sa_type &sa, std::pair<uint64_t,uint64_t> &sum_info){
+string toString(LCPPair& item, vector<char> &text, sa_type &sa, uint64_t positive_sum, uint64_t negative_sum){
         string result = "";
         uint64_t sum_y = item.second.first + item.second.second;
         uint64_t plus_count_y = item.second.first;
@@ -57,14 +58,14 @@ string toString(LCPPair& item, vector<char> &text, sa_type &sa, std::pair<uint64
         uint64_t minus_value = item.second.second;
         string line = item.first.getText(text, sa);
 
-        uint64_t other_true_sum = sum_info.first - plus_value;
-        uint64_t other_false_sum = sum_info.second - minus_value;
+        uint64_t other_positive_sum = positive_sum - plus_value;
+        uint64_t other_negative_sum = negative_sum - minus_value;
 
-        double kai_value = kai(plus_value, minus_value, other_true_sum, other_false_sum);
-        bool bb = kaip(plus_value, minus_value, other_true_sum, other_false_sum);
+        double kai_value = kai(plus_value, minus_value, other_positive_sum, other_negative_sum);
+        bool bb = kaip(plus_value, minus_value, other_positive_sum, other_negative_sum);
         string b1 = (bb ? "+" : "-");
 
-        result += std::to_string(kai_value) + "," + b1 + ","+ std::to_string(plus_value) + "," + std::to_string(minus_value) + "," + std::to_string(other_true_sum) + "," + std::to_string(other_false_sum) + "," + line;
+        result += std::to_string(kai_value) + "," + b1 + ","+ std::to_string(plus_value) + "," + std::to_string(minus_value) + "," + std::to_string(other_positive_sum) + "," + std::to_string(other_negative_sum) + "," + line;
         
         return result;
 }
@@ -233,22 +234,6 @@ int main(int argc, char *argv[])
         }
         rank[i] = r;
     }
-    /*
-    if (isPrint)
-    {
-        std::cout << "Maximal substrings in the file" << std::endl;
-        std::cout << "id"
-                  << "\t\t"
-                  << "occurrence"
-                  << "\t"
-                  << "range(SA)"
-                  << "\t"
-                  << "string length"
-                  << "\t"
-                  << "string" << std::endl;
-    }
-    */
-
     vector<LCPPair> buffer;
 
     ofstream os(outputFile, ios::out | ios::binary);
@@ -260,8 +245,8 @@ int main(int argc, char *argv[])
     // Filtering internal nodes and writing and printing maximal substrings.
     INDEXTYPE line_id = 0;
 
-    uint64_t true_sum = 0;
-    uint64_t false_sum = 0;
+    uint64_t positive_sum = 0;
+    uint64_t negative_sum = 0;
 
 
     for (INDEXTYPE i = 0; i < nodeNum; ++i)
@@ -273,8 +258,8 @@ int main(int argc, char *argv[])
             continue;
         }
         std::pair<uint64_t,uint64_t> freq = getFrequency(interval, SA, border);
-        true_sum += freq.first;
-        false_sum += freq.second;
+        positive_sum += freq.first;
+        negative_sum += freq.second;
 
         if ( freq.first + freq.second >= occ_threshold && interval.lcp >= len_threshold && (interval.lcp*(freq.first + freq.second) >= occlen_threshold) )
         {
@@ -290,13 +275,12 @@ int main(int argc, char *argv[])
 
     }
 
-    std::pair<uint64_t, uint64_t> zikoPair = std::pair<uint64_t, uint64_t>(true_sum, false_sum);
 
 
     std::sort(buffer.begin(), buffer.end(),
               [&](const LCPPair &x, const LCPPair &y) {
-                  double kai_x = kai(x.second.first, x.second.second, true_sum - x.second.first, false_sum - x.second.second);
-                  double kai_y = kai(y.second.first, y.second.second, true_sum - y.second.first, false_sum - y.second.second);
+                  double kai_x = kai(x.second.first, x.second.second, positive_sum - x.second.first, negative_sum - x.second.second);
+                  double kai_y = kai(y.second.first, y.second.second, positive_sum - y.second.first, negative_sum - y.second.second);
                   return kai_y < kai_x;
               });
     string column0 = "Kai";
@@ -311,7 +295,7 @@ int main(int argc, char *argv[])
     for (uint64_t z = 0; z < buffer.size(); z++)
     {
         LCPPair &item = buffer[z];
-        os << toString(item, T, SA, zikoPair);
+        os << toString(item, T, SA, positive_sum, negative_sum);
         if (z + 1 < buffer.size())
             os << std::endl;
     }
