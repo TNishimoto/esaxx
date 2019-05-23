@@ -19,6 +19,21 @@ Daisuke Okanohara (daisuke dot okanohara at gmail.com)
 - The input file must not contain the '0' character.
 - I added the code outputting maximal substrings in an input file (enumMaximalSubstring.cpp). The code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it. Thank you.  
 
+## Download & Compile
+
+> git clone https://github.com/TNishimoto/esaxx.git  
+> cd esaxx  
+> git clone https://github.com/TNishimoto/libdivsufsort.git  
+> cd libdivsufsort  
+> mkdir build  
+> cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="../../" ..  
+> make  
+> make install  
+> cd ../..  
+> mkdir build  
+> cmake -DCMAKE_BUILD_TYPE=Release ..  
+> make  
+
 ## Executions && Examples
 
 ### enumMaximalSubstring.out  
