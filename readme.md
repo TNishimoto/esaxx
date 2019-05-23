@@ -33,6 +33,7 @@ To create the four files, please excecute following comamnds.
 > git clone https://github.com/TNishimoto/libdivsufsort.git  
 > cd libdivsufsort  
 > mkdir build  
+> cd build  
 > cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="../../" ..  
 > make  
 > make install  
@@ -40,6 +41,7 @@ To create the four files, please excecute following comamnds.
 After you create libdivsufsort library, please excecute following commands in esaxx directory to compile this program by cmake.  
 
 > mkdir build  
+> cd build  
 > cmake -DCMAKE_BUILD_TYPE=Release ..  
 > make  
 
