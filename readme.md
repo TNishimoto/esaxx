@@ -19,9 +19,16 @@ Daisuke Okanohara (daisuke dot okanohara at gmail.com)
 - The input file must not contain the '0' character.
 - I added the code outputting maximal substrings in an input file (enumMaximalSubstring.cpp). The code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it. Thank you.  
 
-## Download & Compile
+## Download
 
 > git clone https://github.com/TNishimoto/esaxx.git  
+
+## Compile
+
+This program uses libdivsufsort library, and hence you need following four files:  
+esaxx/include/libdivsufsort.h, esaxx/include/libdivsufsort64.h, esaxx/lib/libdivsufsort.a, and esaxx/lib/libdivsufsort64.a  
+To create the four files, please excecute following comamnds.  
+
 > cd esaxx  
 > git clone https://github.com/TNishimoto/libdivsufsort.git  
 > cd libdivsufsort  
@@ -29,7 +36,9 @@ Daisuke Okanohara (daisuke dot okanohara at gmail.com)
 > cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="../../" ..  
 > make  
 > make install  
-> cd ../..  
+
+After you create libdivsufsort library, please excecute following commands in esaxx directory to compile this program by cmake.  
+
 > mkdir build  
 > cmake -DCMAKE_BUILD_TYPE=Release ..  
 > make  
