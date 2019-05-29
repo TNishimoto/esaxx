@@ -10,10 +10,19 @@ endif(APPLE)
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
+#### Modules
+if(NOT MYMOD_DIR)
+  set(MYMOD_DIR 1)
+  set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
+  set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
+  add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
+endif()
+include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
+
 #libdivsufsort directory is here.
 #Please modify it appropriately.
-LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/lib)
-INCLUDE_DIRECTORIES(./include)
+#LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+#INCLUDE_DIRECTORIES(./include)
 
 add_executable(enumSubstring.out enumSubstring.cpp esa.hxx mycode.hpp)
 target_link_libraries(enumSubstring.out divsufsort divsufsort64)

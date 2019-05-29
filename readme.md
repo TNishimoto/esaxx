@@ -20,26 +20,15 @@ Daisuke Okanohara (daisuke dot okanohara at gmail.com)
 - I added the code outputting maximal substrings in an input file (enumMaximalSubstring.cpp). The code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it. Thank you.  
 
 ## Download
+The source codes in 'module' directory are maintained in different repositories. 
+So, to download all the necessary source codes, do the following:
 
 > git clone https://github.com/TNishimoto/esaxx.git  
+> cd esaxx  
+> git submodule init  
+> git submodule update  
 
 ## Compile
-
-This program uses libdivsufsort library, and hence you need following four files:  
-esaxx/include/libdivsufsort.h, esaxx/include/libdivsufsort64.h, esaxx/lib/libdivsufsort.a, and esaxx/lib/libdivsufsort64.a  
-To create the four files, please excecute following comamnds.  
-
-> cd esaxx  
-> git clone https://github.com/TNishimoto/libdivsufsort.git  
-> cd libdivsufsort  
-> mkdir build  
-> cd build  
-> cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="../../" ..  
-> make  
-> make install  
-
-After you create libdivsufsort library, please excecute following commands in esaxx directory to compile this program by cmake.  
-
 > mkdir build  
 > cd build  
 > cmake -DCMAKE_BUILD_TYPE=Release ..  
