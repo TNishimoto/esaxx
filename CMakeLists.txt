@@ -24,17 +24,21 @@ include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 #LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 #INCLUDE_DIRECTORIES(./include)
 
-add_executable(enumSubstring.out enumSubstring.cpp esa.hxx mycode.hpp)
+add_executable(enumSubstring.out src/enumSubstring.cpp)
 target_link_libraries(enumSubstring.out divsufsort divsufsort64)
 
-add_executable(enumMaximalSubstring.out enumMaximalSubstring.cpp esa.hxx mycode.hpp postorder_maximal_substrings.hpp)
+add_executable(enumMaximalSubstring.out src/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out divsufsort divsufsort64)
 
-add_executable(enumKaiMaximalSubstring.out enumKaiMaximalSubstring.cpp esa.hxx mycode.hpp postorder_maximal_substrings.hpp)
+add_executable(enumKaiMaximalSubstring.out src/enumKaiMaximalSubstring.cpp)
 target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
 
+add_executable(intv.out src/intv.cpp)
+target_link_libraries(intv.out divsufsort divsufsort64)
 
-add_executable(print.out print.cpp mycode.hpp)
+
+
+add_executable(print.out src/print.cpp)
 target_link_libraries(print.out divsufsort divsufsort64)
 
 
