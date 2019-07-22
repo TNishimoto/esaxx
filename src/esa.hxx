@@ -30,9 +30,12 @@
 #include <vector>
 #include <utility>
 #include <cassert>
-#include "sais.hxx"
+#include "mycode.hpp"
 
 namespace esaxx_private {
+
+
+
 template<typename string_type, typename sarray_type, typename index_type>
 index_type suffixtree(string_type T, sarray_type SA, sarray_type L, sarray_type R, sarray_type D, index_type n){
   if (n == 0){
@@ -89,7 +92,12 @@ index_type suffixtree(string_type T, sarray_type SA, sarray_type L, sarray_type 
   }
   return nodeNum;
 }
+
+
 }
+
+
+
 
 /**
  * @brief Build an enhanced suffix array of a given string in linear time
@@ -113,7 +121,7 @@ template<typename string_type, typename sarray_type, typename index_type>
 int esaxx(string_type T, sarray_type SA, sarray_type L, sarray_type R, sarray_type D,
      index_type n, index_type k, index_type& nodeNum) {
   if ((n < 0) || (k <= 0)) return -1;
-  int err = saisxx(T, SA, n, k);
+  int err = stool::saisxx(T, SA, n);
   if (err != 0){
     return err;
   }
