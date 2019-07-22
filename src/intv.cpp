@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   {
     stool::SpecializedLCPInterval<INDEXTYPE> p = *st2;
     ++st2;
-    std::cout << p.toString() << std::endl;
+    std::cout << p.to_string() << std::endl;
   }
 
   //generator.set(std::move(sa), std::move(lcpArray) );

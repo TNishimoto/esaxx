@@ -18,24 +18,26 @@ template <typename INDEX = uint64_t>
 class SpecializedLCPInterval
 {
 public:
-    INDEX i;
-    INDEX j;
-    INDEX parentEdgeLength;
+    LCPInterval<INDEX> interval;
+    INDEX parent;
     char bwtChar;
     SpecializedLCPInterval()
     {
     }
-    SpecializedLCPInterval(INDEX _i, INDEX _j, INDEX _lcp, char _c) : i(_i), j(_j), parentEdgeLength(_lcp), bwtChar(_c)
+    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, char _c) : interval(_interval), parent(_parent), bwtChar(_c)
     {
     }
+	static SpecializedLCPInterval<INDEX> create_end_marker(){
+		return SpecializedLCPInterval<INDEX>(LCPInterval<INDEX>::create_end_marker() ,std::numeric_limits<INDEX>::max(),0);
+	}
 
-    std::string toString()
+    std::string to_string()
     {
-        return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + std::to_string(parentEdgeLength) + ", " + std::string(1, bwtChar) + "]";
+        return "[" + this->interval.to_string() + "," + std::to_string(this->parent) + ", " + std::string(1, bwtChar) + "]";
     }
 
   bool isEnd(){
-    return this->i == std::numeric_limits<INDEX>::max() && this->j == std::numeric_limits<INDEX>::max() && this->parentEdgeLength == std::numeric_limits<INDEX>::max();
+    return this->interval.is_special_marker() && this->parent == std::numeric_limits<INDEX>::max() && this->bwtChar == 0;
   }
 };
 
@@ -47,7 +49,7 @@ class PostorderSSTIterator
     INDEX counter_i = 0;
 
     //LCPIterator<INDEX, VEC> _lcp_forward_iterator;
-    std::stack<std::pair<INDEX, INDEX>> childStack;
+    std::stack<LCPInterval<INDEX>> childStack;
     //std::queue<LCPInterval<INDEX>> parentQueue;
     std::queue<SpecializedLCPInterval<INDEX>> outputQueue;
 
@@ -57,19 +59,17 @@ class PostorderSSTIterator
     bool compute_next_special_interval()
     {
         LCPInterval<INDEX> x = *_iterator;
-        ++_iterator;
-        counter_i++;
 
         while (childStack.size() > 0)
         {
-            std::pair<INDEX, INDEX> top = childStack.top();
-            if (x.i <= top.first && top.second <= x.j)
+            LCPInterval<INDEX> top = childStack.top();
+            if (x.i <= top.i && top.j <= x.j)
             {
-                if(top.first == top.second){
+                if(top.i == top.j){
 
-                    outputQueue.push(SpecializedLCPInterval<INDEX>(top.first, top.second, x.lcp, _bwt[top.first]));
+                    outputQueue.push(SpecializedLCPInterval<INDEX>(top, counter_i, _bwt[top.i]));
                 }else{
-                    outputQueue.push(SpecializedLCPInterval<INDEX>(top.first, top.second, x.lcp, 0));
+                    outputQueue.push(SpecializedLCPInterval<INDEX>(top, counter_i, 0));
                 }
                 childStack.pop();
             }
@@ -78,8 +78,10 @@ class PostorderSSTIterator
                 break;
             }
         }        
-        childStack.push(std::pair<INDEX, INDEX>(x.i, x.j));
+        childStack.push(x);
 
+        ++_iterator;
+        counter_i++;
         return !_iterator.end();
     }
     bool succ()
@@ -89,28 +91,21 @@ class PostorderSSTIterator
             this->compute_next_special_interval();
         }
         if(_iterator.end() && childStack.size() == 1){
-            std::pair<INDEX, INDEX> top = childStack.top();
-            outputQueue.push(SpecializedLCPInterval<INDEX>(top.first, top.second, std::numeric_limits<INDEX>::max(),0));
+            LCPInterval<INDEX> top = childStack.top();
+            outputQueue.push(SpecializedLCPInterval<INDEX>(top, std::numeric_limits<INDEX>::max(), 0));
             childStack.pop();
 
         }
 
         if (this->outputQueue.size() > 0)
         {
-            SpecializedLCPInterval<INDEX> sli = this->outputQueue.front();
-            _currenct_lcp_interval.i = sli.i;
-            _currenct_lcp_interval.j = sli.j;
-            _currenct_lcp_interval.bwtChar = sli.bwtChar;            
-            _currenct_lcp_interval.parentEdgeLength = sli.parentEdgeLength;
+            _currenct_lcp_interval = this->outputQueue.front();
             this->outputQueue.pop();
             return true;
         }
         else
         {
-            _currenct_lcp_interval.i = std::numeric_limits<INDEX>::max();
-            _currenct_lcp_interval.j = std::numeric_limits<INDEX>::max();
-            _currenct_lcp_interval.parentEdgeLength = std::numeric_limits<INDEX>::max();
-            _currenct_lcp_interval.bwtChar = 0;
+            _currenct_lcp_interval = SpecializedLCPInterval<INDEX>::create_end_marker();
 
             return false;
         }
@@ -128,7 +123,7 @@ public:
         }
         else
         {
-            this->_currenct_lcp_interval = SpecializedLCPInterval<INDEX>(std::numeric_limits<INDEX>::max(), std::numeric_limits<INDEX>::max(), std::numeric_limits<INDEX>::max(),0);
+            this->_currenct_lcp_interval = SpecializedLCPInterval<INDEX>::create_end_marker();
         }
     }
     
