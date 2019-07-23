@@ -12,7 +12,7 @@
 #include "esa.hxx"
 #include "postorder_suffix_tree.hpp"
 #include "postorder_special_suffix_tree.hpp"
-#include "postorder_minimal_substrings.hpp"
+#include "minimal_substring_iterator.hpp"
 
 
 #include "sa.hpp"
@@ -31,7 +31,11 @@ int main(int argc, char *argv[])
   //string outputFile = p.get<string>("output_file");
   //bool isPrint = p.get<bool>("print");
   //vector<char> T = stool::load_text(inputFile); // input text
-  vector<char> T{'m', 'i', 's', 'i', 's', 's', 'i', 'p', 'p', 'i'};
+  string sT = "babaabbabbaabbababababababababab";
+  sT.push_back(0);
+
+  vector<char> T(sT.begin(), sT.end());
+  //vector<char> T{'m', 'i', 's', 'i', 's', 's', 'i', 'p', 'p', 'i'};
 
   vector<uint64_t> sa = stool::constructSA<>(T);
   vector<uint64_t> lcpArray = stool::constructLCP<>(T, sa);
@@ -47,12 +51,15 @@ int main(int argc, char *argv[])
       std::cout << sa[i] << ",";
     }
     std::cout << std::endl;
+  */
 
-    stool::PostorderSuffixTree<INDEXTYPE> st(std::move(sa), std::move(lcpArray));
+  vector<uint64_t> sa1 = stool::constructSA<>(T);
+  vector<uint64_t> lcpArray1 = stool::constructLCP<>(T, sa);
+    stool::PostorderSuffixTree<INDEXTYPE> st(std::move(sa1), std::move(lcpArray1));
     for(stool::LCPInterval<INDEXTYPE> itev : st){      
-      std::cout << itev.toString()<< std::endl;
+      std::cout << itev.to_string()<< std::endl;
     }
-    */
+    
 
   std::cout << "-----" << std::endl;
   stool::PostorderSSTIterator<char, INDEXTYPE> st2 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
@@ -66,11 +73,14 @@ int main(int argc, char *argv[])
   stool::PostorderSSTIterator<char, INDEXTYPE> st3 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
   stool::MinimalSubstringIterator<char, INDEXTYPE> msi(bwt,st3);
 
+  uint64_t msiCounter = 1;
   while (!msi.end())
   {
     stool::LCPInterval<INDEXTYPE> p = *msi;
     ++msi;
-    std::cout << p.to_string() << std::endl;
+
+    //std::cout << "ms interval: " << p.to_string() << std::endl;
+    p.print(msiCounter++, T,sa);
   }
 
 

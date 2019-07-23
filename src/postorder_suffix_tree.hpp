@@ -36,6 +36,7 @@ class PostorderSTIterator
   const VEC *SA;
   const VEC *LCPArray;
   INDEX counter_i = 0;
+  INDEX current_i = 0;
 
   //LCPIterator<INDEX, VEC> _lcp_forward_iterator;
   std::stack<IncompleteLCPInterval<INDEX>> incompleteStack;
@@ -175,12 +176,18 @@ public:
   PostorderSTIterator &operator++()
   {
     this->succ();
+    this->current_i++;
     return *this;
   }
   LCPInterval<INDEX> operator*()
   {
     return this->_currenct_lcp_interval;
   }
+
+  INDEX get_current_i(){
+    return this->current_i;
+  }
+
   bool operator!=(const PostorderSTIterator &rhs)
   {
     return _currenct_lcp_interval.lcp != rhs._currenct_lcp_interval.lcp;
