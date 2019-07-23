@@ -28,7 +28,26 @@ public:
 	static LCPInterval<index_type> create_end_marker(){
 		return LCPInterval<index_type>(std::numeric_limits<index_type>::max(),std::numeric_limits<index_type>::max(),std::numeric_limits<index_type>::max());
 	}
-	
+	/*
+	bool operator<(const LCPInterval<index_type> &right) const
+    {
+        if (this->i == right.i)
+        {
+            if (this->j == right.j)
+            {
+                return this->lcp < right.lcp;
+            }
+            else
+            {
+                return this->j < right.j;
+            }
+        }
+        else
+        {
+            return this->i < right.i;
+        }
+    }
+	*/
     std::string to_string()
     {
         return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + std::to_string(lcp) + "]";

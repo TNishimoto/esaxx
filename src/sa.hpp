@@ -92,7 +92,7 @@ std::vector<INDEX> constructLCP(std::vector<CHAR> &text, std::vector<INDEX> &sa,
         if (k > 0)
             k--;
     }
-    std::cout << std::endl;
+    std::cout << "[END]"<< std::endl;
     return lcp;
 }
 template <typename CHAR = char,typename INDEX = uint64_t>

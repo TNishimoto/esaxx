@@ -22,29 +22,35 @@ using INDEXTYPE = uint64_t;
 int main(int argc, char *argv[])
 {
   cmdline::parser p;
-  p.add<string>("input_file", 'i', "input file name", true);
+  p.add<string>("input_file", 'i', "input file name", true);  
+  p.add<string>("output_file", 'o', "output file name", false, "");
   //p.add<string>("output_file", 'o', "output file name", false, "");
   //p.add<bool>("print", 'p', "print info", false, true);
 
   p.parse_check(argc, argv);
-  string inputFile = p.get<string>("input_file");
+  string inputFile = p.get<string>("input_file");  
+  vector<char> T = stool::load_text(inputFile); // input text
+  std::cout << (int)T[T.size()-1] << std::endl;
+  //T.push_back(0);
+
   //string outputFile = p.get<string>("output_file");
   //bool isPrint = p.get<bool>("print");
   //vector<char> T = stool::load_text(inputFile); // input text
-  string sT = "babaabbabbaabbababababababababab";
-  sT.push_back(0);
+  //string sT = "babaabbabbaabbababababababababab";
 
-  vector<char> T(sT.begin(), sT.end());
+  //vector<char> T(sT.begin(), sT.end());
   //vector<char> T{'m', 'i', 's', 'i', 's', 's', 'i', 'p', 'p', 'i'};
 
   vector<uint64_t> sa = stool::constructSA<>(T);
   vector<uint64_t> lcpArray = stool::constructLCP<>(T, sa);
   vector<char> bwt = stool::constructBWT<>(T, sa);
+  /* 
   for (char c : bwt)
   {
     std::cout << std::string(1, c);
   }
   std::cout << std::endl;
+  */
 
   /*
     for(uint64_t i=0;i<sa.size();i++){
@@ -52,7 +58,7 @@ int main(int argc, char *argv[])
     }
     std::cout << std::endl;
   */
-
+/* 
   vector<uint64_t> sa1 = stool::constructSA<>(T);
   vector<uint64_t> lcpArray1 = stool::constructLCP<>(T, sa);
     stool::PostorderSuffixTree<INDEXTYPE> st(std::move(sa1), std::move(lcpArray1));
@@ -69,21 +75,17 @@ int main(int argc, char *argv[])
     ++st2;
     std::cout << p.to_string() << std::endl;
   }
+  */
 
-  stool::PostorderSSTIterator<char, INDEXTYPE> st3 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
-  stool::MinimalSubstringIterator<char, INDEXTYPE> msi(bwt,st3);
-
-  uint64_t msiCounter = 1;
-  while (!msi.end())
-  {
-    stool::LCPInterval<INDEXTYPE> p = *msi;
-    ++msi;
-
-    //std::cout << "ms interval: " << p.to_string() << std::endl;
-    p.print(msiCounter++, T,sa);
+  std::vector<stool::LCPInterval<INDEXTYPE>> msVec = stool::MinimalSubstringIterator<char, INDEXTYPE>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt,sa,lcpArray);
+  //stool::PostorderSSTIterator<char, INDEXTYPE> st3 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
+  //stool::MinimalSubstringIterator<char, INDEXTYPE> msi(bwt,st3);
+  std::cout << msVec.size() << std::endl;
+  /*
+  for(uint64_t i=0;i<msVec.size();i++){
+    msVec[i].print(i, T,sa);
   }
-
-
+  */
   //generator.set(std::move(sa), std::move(lcpArray) );
 
   //stool::PostorderLCPIntervals<INDEXTYPE> generator(T);

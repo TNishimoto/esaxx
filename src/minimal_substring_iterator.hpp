@@ -13,13 +13,14 @@ namespace stool
 {
 
 template <typename INDEX = uint64_t>
-struct VRInfo{
+struct VRInfo
+{
   INDEX count;
   INDEX rank;
   INDEX vrOcc;
   VRInfo();
-  VRInfo(INDEX _rank,INDEX _count, INDEX _vrOcc) : count(_count), rank(_rank), vrOcc(_vrOcc) {
-
+  VRInfo(INDEX _rank, INDEX _count, INDEX _vrOcc) : count(_count), rank(_rank), vrOcc(_vrOcc)
+  {
   }
 };
 
@@ -69,6 +70,9 @@ std::unordered_map<CHAR, INDEX> constructCMap(vector<CHAR> &text)
     }
   }
   std::sort(chars.begin(), chars.end());
+  if(chars[0] != 0){
+    throw logic_error("error!");
+  }
   INDEX counter = 0;
   for (INDEX i = 0; i < chars.size(); i++)
   {
@@ -93,7 +97,7 @@ public:
   {
     //std::cout << "add: " << std::string(1,c) << "/" << rank << "/" << count << "/" << vrOcc << std::endl;
     if (this->map.find(c) == this->map.end())
-    {      
+    {
       this->map[c] = MinimalSubstringCandidates<INDEX>(rank, count, vrOcc);
     }
     else
@@ -123,37 +127,38 @@ public:
       INDEX lvOcc = it.second.count;
       //if (it.second.intervals.size() >= 2)
       //{
-        for (auto &ms : it.second.intervals)
+      for (auto &ms : it.second.intervals)
+      {
+        INDEX lvrOcc = ms.count;
+        INDEX vrOcc = ms.vrOcc;
+#ifdef DEBUG_PRINT
+        std::cout << "check: lvOcc: " << lvOcc << "/"
+                  << "lvrOcc: " << ms.count << ", vrOcc:" << vrOcc << std::endl;
+        std::cout << std::string(1, c) << ", rank = " << ms.rank << "@" << first_occcurrence_map_on_F[c] << std::endl;
+#endif
+        if (lvOcc != lvrOcc && lvrOcc != vrOcc)
         {
-          INDEX lvrOcc = ms.count;
-          INDEX vrOcc = ms.vrOcc;
-          #ifdef DEBUG_PRINT
-            std::cout << "check: lvOcc: " << lvOcc << "/" << "lvrOcc: " << ms.count << ", vrOcc:" << vrOcc << std::endl;
-            std::cout << std::string(1, c)  << ", rank = " << ms.rank << "@" << first_occcurrence_map_on_F[c]  << std::endl;
-          #endif
-          if (lvOcc != lvrOcc && lvrOcc != vrOcc)
-          {
 
-            INDEX i = first_occcurrence_map_on_F[c] + ms.rank;
-            output.push(LCPInterval<INDEX>(i, i + ms.count - 1, lcp));
+          INDEX i = first_occcurrence_map_on_F[c] + ms.rank;
+          output.push(LCPInterval<INDEX>(i, i + ms.count - 1, lcp));
 
-          #ifdef DEBUG_PRINT
-            std::cout << "output!";
-            auto outputInterval = LCPInterval<INDEX>(i, i + ms.count - 1, lcp);
-            std::cout << interval.to_string() << "->" << outputInterval.to_string() << std::endl;
-          #endif
+#ifdef DEBUG_PRINT
+          std::cout << "output!";
+          auto outputInterval = LCPInterval<INDEX>(i, i + ms.count - 1, lcp);
+          std::cout << interval.to_string() << "->" << outputInterval.to_string() << std::endl;
+#endif
 
-            b = true;
-          }
+          b = true;
         }
+      }
       //}
-      if(interval.lcp == 0){
-          INDEX i = first_occcurrence_map_on_F[c];
-          output.push(LCPInterval<INDEX>(i, i + it.second.count - 1, 1));
-        
+      if (interval.lcp == 0)
+      {
+        INDEX i = first_occcurrence_map_on_F[c];
+        output.push(LCPInterval<INDEX>(i, i + it.second.count - 1, 1));
       }
     }
-    
+
     return b;
   }
 
@@ -223,10 +228,10 @@ class MinimalSubstringIterator
         //this->print();
         SpecializedLCPInterval<INDEX> sintv = *this->_iterator;
 
-        #ifdef DEBUG_PRINT
+#ifdef DEBUG_PRINT
         std::cout << "read: "
                   << "id: " << this->_iterator.get_current_i() << sintv.to_string() << std::endl;
-        #endif
+#endif
         b = this->add(sintv);
         ++this->_iterator;
         if (b)
@@ -277,6 +282,42 @@ public:
   bool end()
   {
     return this->_currenct_lcp_interval.is_special_marker();
+  }
+  static vector<LCPInterval<INDEX>> constructSortedMinimalSubstringsWithoutSpecialMarker(vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
+  {
+    stool::PostorderSSTIterator<CHAR, INDEX> sst = stool::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
+    stool::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
+    vector<LCPInterval<INDEX>> r;
+    while (!msi.end())
+    {
+      stool::LCPInterval<INDEX> p = *msi;
+      if (!(p.i == 0 && p.i == p.j))
+      {
+        r.push_back(stool::LCPInterval<INDEX>(p.i - 1, p.j - 1, p.lcp));
+      }
+      ++msi;
+    }
+    std::sort(
+        r.begin(),
+        r.end(),
+        [](const LCPInterval<INDEX> &x, const LCPInterval<INDEX> &y) {
+          if (x.i == y.i)
+          {
+            if (x.j == y.j)
+            {
+              return x.lcp < y.lcp;
+            }
+            else
+            {
+              return x.j > y.j;
+            }
+          }
+          else
+          {
+            return x.i < y.i;
+          }
+        });
+    return r;
   }
 };
 

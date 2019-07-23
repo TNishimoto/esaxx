@@ -184,6 +184,9 @@ public:
 
     static PostorderSSTIterator<CHAR, INDEX, VEC> constructIterator(vector<CHAR> &__bwt, VEC &_SA, VEC &_LCPArray)
     {
+        if(_SA[0] != _SA.size()-1){
+            throw logic_error("error!");
+        }
         PostorderSTIterator<INDEX, VEC> st(&_SA, &_LCPArray, true);
         return PostorderSSTIterator<CHAR, INDEX, VEC>(__bwt, st, true);
     }
@@ -192,6 +195,7 @@ public:
     {
         return _currenct_lcp_interval.isEnd();
     }
+
 };
 /*
 template <typename INDEX = uint64_t, typename VEC = std::vector<INDEX>>
