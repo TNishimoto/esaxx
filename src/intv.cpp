@@ -12,6 +12,8 @@
 #include "esa.hxx"
 #include "postorder_suffix_tree.hpp"
 #include "postorder_special_suffix_tree.hpp"
+#include "postorder_minimal_substrings.hpp"
+
 
 #include "sa.hpp"
 
@@ -60,6 +62,17 @@ int main(int argc, char *argv[])
     ++st2;
     std::cout << p.to_string() << std::endl;
   }
+
+  stool::PostorderSSTIterator<char, INDEXTYPE> st3 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
+  stool::MinimalSubstringIterator<char, INDEXTYPE> msi(bwt,st3);
+
+  while (!msi.end())
+  {
+    stool::LCPInterval<INDEXTYPE> p = *msi;
+    ++msi;
+    std::cout << p.to_string() << std::endl;
+  }
+
 
   //generator.set(std::move(sa), std::move(lcpArray) );
 
