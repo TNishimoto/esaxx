@@ -14,30 +14,83 @@
 #include "minimal_substrings/postorder_special_suffix_tree.hpp"
 #include "minimal_substrings/minimal_substring_iterator.hpp"
 #include "minimal_substrings/naive_minimal_substrings.hpp"
+#include "minimal_substrings/minimal_substring_tree.hpp"
 
 #include "sa.hpp"
 
 using namespace std;
 using INDEXTYPE = uint64_t;
+
+
+
+
+
+
 int main(int argc, char *argv[])
 {
   cmdline::parser p;
   p.add<string>("input_file", 'i', "input file name", true);
-  p.add<string>("output_file", 'o', "output file name", false, "");
-  //p.add<string>("output_file", 'o', "output file name", false, "");
+  p.add<string>("output_file", 'o', "(option) Output attractor file name(the default output name is 'input_file.msub')", false, "");
+  p.add<string>("output_type", 't', "(option) Output mode(binary or text)", false, "binary");
   //p.add<bool>("print", 'p', "print info", false, true);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
+  string outputFile = p.get<string>("output_file");
+  string outputMode = p.get<string>("output_type");
+  if (outputFile.size() == 0)
+  {
+    if (outputMode == "text")
+    {
+      outputFile = inputFile + ".msub.txt";
+    }
+    else
+    {
+      outputFile = inputFile + ".msub";
+    }
+  }
+
   vector<uint8_t> T = stool::load_text2(inputFile); // input text
   std::cout << (int)T[T.size() - 1] << std::endl;
 
+  stool::MinimalSubstringTree<uint8_t, uint64_t> mstree;
+  stool::MinimalSubstringTree<uint8_t, uint64_t>::construct(T, mstree.nodes, mstree.parents);
+  std::cout << mstree.nodes.size() << std::endl;
+  std::cout << mstree.parents.size() << std::endl;
 
+  if (outputMode == "text")
+  {
+    T.pop_back();
+    vector<uint64_t> sa = stool::constructSA<>(T);
+    string otext = "";
+    
+    for (uint64_t i = 0; i < mstree.nodes.size(); i++)
+    {
+      otext.append(stool::toLogLine<>(T, sa, mstree.nodes[i]));
+      if (i + 1 != mstree.nodes.size())
+        otext.append("\r\n");
+    }
+    //IO::write(outputFile, otext);
+		std::ofstream out(outputFile, ios::out | ios::binary);
+		out.write((const char *)(&otext[0]), sizeof(char) * otext.size());
+    
+  }
+  else
+  {
+    mstree.write(outputFile, T);
+    //IO::write(outputFile, intervals);
+    //IO::write(parentFile, parents);
+  }
+
+  //mstree.write(outputFile, text);
+
+  /*
   vector<uint64_t> sa = stool::constructSA<>(T);
   vector<uint64_t> lcpArray = stool::constructLCP<>(T, sa);
   vector<uint8_t> bwt = stool::constructBWT<uint8_t>(T, sa);
 
   std::vector<stool::LCPInterval<INDEXTYPE>> msVec = stool::MinimalSubstringIterator<uint8_t, INDEXTYPE>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
+  */
   /* 
   for (uint64_t i = 0; i < msVec.size(); i++)
   {
@@ -52,6 +105,7 @@ int main(int argc, char *argv[])
   }
 
   */
+  /*
   vector<char> T2(T.begin(),T.end()); // input text
   vector<string> testMS = stool::naive_compute_minimal_substrings<>(T2);
   std::cout << testMS.size() << std::endl;
@@ -64,7 +118,8 @@ int main(int argc, char *argv[])
 
   std::vector<stool::LCPInterval<INDEXTYPE>> msVec2 = stool::MinimalSubstringIterator<uint8_t, INDEXTYPE>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
   std::cout << "###" << msVec2.size() << std::endl;
-  
+  */
+
   //generator.set(std::move(sa), std::move(lcpArray) );
 
   //stool::PostorderLCPIntervals<INDEXTYPE> generator(T);
