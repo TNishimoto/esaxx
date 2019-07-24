@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "mycode.hpp"
+#include "../mycode.hpp"
 #include <stack>
-#include "postorder_suffix_tree.hpp"
+#include "../postorder_suffix_tree.hpp"
 
 namespace stool
 {

@@ -11,8 +11,9 @@
 #include "cmdline.h"
 #include "esa.hxx"
 #include "postorder_suffix_tree.hpp"
-#include "postorder_special_suffix_tree.hpp"
-#include "minimal_substring_iterator.hpp"
+#include "minimal_substrings/postorder_special_suffix_tree.hpp"
+#include "minimal_substrings/minimal_substring_iterator.hpp"
+#include "minimal_substrings/naive_minimal_substrings.hpp"
 
 #include "sa.hpp"
 
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
 
   */
   vector<char> T2(T.begin(),T.end()); // input text
-  vector<string> testMS = stool::MinimalSubstringIterator<>::naive_compute_minimal_substrings2(T2);
+  vector<string> testMS = stool::naive_compute_minimal_substrings<>(T2);
   std::cout << testMS.size() << std::endl;
   std::cout << msVec.size() << std::endl;
   if (testMS.size() != msVec.size())
