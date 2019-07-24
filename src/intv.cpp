@@ -14,7 +14,6 @@
 #include "postorder_special_suffix_tree.hpp"
 #include "minimal_substring_iterator.hpp"
 
-
 #include "sa.hpp"
 
 using namespace std;
@@ -22,70 +21,49 @@ using INDEXTYPE = uint64_t;
 int main(int argc, char *argv[])
 {
   cmdline::parser p;
-  p.add<string>("input_file", 'i', "input file name", true);  
+  p.add<string>("input_file", 'i', "input file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
   //p.add<string>("output_file", 'o', "output file name", false, "");
   //p.add<bool>("print", 'p', "print info", false, true);
 
   p.parse_check(argc, argv);
-  string inputFile = p.get<string>("input_file");  
-  vector<char> T = stool::load_text(inputFile); // input text
-  std::cout << (int)T[T.size()-1] << std::endl;
-  //T.push_back(0);
+  string inputFile = p.get<string>("input_file");
+  vector<uint8_t> T = stool::load_text2(inputFile); // input text
+  std::cout << (int)T[T.size() - 1] << std::endl;
 
-  //string outputFile = p.get<string>("output_file");
-  //bool isPrint = p.get<bool>("print");
-  //vector<char> T = stool::load_text(inputFile); // input text
-  //string sT = "babaabbabbaabbababababababababab";
-
-  //vector<char> T(sT.begin(), sT.end());
-  //vector<char> T{'m', 'i', 's', 'i', 's', 's', 'i', 'p', 'p', 'i'};
 
   vector<uint64_t> sa = stool::constructSA<>(T);
   vector<uint64_t> lcpArray = stool::constructLCP<>(T, sa);
-  vector<char> bwt = stool::constructBWT<>(T, sa);
+  vector<uint8_t> bwt = stool::constructBWT<uint8_t>(T, sa);
+
+  std::vector<stool::LCPInterval<INDEXTYPE>> msVec = stool::MinimalSubstringIterator<uint8_t, INDEXTYPE>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
   /* 
-  for (char c : bwt)
+  for (uint64_t i = 0; i < msVec.size(); i++)
   {
-    std::cout << std::string(1, c);
+    msVec[i].print(i, T, sa);
   }
-  std::cout << std::endl;
   */
 
   /*
-    for(uint64_t i=0;i<sa.size();i++){
-      std::cout << sa[i] << ",";
-    }
-    std::cout << std::endl;
-  */
-/* 
-  vector<uint64_t> sa1 = stool::constructSA<>(T);
-  vector<uint64_t> lcpArray1 = stool::constructLCP<>(T, sa);
-    stool::PostorderSuffixTree<INDEXTYPE> st(std::move(sa1), std::move(lcpArray1));
-    for(stool::LCPInterval<INDEXTYPE> itev : st){      
-      std::cout << itev.to_string()<< std::endl;
-    }
-    
-
-  std::cout << "-----" << std::endl;
-  stool::PostorderSSTIterator<char, INDEXTYPE> st2 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
-  while (!st2.isEnd())
+  for (auto s : testMS)
   {
-    stool::SpecializedLCPInterval<INDEXTYPE> p = *st2;
-    ++st2;
-    std::cout << p.to_string() << std::endl;
+    std::cout << s << std::endl;
   }
-  */
 
-  std::vector<stool::LCPInterval<INDEXTYPE>> msVec = stool::MinimalSubstringIterator<char, INDEXTYPE>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt,sa,lcpArray);
-  //stool::PostorderSSTIterator<char, INDEXTYPE> st3 = stool::PostorderSSTIterator<char, INDEXTYPE>::constructIterator(bwt, sa, lcpArray);
-  //stool::MinimalSubstringIterator<char, INDEXTYPE> msi(bwt,st3);
+  */
+  vector<char> T2(T.begin(),T.end()); // input text
+  vector<string> testMS = stool::MinimalSubstringIterator<>::naive_compute_minimal_substrings2(T2);
+  std::cout << testMS.size() << std::endl;
   std::cout << msVec.size() << std::endl;
-  /*
-  for(uint64_t i=0;i<msVec.size();i++){
-    msVec[i].print(i, T,sa);
+  if (testMS.size() != msVec.size())
+  {
+    throw std::logic_error("different size!");
   }
-  */
+
+
+  std::vector<stool::LCPInterval<INDEXTYPE>> msVec2 = stool::MinimalSubstringIterator<uint8_t, INDEXTYPE>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
+  std::cout << "###" << msVec2.size() << std::endl;
+  
   //generator.set(std::move(sa), std::move(lcpArray) );
 
   //stool::PostorderLCPIntervals<INDEXTYPE> generator(T);

@@ -200,6 +200,35 @@ static vector<char> load_text(string filename)
 	}
 	return vec;
 }
+static vector<uint8_t> load_text2(string filename)
+{
+
+	ifstream stream;
+	stream.open(filename, ios::binary);
+
+	vector<uint8_t> vec;
+
+	if (!stream)
+	{
+		std::cerr << "error reading file " << endl;
+		throw - 1;
+	}
+	uint64_t len;
+	stream.seekg(0, ios::end);
+	uint64_t n = (unsigned long)stream.tellg();
+	stream.seekg(0, ios::beg);
+	len = n / sizeof(uint8_t);
+
+	vec.resize(len+1, 0);
+	stream.read((char *)&(vec)[0], len * sizeof(char));
+
+	for(uint64_t i=0;i<len;i++){
+		if(vec[i] == 0){
+			throw std::logic_error("The input text must not contain '0' character!");
+		}		
+	}
+	return vec;
+}
 
 
 vector<int64_t> construct_sa(vector<char> &text)
