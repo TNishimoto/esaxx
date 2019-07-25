@@ -11,8 +11,8 @@
 #include "minimal_substrings/minimal_substring_iterator.hpp"
 #include "minimal_substrings/naive_minimal_substrings.hpp"
 #include "minimal_substrings/minimal_substring_tree.hpp"
+#include "sa_bwt_lcp.hpp"
 
-#include "sa.hpp"
 
 using namespace std;
 using INDEXTYPE = uint64_t;

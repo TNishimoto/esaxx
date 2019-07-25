@@ -32,7 +32,6 @@
 #include <cassert>
 #include "divsufsort.h"
 #include "divsufsort64.h"
-//#include "mycode.hpp"
 
 namespace esaxx_private {
 

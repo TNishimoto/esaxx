@@ -31,18 +31,20 @@ include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 #INCLUDE_DIRECTORIES(./include)
 
 #set(SOURCES "src/sa.cpp src/mycode.cpp")
-FILE(GLOB SOURCES src/sa.cpp src/mycode.cpp)
+FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp)
+INCLUDE_DIRECTORIES(module/stool/src)
 
-add_executable(enumSubstring.out ${SOURCES} src/enumSubstring.cpp)
+
+add_executable(enumSubstring.out ${STOOL_SOURCES} src/enumSubstring.cpp)
 target_link_libraries(enumSubstring.out divsufsort divsufsort64)
 
-add_executable(enumMaximalSubstring.out ${SOURCES} src/enumMaximalSubstring.cpp)
+add_executable(enumMaximalSubstring.out ${STOOL_SOURCES} src/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out divsufsort divsufsort64)
 
-add_executable(enumKaiMaximalSubstring.out ${SOURCES} src/enumKaiMaximalSubstring.cpp)
+add_executable(enumKaiMaximalSubstring.out ${STOOL_SOURCES} src/enumKaiMaximalSubstring.cpp)
 target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
 
-add_executable(enumMinimalSubstring.out ${SOURCES} src/enumMinimalSubstring.cpp )
+add_executable(enumMinimalSubstring.out ${STOOL_SOURCES} src/enumMinimalSubstring.cpp )
 target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
 
 

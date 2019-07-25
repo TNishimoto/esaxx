@@ -8,7 +8,9 @@
 #include "cmdline.h"
 #include "divsufsort.h"
 #include "divsufsort64.h"
-#include "mycode.hpp"
+#include "io.hpp"
+#include "sa_bwt_lcp.hpp"
+
 #include "minimal_substrings/minimal_substring_tree.hpp"
 #include "minimal_substrings/naive_minimal_substrings.hpp"
 

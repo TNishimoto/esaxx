@@ -16,7 +16,8 @@
 #include "minimal_substrings/naive_minimal_substrings.hpp"
 #include "minimal_substrings/minimal_substring_tree.hpp"
 
-#include "sa.hpp"
+#include "sa_bwt_lcp.hpp"
+
 
 using INDEXTYPE = uint64_t;
 

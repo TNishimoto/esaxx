@@ -4,8 +4,9 @@
 #include <memory>
 
 //#include "fmindex.hpp"
-#include "../mycode.hpp"
-#include "../sa.hpp"
+#include "io.hpp"
+#include "sa_bwt_lcp.hpp"
+
 #include "minimal_substring_iterator.hpp"
 
 namespace stool

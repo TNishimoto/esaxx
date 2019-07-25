@@ -10,7 +10,9 @@
 #include <unordered_map>
 #include "cmdline.h"
 #include "esa.hxx"
-#include "mycode.hpp"
+#include "io.hpp"
+#include "sa_bwt_lcp.hpp"
+
 
 using namespace std;
 using INDEXTYPE = int64_t;

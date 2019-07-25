@@ -6,7 +6,9 @@
 #include "cmdline.h"
 #include "esa.hxx"
 #include <exception>
-#include "mycode.hpp"
+#include "io.hpp"
+#include "sa_bwt_lcp.hpp"
+
 
 
 namespace stool

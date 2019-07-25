@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "mycode.hpp"
+#include "io.hpp"
+#include "sa_bwt_lcp.hpp"
 #include "lcp_interval_iterator.hpp"
 
 /*
