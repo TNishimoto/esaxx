@@ -6,20 +6,19 @@
 #include "cmdline.h"
 #include "esa.hxx"
 #include <exception>
-using namespace std;
 
 namespace stool
 {
 template <typename INDEXTYPE>
 class PostorderMSIterator
 {
-    const vector<INDEXTYPE> &L; // left boundaries of internal node
-    const vector<INDEXTYPE> &R; // right boundaries of internal node
-    const vector<INDEXTYPE> &D; // depths of internal node
+    const std::vector<INDEXTYPE> &L; // left boundaries of internal node
+    const std::vector<INDEXTYPE> &R; // right boundaries of internal node
+    const std::vector<INDEXTYPE> &D; // depths of internal node
     INDEXTYPE index;
     public:
     PostorderMSIterator() = default;
-    PostorderMSIterator(const vector<INDEXTYPE> &_L, const vector<INDEXTYPE> &_R, const vector<INDEXTYPE> &_D, INDEXTYPE _index) : L(_L), R(_R), D(_D), index(_index)
+    PostorderMSIterator(const std::vector<INDEXTYPE> &_L, const std::vector<INDEXTYPE> &_R, const std::vector<INDEXTYPE> &_D, INDEXTYPE _index) : L(_L), R(_R), D(_D), index(_index)
     {
     }
     PostorderMSIterator &operator++()
@@ -47,31 +46,31 @@ template <typename INDEXTYPE>
 class PostorderMaximalSubstrings
 {
 
-    const vector<INDEXTYPE> L; // left boundaries of internal node
-    const vector<INDEXTYPE> R; // right boundaries of internal node
-    const vector<INDEXTYPE> D; // depths of internal node
+    const std::vector<INDEXTYPE> L; // left boundaries of internal node
+    const std::vector<INDEXTYPE> R; // right boundaries of internal node
+    const std::vector<INDEXTYPE> D; // depths of internal node
 
 public:
     PostorderMaximalSubstrings()
     {
     }
-    PostorderMaximalSubstrings(vector<INDEXTYPE> _L, vector<INDEXTYPE> _R, vector<INDEXTYPE> _D) : L(_L), R(_R), D(_D)
+    PostorderMaximalSubstrings(std::vector<INDEXTYPE> _L, std::vector<INDEXTYPE> _R, std::vector<INDEXTYPE> _D) : L(_L), R(_R), D(_D)
     {
     }
 
     template <typename TEXT>
-    static PostorderMaximalSubstrings<INDEXTYPE> construct(vector<TEXT> &text, vector<INDEXTYPE> &SA)
+    static PostorderMaximalSubstrings<INDEXTYPE> construct(std::vector<TEXT> &text, std::vector<INDEXTYPE> &SA)
     {
         INDEXTYPE n = text.size();
         SA.resize(n);
-        vector<INDEXTYPE> L(n);
-        vector<INDEXTYPE> R(n);
-        vector<INDEXTYPE> D(n);
+        std::vector<INDEXTYPE> L(n);
+        std::vector<INDEXTYPE> R(n);
+        std::vector<INDEXTYPE> D(n);
         //r.SA.resize(n);
         L.resize(n);
         R.resize(n);
         D.resize(n);
-        vector<INDEXTYPE> rank(n);
+        std::vector<INDEXTYPE> rank(n);
         INDEXTYPE alphaSize = 0x100; // This can be very large
         INDEXTYPE nodeNum = 0;
         INDEXTYPE SA_first_index = 0;
@@ -81,7 +80,7 @@ public:
                   L.begin(), R.begin(), D.begin(),
                   n, alphaSize, nodeNum) == -1)
         {
-            throw logic_error("error");
+            throw std::logic_error("error");
         }
 
         INDEXTYPE x = 0;

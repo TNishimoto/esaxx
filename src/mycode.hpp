@@ -6,7 +6,6 @@
 #include "divsufsort.h"
 #include "divsufsort64.h"
 
-using namespace std;
 namespace stool
 {
 
@@ -57,31 +56,31 @@ public:
 	}
 
 	template <typename sa_type>
-	void print(uint64_t id, vector<char> &text, sa_type &sa)
+	void print(uint64_t id, std::vector<char> &text, sa_type &sa)
 	{
-		cout << id << "\t\t" << (this->j - this->i + 1) << "\t\t" << this->i << ".." << this->j << "\t\t" << this->lcp << "\t\t";
+		std::cout << id << "\t\t" << (this->j - this->i + 1) << "\t\t" << this->i << ".." << this->j << "\t\t" << this->lcp << "\t\t";
 		int64_t begin = sa[this->i];
 		for (int64_t j = 0; j < this->lcp; ++j)
 		{
 			if(text[begin + j] != 0){
-				cout << text[begin + j];
+				std::cout << text[begin + j];
 			}else{
-				cout << "$(special end character)";
+				std::cout << "$(special end character)";
 			}
 		}
-		cout << endl;
+		std::cout << std::endl;
 	}
 	template <typename sa_type>
-	string getCSVLine(uint64_t id, vector<char> &text, sa_type &sa){
-		string tmp="";
-		string intervalText = this->getText(text, sa);
+	std::string getCSVLine(uint64_t id, std::vector<char> &text, sa_type &sa){
+		std::string tmp="";
+		std::string intervalText = this->getText(text, sa);
 		tmp = std::to_string(id) + "," + std::to_string(this->j - this->i + 1) + "," + std::to_string(this->i) + "," + std::to_string(this->j) + "," + intervalText;
 		return tmp;
 	}
 
 	template <typename sa_type>
-	string getText(vector<char> &text, sa_type &sa){
-		string intervalText = "";
+	std::string getText(std::vector<char> &text, sa_type &sa){
+		std::string intervalText = "";
 		int64_t begin = sa[this->i];
 		for (int64_t j = 0; j < this->lcp; ++j)
 		{
@@ -147,23 +146,23 @@ int saisxx<std::vector<char>::iterator, std::vector<int64_t>::iterator, int64_t>
 }
 
 template <typename T>
-static vector<T> load(string filename)
+static std::vector<T> load(std::string filename)
 {
 
-	ifstream stream;
-	stream.open(filename, ios::binary);
+	std::ifstream stream;
+	stream.open(filename, std::ios::binary);
 
-	vector<T> vec;
+	std::vector<T> vec;
 
 	if (!stream)
 	{
-		std::cerr << "error reading file " << endl;
+		std::cerr << "error reading file " << std::endl;
 		throw - 1;
 	}
 	uint64_t len;
-	stream.seekg(0, ios::end);
+	stream.seekg(0, std::ios::end);
 	uint64_t n = (unsigned long)stream.tellg();
-	stream.seekg(0, ios::beg);
+	stream.seekg(0, std::ios::beg);
 	len = n / sizeof(T);
 
 	vec.resize(len);
@@ -171,23 +170,23 @@ static vector<T> load(string filename)
 	return vec;
 }
 
-static vector<char> load_text(string filename)
+static std::vector<char> load_text(std::string filename)
 {
 
-	ifstream stream;
-	stream.open(filename, ios::binary);
+	std::ifstream stream;
+	stream.open(filename, std::ios::binary);
 
-	vector<char> vec;
+	std::vector<char> vec;
 
 	if (!stream)
 	{
-		std::cerr << "error reading file " << endl;
+		std::cerr << "error reading file " << std::endl;
 		throw - 1;
 	}
 	uint64_t len;
-	stream.seekg(0, ios::end);
+	stream.seekg(0, std::ios::end);
 	uint64_t n = (unsigned long)stream.tellg();
-	stream.seekg(0, ios::beg);
+	stream.seekg(0, std::ios::beg);
 	len = n / sizeof(char);
 
 	vec.resize(len+1, 0);
@@ -200,23 +199,23 @@ static vector<char> load_text(string filename)
 	}
 	return vec;
 }
-static vector<uint8_t> load_text2(string filename)
+static std::vector<uint8_t> load_text2(std::string filename)
 {
 
-	ifstream stream;
-	stream.open(filename, ios::binary);
+	std::ifstream stream;
+	stream.open(filename, std::ios::binary);
 
-	vector<uint8_t> vec;
+	std::vector<uint8_t> vec;
 
 	if (!stream)
 	{
-		std::cerr << "error reading file " << endl;
+		std::cerr << "error reading file " << std::endl;
 		throw - 1;
 	}
 	uint64_t len;
-	stream.seekg(0, ios::end);
+	stream.seekg(0, std::ios::end);
 	uint64_t n = (unsigned long)stream.tellg();
-	stream.seekg(0, ios::beg);
+	stream.seekg(0, std::ios::beg);
 	len = n / sizeof(uint8_t);
 
 	vec.resize(len+1, 0);
@@ -231,9 +230,9 @@ static vector<uint8_t> load_text2(string filename)
 }
 
 
-vector<int64_t> construct_sa(vector<char> &text)
+std::vector<int64_t> construct_sa(std::vector<char> &text)
 {
-	vector<int64_t> SA;
+	std::vector<int64_t> SA;
 	int64_t n = text.size();
 	SA.resize(n);
 

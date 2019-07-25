@@ -1,7 +1,3 @@
-// License: MIT http://opensource.org/licenses/MIT
-/*
-  This code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it.
-*/
 
 #include <iostream>
 #include <fstream>
@@ -10,114 +6,81 @@
 #include <unordered_map>
 #include "cmdline.h"
 #include "esa.hxx"
-#include "postorder_maximal_substrings.hpp"
+#include "postorder_suffix_tree.hpp"
+#include "minimal_substrings/postorder_special_suffix_tree.hpp"
+#include "minimal_substrings/minimal_substring_iterator.hpp"
+#include "minimal_substrings/naive_minimal_substrings.hpp"
+#include "minimal_substrings/minimal_substring_tree.hpp"
+
+#include "sa.hpp"
 
 using namespace std;
-using INDEXTYPE = int64_t;
+using INDEXTYPE = uint64_t;
+
+
+
+
+
 
 int main(int argc, char *argv[])
 {
-
   cmdline::parser p;
   p.add<string>("input_file", 'i', "input file name", true);
-  p.add<string>("output_file", 'o', "output file name", false, "");
-  p.add<bool>("print", 'p', "print info", false, true);
-  p.add<string>("format", 'f', "output format", false, "csv");
+  p.add<string>("output_file", 'o', "(option) Output attractor file name(the default output name is 'input_file.msub')", false, "");
+  p.add<string>("output_type", 't', "(option) Output mode(binary or text)", false, "binary");
+  //p.add<bool>("print", 'p', "print info", false, true);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
-  string format = p.get<string>("format");
-
-  if (format != "binary")
-  {
-    format = "csv";
-  }
-
-  bool isPrint = p.get<bool>("print");
-
+  string outputMode = p.get<string>("output_type");
   if (outputFile.size() == 0)
   {
-    outputFile = inputFile + ".ms";
+    if (outputMode == "text")
+    {
+      outputFile = inputFile + ".msub.txt";
+    }
+    else
+    {
+      outputFile = inputFile + ".msub";
+    }
   }
+  if(outputMode != "text") outputMode = "binary";
 
-  vector<char> T = stool::load_text(inputFile); // input text
-  INDEXTYPE n = T.size();
-  vector<INDEXTYPE> SA; // suffix array
+  vector<uint8_t> T = stool::load_text2(inputFile); // input text
 
-  stool::PostorderMaximalSubstrings<INDEXTYPE> iterator = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T,SA);
+  stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t> mstree;
+  stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t>::construct(T, mstree.nodes, mstree.parents);
   
-  if (isPrint)
+  if (outputMode == "text")
   {
-    std::cout << "Maximal substrings in the file" << std::endl;
-    std::cout << "id"
-              << "\t\t"
-              << "occurrence"
-              << "\t"
-              << "range(SA)"
-              << "\t"
-              << "string length"
-              << "\t"
-              << "string" << std::endl;
+    T.pop_back();
+    vector<uint64_t> sa = stool::constructSA<>(T);
+    string otext = "";
+    
+    for (uint64_t i = 0; i < mstree.nodes.size(); i++)
+    {
+      otext.append(stool::esaxx::toLogLine<>(T, sa, mstree.nodes[i]));
+      if (i + 1 != mstree.nodes.size())
+        otext.append("\r\n");
+    }
+    //IO::write(outputFile, otext);
+		std::ofstream out(outputFile, ios::out | ios::binary);
+		out.write((const char *)(&otext[0]), sizeof(char) * otext.size());
+    
   }
-
-  vector<stool::LCPInterval<INDEXTYPE>> buffer;
-  ofstream os(outputFile, ios::out | ios::binary);
-  if (!os)
-    return 1;
-  INDEXTYPE maximumSubstringCount = 0;
-  INDEXTYPE id = 0;
-
-  // Filtering internal nodes and writing and printing maximal substrings.
-  INDEXTYPE line_id = 0;
-
-  for (auto it : iterator)
+  else
   {
-    id++;
-    maximumSubstringCount++;
-    buffer.push_back(it);
-    //std::cout << it.i << "/" << it.j << "/" << it.lcp << std::endl;
-
-    if (buffer.size() > 8192)
-    {
-      if (format == "binary")
-      {
-        os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
-      }
-      else
-      {
-        for (uint64_t z = 0; z < buffer.size(); z++)
-        {
-          os << buffer[z].getCSVLine(line_id, T, SA) << std::endl;
-          line_id++;
-        }
-      }
-      buffer.clear();
-    }
-
-    if (isPrint)
-    {
-      if (maximumSubstringCount < 1000)
-      {
-        it.print(id, T, SA);
-      }
-      else if (maximumSubstringCount == 1000)
-      {
-        std::cout << "etc.." << std::endl;
-      }
-    }
+    mstree.write(outputFile, T);
   }
-  buffer.clear();
-  os.close();
-
   std::cout << "\033[36m";
   std::cout << "___________RESULT___________" << std::endl;
   std::cout << "File: " << inputFile << std::endl;
   std::cout << "Output: " << outputFile << std::endl;
-  std::cout << "Output format: " << format << std::endl;
+  std::cout << "Output format: " << outputMode << std::endl;
   std::cout << "The length of the input text: " << T.size() << std::endl;
   //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
-  std::cout << "The number of maximum substrings: " << iterator.size() << std::endl;
+  std::cout << "The number of minimum substrings: " << mstree.nodes.size() << std::endl;
   std::cout << "_________________________________" << std::endl;
   std::cout << "\033[39m" << std::endl;
 }

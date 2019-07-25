@@ -12,6 +12,7 @@
 namespace stool
 {
 
+namespace esaxx{
 // This class has information about a node in the suffix tree of an input string.
 // This class stores the interval [i..j] of the node on SA, and the length of the edge between the parent and the node.
 template <typename CHAR, typename INDEX>
@@ -61,7 +62,7 @@ template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename VEC = std
 class PostorderSSTIterator
 {
     PostorderSTIterator<INDEX, VEC> _iterator;
-    vector<CHAR> &_bwt;
+    std::vector<CHAR> &_bwt;
     //INDEX counter_i = 0;
     INDEX current_i = 0;
     std::unordered_map<CHAR, INDEX> charRankMap;
@@ -149,7 +150,7 @@ class PostorderSSTIterator
 public:
     PostorderSSTIterator() = default;
 
-    PostorderSSTIterator(vector<CHAR> &__bwt, PostorderSTIterator<> &__iterator, bool isBegin) : _bwt(__bwt), _iterator(__iterator)
+    PostorderSSTIterator(std::vector<CHAR> &__bwt, PostorderSTIterator<> &__iterator, bool isBegin) : _bwt(__bwt), _iterator(__iterator)
     {
         if (isBegin)
         {
@@ -182,10 +183,10 @@ public:
         return this->current_i;
     }
 
-    static PostorderSSTIterator<CHAR, INDEX, VEC> constructIterator(vector<CHAR> &__bwt, VEC &_SA, VEC &_LCPArray)
+    static PostorderSSTIterator<CHAR, INDEX, VEC> constructIterator(std::vector<CHAR> &__bwt, VEC &_SA, VEC &_LCPArray)
     {
         if(_SA[0] != _SA.size()-1){
-            throw logic_error("error!");
+            throw std::logic_error("error!");
         }
         PostorderSTIterator<INDEX, VEC> st(&_SA, &_LCPArray, true);
         return PostorderSSTIterator<CHAR, INDEX, VEC>(__bwt, st, true);
@@ -268,4 +269,5 @@ public:
     }
 };
 */
+}
 } // namespace stool

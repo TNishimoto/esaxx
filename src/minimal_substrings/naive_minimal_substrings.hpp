@@ -11,9 +11,11 @@
 
 namespace stool
 {
+namespace esaxx
+{
 /*
     template <typename INDEX = uint64_t>
-    std::vector<std::string> naive_compute_minimal_substrings(vector<char> &T)
+    std::std::vector<std::string> naive_compute_minimal_substrings(std::vector<char> &T)
   {
     string text(T.begin(), T.end());
     std::unordered_map<std::string, INDEX> map;
@@ -64,7 +66,7 @@ namespace stool
   }
   */
 template <typename INDEX = uint64_t>
-void naive_compute_minimal_substrings(string &text, std::unordered_map<INDEX, INDEX> &previousPositionSet, INDEX strlen, std::vector<std::string> &output)
+void naive_compute_minimal_substrings(std::string &text, std::unordered_map<INDEX, INDEX> &previousPositionSet, INDEX strlen, std::vector<std::string> &output)
 {
   if (strlen == 1)
   {
@@ -175,12 +177,12 @@ void naive_compute_minimal_substrings(string &text, std::unordered_map<INDEX, IN
 }
 
 template <typename INDEX = uint64_t>
-std::vector<std::string> naive_compute_minimal_substrings(vector<char> &T)
+std::vector<std::string> naive_compute_minimal_substrings(std::vector<char> &T)
 {
-  string text(T.begin(), T.end());
+  std::string text(T.begin(), T.end());
   std::unordered_map<INDEX, INDEX> positionCountSet;
   std::vector<std::string> output;
-  stool::naive_compute_minimal_substrings<INDEX>(text, positionCountSet, 1, output);
+  stool::esaxx::naive_compute_minimal_substrings<INDEX>(text, positionCountSet, 1, output);
   for (INDEX len = 2; len <= text.size(); len++)
   {
     std::cout << "[" << len << "/" << positionCountSet.size() << "]\r" << std::flush;
@@ -190,7 +192,7 @@ std::vector<std::string> naive_compute_minimal_substrings(vector<char> &T)
     }
     else
     {
-      stool::naive_compute_minimal_substrings<INDEX>(text, positionCountSet, len, output);
+      stool::esaxx::naive_compute_minimal_substrings<INDEX>(text, positionCountSet, len, output);
     }
   }
   std::cout << std::endl;
@@ -198,13 +200,13 @@ std::vector<std::string> naive_compute_minimal_substrings(vector<char> &T)
   return output;
 }
 template <typename CHAR = char, typename INDEX = uint64_t>
-string toLogLine(vector<CHAR> &text, vector<INDEX> &sa, stool::LCPInterval<INDEX> &interval)
+std::string toLogLine(std::vector<CHAR> &text, std::vector<INDEX> &sa, stool::LCPInterval<INDEX> &interval)
 {
   std::cout << interval.to_string() << std::endl;
-  string T(text.begin(), text.end());
-  string log = "";
+  std::string T(text.begin(), text.end());
+  std::string log = "";
   /*
-  string mstr = T.substr(sa[interval.i], interval.lcp);
+  std::string mstr = T.substr(sa[interval.i], interval.lcp);
   log.append("\"");
   log.append(mstr);
   log.append("\" ");
@@ -218,7 +220,7 @@ string toLogLine(vector<CHAR> &text, vector<INDEX> &sa, stool::LCPInterval<INDEX
 
   log.append("occ: ");
 
-  vector<uint64_t> occs;
+  std::vector<uint64_t> occs;
   for (uint64_t x = interval.i; x <= interval.j; x++)
   {
     uint64_t pos = sa[x];
@@ -237,4 +239,5 @@ string toLogLine(vector<CHAR> &text, vector<INDEX> &sa, stool::LCPInterval<INDEX
 
   return log;
 }
+} // namespace exaxx
 } // namespace stool

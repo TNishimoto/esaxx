@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     {
         
         vector<uint8_t> T = stool::load_text2(inputFile); // input text
-        stool::MinimalSubstringTree<uint8_t, uint64_t> mstree;
+        stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t> mstree;
         mstree.load(type, T);
         std::cout << "load!" << std::endl;
         T.pop_back();
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
         for (uint64_t i = 0; i < mstree.nodes.size(); i++)
         {
-            otext.append(stool::toLogLine<>(T, sa, mstree.nodes[i]));
+            otext.append(stool::esaxx::toLogLine<>(T, sa, mstree.nodes[i]));
             if (i + 1 != mstree.nodes.size())
                 otext.append("\r\n");
         }

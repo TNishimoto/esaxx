@@ -120,7 +120,7 @@ template <typename index_type>
 vector<bool> constructForbiddenIndexesForMaximalSubstrings(vector<char> &text, vector<index_type> &sa, stool::PostorderMaximalSubstrings<index_type> &ms)
 {
     vector<index_type> excludedPositions;
-    excludedPositions.resize(text.size(), UINT64_MAX);
+    excludedPositions.resize(text.size(), std::numeric_limits<index_type>::max());
     uint64_t prev = 0;
     uint64_t rank = 0;
     for (uint64_t i = 0; i < text.size(); i++)

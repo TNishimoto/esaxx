@@ -10,6 +10,7 @@
 
 namespace stool
 {
+  namespace esaxx{
 template <typename INDEX = uint64_t>
 class IncompleteLCPInterval
 {
@@ -267,5 +268,6 @@ public:
     return r;
   }
 };
+  }
 
 } // namespace stool

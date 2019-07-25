@@ -4,7 +4,6 @@
 #include "divsufsort.h"
 #include "divsufsort64.h"
 
-//using namespace std;
 
 namespace stool
 {
@@ -106,8 +105,8 @@ std::vector<INDEX> constructLCP(std::vector<CHAR> &text, std::vector<INDEX> &sa)
 }
 
 template <typename CHAR = char,typename INDEX = uint64_t>
-vector<CHAR> constructBWT(vector<CHAR> &text, std::vector<INDEX> &sa){    
-    vector<CHAR> bwt;
+std::vector<CHAR> constructBWT(std::vector<CHAR> &text, std::vector<INDEX> &sa){    
+    std::vector<CHAR> bwt;
     bwt.resize(text.size());
     INDEX n = text.size();
     for(INDEX i=0;i<text.size();i++){

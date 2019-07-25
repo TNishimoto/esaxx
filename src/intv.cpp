@@ -18,7 +18,6 @@
 
 #include "sa.hpp"
 
-using namespace std;
 using INDEXTYPE = uint64_t;
 
 
@@ -53,8 +52,8 @@ int main(int argc, char *argv[])
   vector<uint8_t> T = stool::load_text2(inputFile); // input text
   std::cout << (int)T[T.size() - 1] << std::endl;
 
-  stool::MinimalSubstringTree<uint8_t, uint64_t> mstree;
-  stool::MinimalSubstringTree<uint8_t, uint64_t>::construct(T, mstree.nodes, mstree.parents);
+  stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t> mstree;
+  stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t>::construct(T, mstree.nodes, mstree.parents);
   std::cout << mstree.nodes.size() << std::endl;
   std::cout << mstree.parents.size() << std::endl;
 
@@ -66,7 +65,7 @@ int main(int argc, char *argv[])
     
     for (uint64_t i = 0; i < mstree.nodes.size(); i++)
     {
-      otext.append(stool::toLogLine<>(T, sa, mstree.nodes[i]));
+      otext.append(stool::esaxx::toLogLine<>(T, sa, mstree.nodes[i]));
       if (i + 1 != mstree.nodes.size())
         otext.append("\r\n");
     }

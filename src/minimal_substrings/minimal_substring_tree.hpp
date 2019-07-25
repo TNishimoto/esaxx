@@ -10,17 +10,19 @@
 
 namespace stool
 {
-
+namespace esaxx
+{
 // The minimal substring tree of a string T is the trie for minimal substrings for T.
 template <typename CHAR = uint8_t, typename INDEX = uint64_t>
 class MinimalSubstringTree
 {
 private:
   // Construct the outputParents using lcp intervals of minimal substring for T.
-  static void constructMSIntervalParents(vector<LCPInterval<INDEX>> &intervals, vector<INDEX> &outputParents)
+  static std::vector<INDEX> constructMSIntervalParents(std::vector<LCPInterval<INDEX>> &intervals)
   {
+    std::vector<INDEX> outputParents;
     std::stack<INDEX> stack;
-    outputParents.resize(intervals.size(), UINT64_MAX);
+    outputParents.resize(intervals.size(), std::numeric_limits<INDEX>::max());
     for (INDEX i = 0; i < intervals.size(); i++)
     {
       if (i % 100000 == 0)
@@ -48,16 +50,17 @@ private:
       stack.push(i);
     }
     std::cout << "[END]" << std::endl;
+    return outputParents;
   }
 
 public:
-  vector<LCPInterval<INDEX>> nodes;
-  vector<INDEX> parents;
+  std::vector<LCPInterval<INDEX>> nodes;
+  std::vector<INDEX> parents;
   // The outputIntervals stores lcp intervals of minimal substring.
   // The lcp intervals sorted in lexcographically order.
   // The i-th element in the outputParents stores the index of the parent of the node representing the i-th minimal substring.
 
-  static void construct(std::vector<CHAR> &text, vector<LCPInterval<INDEX>> &outputIntervals, vector<INDEX> &outputParents)
+  static void construct(std::vector<CHAR> &text, std::vector<LCPInterval<INDEX>> &outputIntervals, std::vector<INDEX> &outputParents)
   {
     /*
     for (uint64_t i = 0; i < text.size(); i++)
@@ -71,11 +74,11 @@ public:
     text.push_back(0);
     */
 
-    //vector<INDEX> parents;
+    //std::vector<INDEX> parents;
 
-    vector<INDEX> sa = stool::constructSA<CHAR,INDEX>(text);
-    vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
-    vector<CHAR> bwt = stool::constructBWT<CHAR,INDEX>(text, sa);
+    std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(text);
+    std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+    std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
     /*
     stool::constructSA(text, sa, isa);
     if (sa[0] != text.size() - 1)
@@ -93,13 +96,14 @@ public:
     std::cout << "Computing minimal substrings..." << std::flush;
     OnlineMSInterval::construct(sa, lcp, fmi, outputIntervals);
     */
-    std::vector<stool::LCPInterval<INDEX>> msVec = stool::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
+    std::vector<stool::LCPInterval<INDEX>> msVec = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
     outputIntervals.swap(msVec);
 
-    MinimalSubstringTree::constructMSIntervalParents(outputIntervals, outputParents);
+    std::vector<INDEX> tmp = MinimalSubstringTree::constructMSIntervalParents(outputIntervals);
+    outputParents.swap(tmp);
     //text.pop_back();
   }
-  void construct(string &text)
+  void construct(std::string &text)
   {
     MinimalSubstringTree::construct(text, this->nodes, this->parents);
   }
@@ -118,22 +122,21 @@ public:
     IO::write(filepath2, parents);
   }
   */
-  void write(string filepath, std::vector<CHAR> &text)
+  void write(std::string filepath, std::vector<CHAR> &text)
   {
 
-    ofstream out(filepath, ios::out | ios::binary);
+    std::ofstream out(filepath, std::ios::out | std::ios::binary);
     //variables.serialize(out);
     //std::hash<std::vector<CHAR>> hash_fn;
     //INDEX hash = hash_fn(text);
     INDEX hash = 0;
-    
+
     INDEX len = text.size();
     out.write(reinterpret_cast<const char *>(&hash), sizeof(uint64_t));
     out.write(reinterpret_cast<const char *>(&len), sizeof(uint64_t));
     INDEX nodeVecSize = nodes.size();
     out.write(reinterpret_cast<const char *>(&nodeVecSize), sizeof(INDEX));
-    out.write(reinterpret_cast<const char *>(&nodes[0]), nodeVecSize * sizeof(INDEX));
-    std::cout << "size: " << nodes.size() << std::endl;
+    out.write(reinterpret_cast<const char *>(&nodes[0]), nodeVecSize * sizeof(LCPInterval<INDEX>));
 
     //stool::IO::write(out, nodes, false);
     INDEX parentVecSize = parents.size();
@@ -144,7 +147,7 @@ public:
     out.close();
     //this->printInfo();
   }
-  void load(string filepath, std::vector<CHAR> &text)
+  void load(std::string filepath, std::vector<CHAR> &text)
   {
     std::ifstream m_ifs(filepath);
     bool mSubstrFileExist = m_ifs.is_open();
@@ -156,8 +159,8 @@ public:
       std::exit(EXIT_FAILURE);
     }
 
-    ifstream inputStream;
-    inputStream.open(filepath, ios::binary);
+    std::ifstream inputStream;
+    inputStream.open(filepath, std::ios::binary);
 
     std::hash<std::string> hash_fn;
     //INDEX hash = hash_fn(text);
@@ -172,19 +175,17 @@ public:
     inputStream.read((char *)&load_len, sizeof(INDEX));
     //stool::IO::load(inputStream, nodes, false);
     //stool::IO::load(inputStream, parents, false);
-    
+
     INDEX nodeVecSize;
     INDEX parentVecSize;
-    
-		inputStream.read((char *)(&nodeVecSize), sizeof(INDEX));
-    std::cout << "size: " << nodeVecSize << std::endl;
-		nodes.resize(nodeVecSize);
-		inputStream.read((char *)&(nodes)[0], nodeVecSize * sizeof(LCPInterval<INDEX>));
 
-		inputStream.read((char *)(&parentVecSize), sizeof(INDEX));
-		parents.resize(parentVecSize);
-		inputStream.read((char *)&(parents)[0], parentVecSize * sizeof(INDEX));
+    inputStream.read((char *)(&nodeVecSize), sizeof(INDEX));
+    nodes.resize(nodeVecSize);
+    inputStream.read((char *)&(nodes)[0], nodeVecSize * sizeof(LCPInterval<INDEX>));
 
+    inputStream.read((char *)(&parentVecSize), sizeof(INDEX));
+    parents.resize(parentVecSize);
+    inputStream.read((char *)&(parents)[0], parentVecSize * sizeof(INDEX));
 
     inputStream.close();
     if (load_hash != hash || load_len != len)
@@ -197,7 +198,7 @@ public:
     }
     //this->printInfo();
   }
-  void loadOrConstruct(string filepath, vector<CHAR> *text)
+  void loadOrConstruct(std::string filepath, std::vector<CHAR> *text)
   {
     std::ifstream m_ifs(filepath);
     bool mSubstrFileExist = m_ifs.is_open();
@@ -216,5 +217,5 @@ public:
     }
   }
 };
-
+} // namespace exaxx
 } // namespace stool

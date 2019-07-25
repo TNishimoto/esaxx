@@ -10,7 +10,8 @@
 
 namespace stool
 {
-
+namespace esaxx
+{
 template <typename INDEX = uint64_t>
 struct VRInfo
 {
@@ -29,7 +30,7 @@ class MinimalSubstringCandidates
 public:
   INDEX count;
   INDEX rank;
-  vector<VRInfo<INDEX>> intervals;
+  std::vector<VRInfo<INDEX>> intervals;
 
   MinimalSubstringCandidates()
   {
@@ -51,10 +52,10 @@ public:
 };
 
 template <typename CHAR = uint8_t, typename INDEX = uint64_t>
-std::unordered_map<CHAR, INDEX> constructCMap(vector<CHAR> &text)
+std::unordered_map<CHAR, INDEX> constructCMap(std::vector<CHAR> &text)
 {
   std::unordered_map<CHAR, INDEX> C;
-  vector<CHAR> chars;
+  std::vector<CHAR> chars;
 
   for (uint64_t i = 0; i < text.size(); i++)
   {
@@ -72,7 +73,7 @@ std::unordered_map<CHAR, INDEX> constructCMap(vector<CHAR> &text)
   if (chars[0] != 0)
   {
     assert(false);
-    throw logic_error("error!");
+    throw std::logic_error("error!");
   }
   INDEX counter = 0;
   for (INDEX i = 0; i < chars.size(); i++)
@@ -227,7 +228,7 @@ class MinimalSubstringIterator
       while (!this->_iterator.isEnd())
       {
         //this->print();
-        SpecializedLCPInterval<CHAR,INDEX> sintv = *this->_iterator;
+        SpecializedLCPInterval<CHAR, INDEX> sintv = *this->_iterator;
 
 #ifdef DEBUG_PRINT
         std::cout << "read: "
@@ -251,7 +252,7 @@ class MinimalSubstringIterator
 
 public:
   MinimalSubstringIterator() = default;
-  MinimalSubstringIterator(vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
+  MinimalSubstringIterator(std::vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
@@ -284,11 +285,11 @@ public:
   {
     return this->_currenct_lcp_interval.is_special_marker();
   }
-  static vector<LCPInterval<INDEX>> constructSortedMinimalSubstringsWithoutSpecialMarker(vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
+  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstringsWithoutSpecialMarker(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
   {
-    stool::PostorderSSTIterator<CHAR, INDEX> sst = stool::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
-    stool::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
-    vector<LCPInterval<INDEX>> r;
+    stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
+    stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
+    std::vector<LCPInterval<INDEX>> r;
     while (!msi.end())
     {
       stool::LCPInterval<INDEX> p = *msi;
@@ -320,11 +321,11 @@ public:
         });
     return r;
   }
-  static vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
+  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
   {
-    stool::PostorderSSTIterator<CHAR, INDEX> sst = stool::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
-    stool::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
-    vector<LCPInterval<INDEX>> r;
+    stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
+    stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
+    std::vector<LCPInterval<INDEX>> r;
     while (!msi.end())
     {
       stool::LCPInterval<INDEX> p = *msi;
@@ -353,8 +354,6 @@ public:
         });
     return r;
   }
-
-  
 };
-
+} // namespace exaxx
 } // namespace stool
