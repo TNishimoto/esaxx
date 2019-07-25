@@ -339,13 +339,28 @@ public:
   }
   static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
   {
+    assert(bwt.size() == sa.size());
+    assert(bwt.size() == lcpArray.size());
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
-    while (!msi.end())
+    while (!msi.isEnded())
     {
       stool::LCPInterval<INDEX> p = *msi;
       r.push_back(stool::LCPInterval<INDEX>(p.i, p.j, p.lcp));
+
+#ifdef DEBUG
+        for (uint64_t x = p.i; x <= p.j; x++)
+        {
+          INDEX occ = sa[x];
+          if(occ + p.lcp - 1 >= bwt.size()){
+            std::cout << occ << std::endl;
+            std::cout << p.to_string() << std::endl;
+          }
+          assert(occ + p.lcp - 1 < bwt.size());
+        }
+#endif
+
       ++msi;
     }
     std::sort(
@@ -368,6 +383,7 @@ public:
             return x.i < y.i;
           }
         });
+
     return r;
   }
 };

@@ -71,7 +71,8 @@ public:
     std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
 
     std::cout << "Constructing Minimal Substrings" << std::endl;
-    std::vector<stool::LCPInterval<INDEX>> msVec = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
+    //std::vector<stool::LCPInterval<INDEX>> msVec = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
+    std::vector<stool::LCPInterval<INDEX>> msVec = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
     outputIntervals.swap(msVec);
     std::cout << "Constructing Minimal Substring Tree" << std::endl;
     std::vector<INDEX> tmp = MinimalSubstringTree::constructMSIntervalParents(outputIntervals);
