@@ -219,9 +219,10 @@ public:
 
   ~PostorderSuffixTree()
   {
-    if (deleteFlag)
+    if (deleteFlag){
       delete _SA;
       delete _LCPArray;
+    }
   }
 
   PostorderSuffixTree(PostorderSuffixTree &&obj)

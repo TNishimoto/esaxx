@@ -49,6 +49,7 @@ int saisxx(string_type T, sarray_type SA, index_type n)
 	(void)T;
 	(void)SA;
 	(void)n;
+  throw -1;
 }
 template <>
 int saisxx<std::vector<char>::iterator, std::vector<int32_t>::iterator, int32_t>(std::vector<char>::iterator T, std::vector<int32_t>::iterator SA, int32_t n)
