@@ -46,9 +46,9 @@ template <typename sa_type, typename index_type>
 string toCSVLine(LCPPair &item, vector<char> &text, sa_type &sa, index_type positive_sum, index_type negative_sum, string delimiter)
 {
     string result = "";
-    index_type sum_y = item.second.first + item.second.second;
-    index_type plus_count_y = item.second.first;
-    double y_value = (double)plus_count_y / (double)sum_y;
+    //index_type sum_y = item.second.first + item.second.second;
+    //index_type plus_count_y = item.second.first;
+    //double y_value = (double)plus_count_y / (double)sum_y;
     index_type plus_value = item.second.first;
     index_type minus_value = item.second.second;
     string line = item.first.getText(text, sa);
@@ -169,12 +169,12 @@ vector<bool> constructForbiddenIndexesForMaximalSubstrings(vector<char> &text, v
 }
 
 template <typename sa_type>
-std::pair<uint64_t, uint64_t> getFrequency(stool::LCPInterval<INDEXTYPE> &interval, sa_type &sa, uint64_t border)
+std::pair<uint64_t, uint64_t> getFrequency(stool::LCPInterval<INDEXTYPE> &interval, sa_type &sa, INDEXTYPE border)
 {
     //vector<uint64_t> occurrences;
-    uint64_t plus = 0;
-    uint64_t minus = 0;
-    for (uint64_t i = interval.i; i <= interval.j; i++)
+    INDEXTYPE plus = 0;
+    INDEXTYPE minus = 0;
+    for (INDEXTYPE i = interval.i; i <= interval.j; i++)
     {
         if (sa[i] < border)
         {
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
     int64_t len_threshold = p.get<int64_t>("len_threshold");
     int64_t occlen_threshold = p.get<int64_t>("occlen_threshold");
 
-    bool isPrint = p.get<bool>("print");
+    //bool isPrint = p.get<bool>("print");
 
     if (outputFile.size() == 0)
     {
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
 
     std::pair<vector<char>,INDEXTYPE> pr = getInputText<INDEXTYPE>(inputFile); // input text
     vector<char> &T = pr.first;
-    INDEXTYPE n = T.size();
+    //INDEXTYPE n = T.size();
     vector<INDEXTYPE> SA; // suffix array
     stool::PostorderMaximalSubstrings<INDEXTYPE> maximal_substrings = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, SA);
     vector<bool> filterVec = constructForbiddenIndexesForMaximalSubstrings(T, SA, maximal_substrings);
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        std::pair<uint64_t, uint64_t> freq = getFrequency(interval, SA, pr.second);
+        std::pair<int64_t, int64_t> freq = getFrequency(interval, SA, pr.second);
         positive_sum += freq.first;
         negative_sum += freq.second;
         if (freq.first + freq.second >= occ_threshold && interval.lcp >= len_threshold && (interval.lcp * (freq.first + freq.second) >= occlen_threshold))

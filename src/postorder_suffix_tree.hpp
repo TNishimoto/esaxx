@@ -193,7 +193,7 @@ public:
   {
     return _currenct_lcp_interval.lcp != rhs._currenct_lcp_interval.lcp;
   }
-  bool end(){
+  bool isEnded(){
     return this->_currenct_lcp_interval.lcp == std::numeric_limits<INDEX>::max();
   }
 };

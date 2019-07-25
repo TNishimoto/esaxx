@@ -30,12 +30,68 @@
 #include <vector>
 #include <utility>
 #include <cassert>
-#include "mycode.hpp"
+#include "divsufsort.h"
+#include "divsufsort64.h"
+//#include "mycode.hpp"
 
 namespace esaxx_private {
 
+/**
+ * @brief Constructs the suffix array of a given string in linear time.
+ * @param T[0..n-1] The input string. (random access iterator)
+ * @param SA[0..n-1] The output array of suffixes. (random access iterator)
+ * @param n The length of the given string.
+ * @param k The alphabet size.
+ * @return 0 if no error occurred, -1 or -2 otherwise.
+ */
+template <typename string_type, typename sarray_type, typename index_type>
+int saisxx(string_type T, sarray_type SA, index_type n)
+{
+	(void)T;
+	(void)SA;
+	(void)n;
+}
+template <>
+int saisxx<std::vector<char>::iterator, std::vector<int32_t>::iterator, int32_t>(std::vector<char>::iterator T, std::vector<int32_t>::iterator SA, int32_t n)
+{
+	if (n > 0 && T[n - 1] != 0)
+	{
+		throw std::logic_error("The last character of the input text must be '0'");
+	}
+	//if((n < 0) || (k <= 0)) { return -1; }
+	if (n <= 1)
+	{
+		if (n == 1)
+		{
+			SA[0] = 0;
+		}
+		return 0;
+	}
 
+	int err = divsufsort((const unsigned char *)&T[0], (int32_t *)&SA[0], n);
+	return err;
+}
+template <>
+int saisxx<std::vector<char>::iterator, std::vector<int64_t>::iterator, int64_t>(std::vector<char>::iterator T, std::vector<int64_t>::iterator SA, int64_t n)
+{
+	//if((n < 0) || (k <= 0)) { return -1; }
+	if (n > 0 && T[n - 1] != 0)
+	{
+		throw std::logic_error("The last character of the input text must be '0'");
+	}
 
+	if (n <= 1)
+	{
+		if (n == 1)
+		{
+			SA[0] = 0;
+		}
+		return 0;
+	}
+
+	int err = divsufsort64((const unsigned char *)&T[0], (int64_t *)&SA[0], n);
+	return err;
+}
 template<typename string_type, typename sarray_type, typename index_type>
 index_type suffixtree(string_type T, sarray_type SA, sarray_type L, sarray_type R, sarray_type D, index_type n){
   if (n == 0){
@@ -121,7 +177,7 @@ template<typename string_type, typename sarray_type, typename index_type>
 int esaxx(string_type T, sarray_type SA, sarray_type L, sarray_type R, sarray_type D,
      index_type n, index_type k, index_type& nodeNum) {
   if ((n < 0) || (k <= 0)) return -1;
-  int err = stool::saisxx(T, SA, n);
+  int err = esaxx_private::saisxx(T, SA, n);
   if (err != 0){
     return err;
   }

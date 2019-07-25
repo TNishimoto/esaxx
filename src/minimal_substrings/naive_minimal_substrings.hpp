@@ -205,7 +205,7 @@ std::string toLogLine(std::vector<CHAR> &text, std::vector<INDEX> &sa, stool::LC
   std::cout << interval.to_string() << std::endl;
   std::string T(text.begin(), text.end());
   std::string log = "";
-  /*
+  
   std::string mstr = T.substr(sa[interval.i], interval.lcp);
   log.append("\"");
   log.append(mstr);
@@ -232,10 +232,10 @@ std::string toLogLine(std::vector<CHAR> &text, std::vector<INDEX> &sa, stool::LC
   {
     uint64_t pos = occs[i];
     uint64_t endPos = occs[i] + interval.lcp - 1;
-    string occ = "[" + to_string(pos) + ".." + to_string(endPos) + "]";
+    std::string occ = "[" + std::to_string(pos) + ".." + std::to_string(endPos) + "]";
     log.append(occ);
   }
-  */
+  
 
   return log;
 }

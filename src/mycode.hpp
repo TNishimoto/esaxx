@@ -24,8 +24,9 @@ public:
 		this->lcp = _lcp;
 	}
 
-	static LCPInterval<index_type> create_end_marker(){
-		return LCPInterval<index_type>(std::numeric_limits<index_type>::max(),std::numeric_limits<index_type>::max(),std::numeric_limits<index_type>::max());
+	static LCPInterval<index_type> create_end_marker()
+	{
+		return LCPInterval<index_type>(std::numeric_limits<index_type>::max(), std::numeric_limits<index_type>::max(), std::numeric_limits<index_type>::max());
 	}
 	/*
 	bool operator<(const LCPInterval<index_type> &right) const
@@ -47,11 +48,12 @@ public:
         }
     }
 	*/
-    std::string to_string()
-    {
-        return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + std::to_string(lcp) + "]";
-    }
-	bool is_special_marker(){
+	std::string to_string()
+	{
+		return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + std::to_string(lcp) + "]";
+	}
+	bool is_special_marker()
+	{
 		return this->i == std::numeric_limits<index_type>::max() && this->j == std::numeric_limits<index_type>::max() && this->lcp == std::numeric_limits<index_type>::max();
 	}
 
@@ -62,24 +64,29 @@ public:
 		int64_t begin = sa[this->i];
 		for (int64_t j = 0; j < this->lcp; ++j)
 		{
-			if(text[begin + j] != 0){
+			if (text[begin + j] != 0)
+			{
 				std::cout << text[begin + j];
-			}else{
+			}
+			else
+			{
 				std::cout << "$(special end character)";
 			}
 		}
 		std::cout << std::endl;
 	}
 	template <typename sa_type>
-	std::string getCSVLine(uint64_t id, std::vector<char> &text, sa_type &sa){
-		std::string tmp="";
+	std::string getCSVLine(uint64_t id, std::vector<char> &text, sa_type &sa)
+	{
+		std::string tmp = "";
 		std::string intervalText = this->getText(text, sa);
 		tmp = std::to_string(id) + "," + std::to_string(this->j - this->i + 1) + "," + std::to_string(this->i) + "," + std::to_string(this->j) + "," + intervalText;
 		return tmp;
 	}
 
 	template <typename sa_type>
-	std::string getText(std::vector<char> &text, sa_type &sa){
+	std::string getText(std::vector<char> &text, sa_type &sa)
+	{
 		std::string intervalText = "";
 		int64_t begin = sa[this->i];
 		for (int64_t j = 0; j < this->lcp; ++j)
@@ -88,65 +95,11 @@ public:
 		}
 		return intervalText;
 	}
-
 };
 
-/**
- * @brief Constructs the suffix array of a given string in linear time.
- * @param T[0..n-1] The input string. (random access iterator)
- * @param SA[0..n-1] The output array of suffixes. (random access iterator)
- * @param n The length of the given string.
- * @param k The alphabet size.
- * @return 0 if no error occurred, -1 or -2 otherwise.
- */
-template <typename string_type, typename sarray_type, typename index_type>
-int saisxx(string_type T, sarray_type SA, index_type n)
-{
-}
-template <>
-int saisxx<std::vector<char>::iterator, std::vector<int32_t>::iterator, int32_t>(std::vector<char>::iterator T, std::vector<int32_t>::iterator SA, int32_t n)
-{
-	if (n > 0 && T[n - 1] != 0)
-	{
-		throw std::logic_error("The last character of the input text must be '0'");
-	}
-	//if((n < 0) || (k <= 0)) { return -1; }
-	if (n <= 1)
-	{
-		if (n == 1)
-		{
-			SA[0] = 0;
-		}
-		return 0;
-	}
-
-	int err = divsufsort((const unsigned char *)&T[0], (int32_t *)&SA[0], n);
-	return err;
-}
-template <>
-int saisxx<std::vector<char>::iterator, std::vector<int64_t>::iterator, int64_t>(std::vector<char>::iterator T, std::vector<int64_t>::iterator SA, int64_t n)
-{
-	//if((n < 0) || (k <= 0)) { return -1; }
-	if (n > 0 && T[n - 1] != 0)
-	{
-		throw std::logic_error("The last character of the input text must be '0'");
-	}
-
-	if (n <= 1)
-	{
-		if (n == 1)
-		{
-			SA[0] = 0;
-		}
-		return 0;
-	}
-
-	int err = divsufsort64((const unsigned char *)&T[0], (int64_t *)&SA[0], n);
-	return err;
-}
 
 template <typename T>
-static std::vector<T> load(std::string filename)
+std::vector<T> load(std::string filename)
 {
 
 	std::ifstream stream;
@@ -170,7 +123,7 @@ static std::vector<T> load(std::string filename)
 	return vec;
 }
 
-static std::vector<char> load_text(std::string filename)
+std::vector<char> load_text(std::string filename)
 {
 
 	std::ifstream stream;
@@ -189,17 +142,19 @@ static std::vector<char> load_text(std::string filename)
 	stream.seekg(0, std::ios::beg);
 	len = n / sizeof(char);
 
-	vec.resize(len+1, 0);
+	vec.resize(len + 1, 0);
 	stream.read((char *)&(vec)[0], len * sizeof(char));
 
-	for(uint64_t i=0;i<len;i++){
-		if(vec[i] == 0){
+	for (uint64_t i = 0; i < len; i++)
+	{
+		if (vec[i] == 0)
+		{
 			throw std::logic_error("The input text must not contain '0' character!");
-		}		
+		}
 	}
 	return vec;
 }
-static std::vector<uint8_t> load_text2(std::string filename)
+std::vector<uint8_t> load_text2(std::string filename)
 {
 
 	std::ifstream stream;
@@ -218,17 +173,18 @@ static std::vector<uint8_t> load_text2(std::string filename)
 	stream.seekg(0, std::ios::beg);
 	len = n / sizeof(uint8_t);
 
-	vec.resize(len+1, 0);
+	vec.resize(len + 1, 0);
 	stream.read((char *)&(vec)[0], len * sizeof(char));
 
-	for(uint64_t i=0;i<len;i++){
-		if(vec[i] == 0){
+	for (uint64_t i = 0; i < len; i++)
+	{
+		if (vec[i] == 0)
+		{
 			throw std::logic_error("The input text must not contain '0' character!");
-		}		
+		}
 	}
 	return vec;
 }
-
 
 std::vector<int64_t> construct_sa(std::vector<char> &text)
 {

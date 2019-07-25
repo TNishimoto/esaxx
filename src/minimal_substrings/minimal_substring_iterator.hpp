@@ -225,7 +225,7 @@ class MinimalSubstringIterator
     else
     {
       bool b = false;
-      while (!this->_iterator.isEnd())
+      while (!this->_iterator.isEnded())
       {
         //this->print();
         SpecializedLCPInterval<CHAR, INDEX> sintv = *this->_iterator;
@@ -264,6 +264,7 @@ public:
   MinimalSubstringIterator &operator++()
   {
     bool b = this->succ();
+    ++counter_i;
     if (b)
     {
       this->_currenct_lcp_interval = this->outputQueue.front();
@@ -281,24 +282,39 @@ public:
     return this->_currenct_lcp_interval;
   }
 
-  bool end()
+  bool isEnded()
   {
     return this->_currenct_lcp_interval.is_special_marker();
+  }
+  INDEX get_st_counter()
+  {
+    return this->_iterator.get_current_i();
+  }
+  INDEX get_counter()
+  {
+    return this->counter_i;
   }
   static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstringsWithoutSpecialMarker(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
   {
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
-    while (!msi.end())
+
+    INDEX maxNodeCount = bwt.size() * 2;
+    while (!msi.isEnded())
     {
       stool::LCPInterval<INDEX> p = *msi;
+
+      if (msi.get_counter() % 100000 == 0)
+        std::cout << "\r"
+                  << "constructing Minimal Substrings : [" << msi.get_st_counter() << "/" << maxNodeCount << "]" << std::flush;
       if (!(p.i == 0 && p.i == p.j))
       {
         r.push_back(stool::LCPInterval<INDEX>(p.i - 1, p.j - 1, p.lcp));
       }
       ++msi;
     }
+    std::cout << "[END]" << std::endl;
     std::sort(
         r.begin(),
         r.end(),
@@ -355,5 +371,5 @@ public:
     return r;
   }
 };
-} // namespace exaxx
+} // namespace esaxx
 } // namespace stool

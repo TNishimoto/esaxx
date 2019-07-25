@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include "cmdline.h"
 #include "esa.hxx"
+#include "mycode.hpp"
 
 using namespace std;
 using INDEXTYPE = int64_t;
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  INDEXTYPE size = T.size();
+  //INDEXTYPE size = T.size();
 
   if (isPrint)
   {
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
   for (INDEXTYPE i = 0; i < nodeNum; ++i)
   {
     stool::LCPInterval<INDEXTYPE> interval(L[i], R[i], D[i]);
-    INDEXTYPE len = D[i];
+    //INDEXTYPE len = D[i];
     nodeCount++;
     buffer.push_back(interval);
     if (buffer.size() > 8192)

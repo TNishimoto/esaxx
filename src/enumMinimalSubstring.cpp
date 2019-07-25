@@ -17,11 +17,6 @@
 using namespace std;
 using INDEXTYPE = uint64_t;
 
-
-
-
-
-
 int main(int argc, char *argv[])
 {
   cmdline::parser p;
@@ -45,19 +40,23 @@ int main(int argc, char *argv[])
       outputFile = inputFile + ".msub";
     }
   }
-  if(outputMode != "text") outputMode = "binary";
+  if (outputMode != "text")
+    outputMode = "binary";
 
   vector<uint8_t> T = stool::load_text2(inputFile); // input text
 
+  auto start = std::chrono::system_clock::now();
   stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t> mstree;
   stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t>::construct(T, mstree.nodes, mstree.parents);
-  
+  auto end = std::chrono::system_clock::now();
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
   if (outputMode == "text")
   {
     T.pop_back();
     vector<uint64_t> sa = stool::constructSA<>(T);
     string otext = "";
-    
+
     for (uint64_t i = 0; i < mstree.nodes.size(); i++)
     {
       otext.append(stool::esaxx::toLogLine<>(T, sa, mstree.nodes[i]));
@@ -65,9 +64,8 @@ int main(int argc, char *argv[])
         otext.append("\r\n");
     }
     //IO::write(outputFile, otext);
-		std::ofstream out(outputFile, ios::out | ios::binary);
-		out.write((const char *)(&otext[0]), sizeof(char) * otext.size());
-    
+    std::ofstream out(outputFile, ios::out | ios::binary);
+    out.write((const char *)(&otext[0]), sizeof(char) * otext.size());
   }
   else
   {
@@ -79,8 +77,10 @@ int main(int argc, char *argv[])
   std::cout << "Output: " << outputFile << std::endl;
   std::cout << "Output format: " << outputMode << std::endl;
   std::cout << "The length of the input text: " << T.size() << std::endl;
-  //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
   std::cout << "The number of minimum substrings: " << mstree.nodes.size() << std::endl;
+  std::cout << "Excecution time : " << elapsed << "ms";
+    double charperms = (double)T.size() / elapsed;
+    std::cout << "[" << charperms << "chars/ms]" << std::endl;
   std::cout << "_________________________________" << std::endl;
   std::cout << "\033[39m" << std::endl;
 }

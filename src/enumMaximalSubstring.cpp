@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   }
 
   vector<char> T = stool::load_text(inputFile); // input text
-  INDEXTYPE n = T.size();
+  //INDEXTYPE n = T.size();
   vector<INDEXTYPE> SA; // suffix array
 
   stool::PostorderMaximalSubstrings<INDEXTYPE> iterator = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T,SA);

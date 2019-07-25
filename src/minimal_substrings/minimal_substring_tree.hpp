@@ -62,43 +62,17 @@ public:
 
   static void construct(std::vector<CHAR> &text, std::vector<LCPInterval<INDEX>> &outputIntervals, std::vector<INDEX> &outputParents)
   {
-    /*
-    for (uint64_t i = 0; i < text.size(); i++)
-    {
-      if (text[i] == 0)
-      {
-        std::cout << "the input text contains zero." << std::endl;
-        throw - 1;
-      }
-    }
-    text.push_back(0);
-    */
-
-    //std::vector<INDEX> parents;
-
+    std::cout << "Constructing Suffix Array" << std::endl;
     std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(text);
+    std::cout << "Constructing LCP Array" << std::endl;
     std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+    std::cout << "Constructing BWT" << std::endl;
     std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
-    /*
-    stool::constructSA(text, sa, isa);
-    if (sa[0] != text.size() - 1)
-    {
-      std::cout << "the input text contains negative values." << std::endl;
-      throw - 1;
-    }
-    constructLCP(text, lcp, sa, isa);
-    isa.resize(0);
-    isa.shrink_to_fit();
-    */
-    /*
-    std::cout << "Constructing FM-Index..." << std::endl;
-    FMIndex fmi(text, sa);
-    std::cout << "Computing minimal substrings..." << std::flush;
-    OnlineMSInterval::construct(sa, lcp, fmi, outputIntervals);
-    */
+
+    std::cout << "Constructing Minimal Substrings" << std::endl;
     std::vector<stool::LCPInterval<INDEX>> msVec = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
     outputIntervals.swap(msVec);
-
+    std::cout << "Constructing Minimal Substring Tree" << std::endl;
     std::vector<INDEX> tmp = MinimalSubstringTree::constructMSIntervalParents(outputIntervals);
     outputParents.swap(tmp);
     //text.pop_back();
@@ -107,21 +81,6 @@ public:
   {
     MinimalSubstringTree::construct(text, this->nodes, this->parents);
   }
-  /*
-  void load(string filepath)
-  {
-    string filepath2 = filepath + ".parents";
-    IO::load<LCPInterval>(filepath, nodes);
-    IO::load<uint64_t>(filepath2, parents);
-  }
-  void write(string filepath)
-  {
-    string filepath2 = filepath + ".parents";
-
-    IO::write(filepath, nodes);
-    IO::write(filepath2, parents);
-  }
-  */
   void write(std::string filepath, std::vector<CHAR> &text)
   {
 
@@ -162,7 +121,7 @@ public:
     std::ifstream inputStream;
     inputStream.open(filepath, std::ios::binary);
 
-    std::hash<std::string> hash_fn;
+    //std::hash<std::string> hash_fn;
     //INDEX hash = hash_fn(text);
     INDEX hash = 0;
 

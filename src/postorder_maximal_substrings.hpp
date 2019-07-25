@@ -6,6 +6,8 @@
 #include "cmdline.h"
 #include "esa.hxx"
 #include <exception>
+#include "mycode.hpp"
+
 
 namespace stool
 {
@@ -23,7 +25,7 @@ class PostorderMSIterator
     }
     PostorderMSIterator &operator++()
     {
-        if (index + 1 < this->L.size())
+        if (index + 1 < (INDEXTYPE)this->L.size())
         {
             this->index++;
         }
@@ -111,7 +113,7 @@ public:
                 y++;
             }
         }
-        y;
+        //y;
         L.resize(y+1);        
         R.resize(y+1);
         D.resize(y+1);
