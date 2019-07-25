@@ -30,16 +30,19 @@ include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 #LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 #INCLUDE_DIRECTORIES(./include)
 
-add_executable(enumSubstring.out src/sa.cpp src/enumSubstring.cpp)
+#set(SOURCES "src/sa.cpp src/mycode.cpp")
+FILE(GLOB SOURCES src/sa.cpp src/mycode.cpp)
+
+add_executable(enumSubstring.out ${SOURCES} src/enumSubstring.cpp)
 target_link_libraries(enumSubstring.out divsufsort divsufsort64)
 
-add_executable(enumMaximalSubstring.out src/sa.cpp src/enumMaximalSubstring.cpp)
+add_executable(enumMaximalSubstring.out ${SOURCES} src/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out divsufsort divsufsort64)
 
-add_executable(enumKaiMaximalSubstring.out src/sa.cpp src/enumKaiMaximalSubstring.cpp)
+add_executable(enumKaiMaximalSubstring.out ${SOURCES} src/enumKaiMaximalSubstring.cpp)
 target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
 
-add_executable(enumMinimalSubstring.out src/sa.cpp src/enumMinimalSubstring.cpp )
+add_executable(enumMinimalSubstring.out ${SOURCES} src/enumMinimalSubstring.cpp )
 target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
 
 
