@@ -176,6 +176,11 @@ public:
       //IO::load<uint64_t>(filepath2, this->parents);
     }
   }
+  void print(){
+    for(uint64_t i=0;this->nodes.size();i++){
+      std::cout << i << ": " << this->nodes[i].to_string() << ", parent: " << this->parents[i].to_string() << std::endl;
+    }
+  }
 };
 } // namespace exaxx
 } // namespace stool
