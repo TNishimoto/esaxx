@@ -26,15 +26,19 @@ public:
     LCPInterval<INDEX> interval;
     // The parent index of this node.
     INDEX parent;
+    INDEX charRankOrID;
     // If this node is a leaf, the bwtChar is the character of the bwt on this leaf.
     CHAR bwtChar;
-    INDEX charRankOrID;
     SpecializedLCPInterval()
     {
     }
-    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, CHAR _c, INDEX _charRank) : interval(_interval), parent(_parent), bwtChar(_c), charRankOrID(_charRank)
+    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, CHAR _c, INDEX _charRank) : interval(_interval), parent(_parent), charRankOrID(_charRank), bwtChar(_c)
     {
     }
+    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, INDEX _id) : interval(_interval), parent(_parent), charRankOrID(_id), bwtChar(0)
+    {
+    }
+
     static SpecializedLCPInterval<CHAR, INDEX> create_end_marker()
     {
         return SpecializedLCPInterval<CHAR, INDEX>(LCPInterval<INDEX>::create_end_marker(), std::numeric_limits<INDEX>::max(), 0, 0);
@@ -50,12 +54,12 @@ public:
         return this->interval.is_special_marker() && this->parent == std::numeric_limits<INDEX>::max() && this->bwtChar == 0;
     }
 };
-template <typename CHAR, typename INDEX>
+template <typename INDEX>
 struct SSTChildIntervalInfo
 {
     LCPInterval<INDEX> interval;
     INDEX id;
-    CHAR charRank;
+    INDEX charRank;
     SSTChildIntervalInfo()
     {
     }
@@ -72,7 +76,7 @@ class PostorderSSTIterator
     //INDEX counter_i = 0;
     INDEX current_i = 0;
     std::unordered_map<CHAR, INDEX> charRankMap;
-    std::stack<SSTChildIntervalInfo<CHAR, INDEX>> childStack;
+    std::stack<SSTChildIntervalInfo<INDEX>> childStack;
     std::queue<SpecializedLCPInterval<CHAR, INDEX>> outputQueue;
     SpecializedLCPInterval<CHAR, INDEX> _currenct_lcp_interval;
 
@@ -87,7 +91,7 @@ class PostorderSSTIterator
 
         while (childStack.size() > 0)
         {
-            SSTChildIntervalInfo<CHAR, INDEX> top = childStack.top();
+            SSTChildIntervalInfo<INDEX> top = childStack.top();
             LCPInterval<INDEX> &childInterval = top.interval;
             if (x.i <= childInterval.i && childInterval.j <= x.j)
             {
@@ -97,7 +101,7 @@ class PostorderSSTIterator
                 }
                 else
                 {
-                    outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(childInterval, id, 0, top.id));
+                    outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(childInterval, id, top.id));
                 }
                 childStack.pop();
             }
@@ -116,11 +120,11 @@ class PostorderSSTIterator
             {
                 this->charRankMap[_bwt[x.i]]++;
             }
-            childStack.push(SSTChildIntervalInfo<CHAR, INDEX>(x, id, this->charRankMap[_bwt[x.i]]));
+            childStack.push(SSTChildIntervalInfo<INDEX>(x, id, this->charRankMap[_bwt[x.i]]));
         }
         else
         {
-            childStack.push(SSTChildIntervalInfo<CHAR, INDEX>(x, id, 0));
+            childStack.push(SSTChildIntervalInfo<INDEX>(x, id, 0));
         }
 
         ++_iterator;
@@ -135,7 +139,7 @@ class PostorderSSTIterator
         }
         if (_iterator.isEnded() && childStack.size() == 1)
         {
-            SSTChildIntervalInfo<CHAR, INDEX> top = childStack.top();
+            SSTChildIntervalInfo<INDEX> top = childStack.top();
             outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(top.interval, std::numeric_limits<INDEX>::max(), 0, top.id));
             childStack.pop();
         }

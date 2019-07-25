@@ -65,10 +65,26 @@ public:
   {
     std::cout << "Constructing Suffix Array" << std::endl;
     std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(text);
+
     std::cout << "Constructing LCP Array" << std::endl;
     std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
     std::cout << "Constructing BWT" << std::endl;
     std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
+
+    /*
+    for (uint64_t i = 0; i < sa.size(); i++)
+    {
+      std::cout << (bwt[i] == 0 ? '$' : (char)bwt[i]) << ", ";
+      std::cout << "i: " << i << ", sa[i]: " << sa[i] << ", ";
+      uint64_t x = sa[i];
+      while (x < text.size())
+      {
+        std::cout << (text[x] == 0 ? '$' : (char)text[x]);
+        x++;
+      }
+      std::cout << std::endl;
+    }
+    */
 
     std::cout << "Constructing Minimal Substrings" << std::endl;
     //std::vector<stool::LCPInterval<INDEX>> msVec = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstringsWithoutSpecialMarker(bwt, sa, lcpArray);
@@ -177,11 +193,13 @@ public:
       //IO::load<uint64_t>(filepath2, this->parents);
     }
   }
-  void print(){
-    for(uint64_t i=0;this->nodes.size();i++){
+  void print()
+  {
+    for (uint64_t i = 0; this->nodes.size(); i++)
+    {
       std::cout << i << ": " << this->nodes[i].to_string() << ", parent: " << this->parents[i].to_string() << std::endl;
     }
   }
 };
-} // namespace exaxx
+} // namespace esaxx
 } // namespace stool

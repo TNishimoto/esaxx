@@ -134,15 +134,24 @@ public:
         INDEX lvrOcc = ms.count;
         INDEX vrOcc = ms.vrOcc;
 #ifdef DEBUG_PRINT
+        std::cout << std::string(1, c) << ">>" << interval.to_string() << std::endl;
         std::cout << "check: lvOcc: " << lvOcc << "/"
                   << "lvrOcc: " << ms.count << ", vrOcc:" << vrOcc << std::endl;
         std::cout << std::string(1, c) << ", rank = " << ms.rank << "@" << first_occcurrence_map_on_F[c] << std::endl;
 #endif
         if (lvOcc != lvrOcc && lvrOcc != vrOcc)
         {
-
           INDEX i = first_occcurrence_map_on_F[c] + ms.rank;
           output.push(LCPInterval<INDEX>(i, i + ms.count - 1, lcp));
+
+          if(c == 0){
+            std::cout << LCPInterval<INDEX>(i, i + ms.count - 1, lcp).to_string() << std::endl;
+            
+            std::cout << (char)c << std::endl;
+
+            assert(false);
+          }
+
 
 #ifdef DEBUG_PRINT
           std::cout << "output!";

@@ -13,7 +13,9 @@ else(CPP_STATIC)
 set(CMAKE_CXX_FLAGS "-std=c++14 -m64 -Wall -Wextra")
 endif(CPP_STATIC)
 
+#set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG -DDEBUG_PRINT")
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
+
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
 #### Modules
