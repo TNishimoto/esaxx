@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "cmdline.h"
+#include "stool/src/cmdline.h"
 #include "esa.hxx"
-#include "io.hpp"
-#include "sa_bwt_lcp.hpp"
+#include "stool/src/io.hpp"
+#include "stool/src/sa_bwt_lcp.hpp"
 
 
 using namespace std;

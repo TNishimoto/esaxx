@@ -5,11 +5,11 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "cmdline.h"
+#include "stool/src/cmdline.h"
 #include "divsufsort.h"
 #include "divsufsort64.h"
-#include "io.hpp"
-#include "sa_bwt_lcp.hpp"
+#include "stool/src/io.hpp"
+#include "stool/src/sa_bwt_lcp.hpp"
 
 #include "minimal_substrings/minimal_substring_tree.hpp"
 #include "minimal_substrings/naive_minimal_substrings.hpp"

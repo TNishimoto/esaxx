@@ -31,8 +31,10 @@ include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 #INCLUDE_DIRECTORIES(./include)
 
 #set(SOURCES "src/sa.cpp src/mycode.cpp")
+
+# STOOL submodule
 FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp)
-INCLUDE_DIRECTORIES(module/stool/src)
+INCLUDE_DIRECTORIES(module)
 
 
 add_executable(enumSubstring.out ${STOOL_SOURCES} src/enumSubstring.cpp)

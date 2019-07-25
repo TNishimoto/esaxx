@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "io.hpp"
-#include "sa_bwt_lcp.hpp"
+#include "stool/src/io.hpp"
+#include "stool/src/sa_bwt_lcp.hpp"
 
 #include <stack>
 

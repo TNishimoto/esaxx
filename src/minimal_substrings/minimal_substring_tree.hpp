@@ -4,8 +4,8 @@
 #include <memory>
 
 //#include "fmindex.hpp"
-#include "io.hpp"
-#include "sa_bwt_lcp.hpp"
+#include "stool/src/io.hpp"
+#include "stool/src/sa_bwt_lcp.hpp"
 
 #include "minimal_substring_iterator.hpp"
 
