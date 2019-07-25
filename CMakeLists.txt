@@ -39,13 +39,13 @@ target_link_libraries(enumMaximalSubstring.out divsufsort divsufsort64)
 add_executable(enumKaiMaximalSubstring.out src/enumKaiMaximalSubstring.cpp)
 target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
 
-add_executable(enumMinimalSubstring.out src/enumMinimalSubstring.cpp)
+add_executable(enumMinimalSubstring.out src/sa.cpp src/enumMinimalSubstring.cpp )
 target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
 
 
 
-add_executable(print.out src/print.cpp)
-target_link_libraries(print.out divsufsort divsufsort64)
+#add_executable(print.out src/print.cpp)
+#target_link_libraries(print.out divsufsort divsufsort64)
 
 
 
