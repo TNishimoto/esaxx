@@ -8,7 +8,7 @@
 namespace stool
 {
 
-template <typename CHAR = char,typename INDEX = uint64_t>
+template <typename CHAR = uint8_t,typename INDEX = uint64_t>
 std::vector<INDEX> constructSA(std::vector<CHAR> &text)
 {
     std::vector<INDEX> sa;
@@ -27,6 +27,8 @@ std::vector<INDEX> constructSA(std::vector<CHAR> &text)
     //free(SA);
     return sa;
 }
+//template std::vector<uint64_t> constructSA<uint8_t,uint64_t>(std::vector<uint8_t>&);
+
 template <typename CHAR = char,typename INDEX = uint64_t>
 std::vector<INDEX> constructISA(std::vector<CHAR> &text, std::vector<INDEX> &sa)
 {

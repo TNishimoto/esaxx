@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -48,6 +49,31 @@ public:
         }
     }
 	*/
+	bool operator<(const LCPInterval &right) const
+	{
+		if (this->i == right.i)
+		{
+			if (this->j == right.j)
+			{
+				return this->lcp < right.lcp;
+			}
+			else
+			{
+				return this->j < right.j;
+			}
+		}
+		else
+		{
+			return this->i < right.i;
+		}
+	}
+	bool operator==(const LCPInterval &rhs) const
+	{
+		const LCPInterval &lhs = *this;
+		bool b = lhs.i == rhs.i && lhs.j == rhs.j && lhs.lcp == rhs.lcp;
+		//if(!b) std::cout << "b" << std::endl;
+		return b;
+	}
 	std::string to_string()
 	{
 		return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + std::to_string(lcp) + "]";
@@ -95,8 +121,18 @@ public:
 		}
 		return intervalText;
 	}
+	bool containsPosition(std::vector<uint64_t> &sa, uint64_t pos) const
+	{
+		for (uint64_t x = this->i; x <= this->j; x++)
+		{
+			if (sa[x] <= pos && pos <= sa[x] + this->lcp - 1)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 };
-
 
 template <typename T>
 std::vector<T> load(std::string filename)
@@ -186,6 +222,7 @@ std::vector<uint8_t> load_text2(std::string filename)
 	return vec;
 }
 
+
 std::vector<int64_t> construct_sa(std::vector<char> &text)
 {
 	std::vector<int64_t> SA;
@@ -198,3 +235,5 @@ std::vector<int64_t> construct_sa(std::vector<char> &text)
 }
 
 } // namespace stool
+
+
