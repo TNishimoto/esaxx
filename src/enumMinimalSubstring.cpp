@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   if (outputMode != "text")
     outputMode = "binary";
 
-  vector<uint8_t> T = stool::load_text2(inputFile); // input text
+  vector<uint8_t> T = stool::load_text_from_file(inputFile); // input text
 
   auto start = std::chrono::system_clock::now();
   stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t> mstree;

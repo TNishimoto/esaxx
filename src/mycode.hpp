@@ -190,7 +190,7 @@ std::vector<char> load_text(std::string filename)
 	}
 	return vec;
 }
-std::vector<uint8_t> load_text2(std::string filename)
+std::vector<uint8_t> load_text_from_file(std::string filename)
 {
 
 	std::ifstream stream;
