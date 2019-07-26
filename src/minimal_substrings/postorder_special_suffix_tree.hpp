@@ -199,7 +199,7 @@ public:
     {
         if (_SA[0] != _SA.size() - 1)
         {
-            throw std::logic_error("error!");
+            throw std::logic_error("The first value of SA must be the last position of the text.");
         }
         PostorderSTIterator<INDEX, VEC> st(&_SA, &_LCPArray, true);
         return PostorderSSTIterator<CHAR, INDEX, VEC>(__bwt, st, true);

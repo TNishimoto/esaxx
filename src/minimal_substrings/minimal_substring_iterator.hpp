@@ -73,7 +73,7 @@ std::unordered_map<CHAR, INDEX> constructCMap(std::vector<CHAR> &text)
   if (chars[0] != 0)
   {
     assert(false);
-    throw std::logic_error("error!");
+    throw std::logic_error("The first character of the bwt string must be '0'");
   }
   INDEX counter = 0;
   for (INDEX i = 0; i < chars.size(); i++)
