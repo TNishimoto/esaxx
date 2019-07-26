@@ -12,6 +12,30 @@ namespace stool
 {
 namespace esaxx
 {
+
+template <typename INDEX = uint64_t>
+struct LCPIntervalComp
+{
+  bool operator()(LCPInterval<INDEX> &x, LCPInterval<INDEX> &y)
+  {
+    if (x.i == y.i)
+    {
+      if (x.j == y.j)
+      {
+        return x.lcp < y.lcp;
+      }
+      else
+      {
+        return x.j > y.j;
+      }
+    }
+    else
+    {
+      return x.i < y.i;
+    }
+  }
+};
+
 template <typename INDEX = uint64_t>
 struct VRInfo
 {
@@ -144,14 +168,14 @@ public:
           INDEX i = first_occcurrence_map_on_F[c] + ms.rank;
           output.push(LCPInterval<INDEX>(i, i + ms.count - 1, lcp));
 
-          if(c == 0){
+          if (c == 0)
+          {
             std::cout << LCPInterval<INDEX>(i, i + ms.count - 1, lcp).to_string() << std::endl;
-            
+
             std::cout << (char)c << std::endl;
 
             assert(false);
           }
-
 
 #ifdef DEBUG_PRINT
           std::cout << "output!";
@@ -303,6 +327,7 @@ public:
   {
     return this->counter_i;
   }
+  /* 
   static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstringsWithoutSpecialMarker(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
   {
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
@@ -327,25 +352,10 @@ public:
     std::sort(
         r.begin(),
         r.end(),
-        [](const LCPInterval<INDEX> &x, const LCPInterval<INDEX> &y) {
-          if (x.i == y.i)
-          {
-            if (x.j == y.j)
-            {
-              return x.lcp < y.lcp;
-            }
-            else
-            {
-              return x.j > y.j;
-            }
-          }
-          else
-          {
-            return x.i < y.i;
-          }
-        });
+        LCPIntervalComp<INDEX>());
     return r;
   }
+  */
   static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
   {
     assert(bwt.size() == sa.size());
@@ -353,21 +363,28 @@ public:
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
+    INDEX maxNodeCount = bwt.size() * 2;
     while (!msi.isEnded())
     {
       stool::LCPInterval<INDEX> p = *msi;
       r.push_back(stool::LCPInterval<INDEX>(p.i, p.j, p.lcp));
 
+
+      if (msi.get_counter() % 100000 == 0)
+        std::cout << "\r"
+                  << "constructing Minimal Substrings : [" << msi.get_st_counter() << "/" << maxNodeCount << "]" << std::flush;
+
 #ifdef DEBUG
-        for (uint64_t x = p.i; x <= p.j; x++)
+      for (uint64_t x = p.i; x <= p.j; x++)
+      {
+        INDEX occ = sa[x];
+        if (occ + p.lcp - 1 >= bwt.size())
         {
-          INDEX occ = sa[x];
-          if(occ + p.lcp - 1 >= bwt.size()){
-            std::cout << occ << std::endl;
-            std::cout << p.to_string() << std::endl;
-          }
-          assert(occ + p.lcp - 1 < bwt.size());
+          std::cout << occ << std::endl;
+          std::cout << p.to_string() << std::endl;
         }
+        assert(occ + p.lcp - 1 < bwt.size());
+      }
 #endif
 
       ++msi;
@@ -375,23 +392,7 @@ public:
     std::sort(
         r.begin(),
         r.end(),
-        [](const LCPInterval<INDEX> &x, const LCPInterval<INDEX> &y) {
-          if (x.i == y.i)
-          {
-            if (x.j == y.j)
-            {
-              return x.lcp < y.lcp;
-            }
-            else
-            {
-              return x.j > y.j;
-            }
-          }
-          else
-          {
-            return x.i < y.i;
-          }
-        });
+        LCPIntervalComp<INDEX>());
 
     return r;
   }
