@@ -63,6 +63,7 @@ public:
 
   static void construct(std::vector<CHAR> &text, std::vector<LCPInterval<INDEX>> &outputIntervals, std::vector<INDEX> &outputParents)
   {
+    assert(text[text.size()-1] == 0);
     std::cout << "Constructing Suffix Array" << std::endl;
     std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(text);
 
