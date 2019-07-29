@@ -220,6 +220,7 @@ std::string toLogLine(std::vector<CHAR> &text, std::vector<INDEX> &sa, stool::LC
   log.append("] ");
   //log.append(std::to_string(interval.lcp));
 
+  if(interval.lcp == 0) return log;
   log.append("occ: ");
 
   std::vector<uint64_t> occs;

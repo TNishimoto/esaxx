@@ -245,6 +245,11 @@ class MinimalSubstringIterator
       bool b = item_info.take(first_occcurrence_map_on_F, this->outputQueue);
       parent_info.add(item_info);
       this->map.erase(id);
+
+      if(interval_info.interval.lcp == 0){
+        this->outputQueue.push(interval_info.interval);
+      }
+
       return b;
     }
   }
@@ -264,6 +269,8 @@ class MinimalSubstringIterator
         SpecializedLCPInterval<CHAR, INDEX> sintv = *this->_iterator;
 
 #ifdef DEBUG_PRINT
+        std::cout << sintv.to_string() << std::endl;
+
         std::cout << "read: "
                   << "id: " << this->_iterator.get_current_i() << sintv.to_string() << std::endl;
 #endif
@@ -377,6 +384,7 @@ public:
 #ifdef DEBUG
       for (uint64_t x = p.i; x <= p.j; x++)
       {
+        if(p.lcp != 0){
         INDEX occ = sa[x];
         if (occ + p.lcp - 1 >= bwt.size())
         {
@@ -384,6 +392,7 @@ public:
           std::cout << p.to_string() << std::endl;
         }
         assert(occ + p.lcp - 1 < bwt.size());
+        }
       }
 #endif
 
