@@ -32,7 +32,7 @@ include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 #LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 #INCLUDE_DIRECTORIES(./include)
 
-#set(SOURCES "src/sa.cpp src/mycode.cpp")
+#set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
 FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp)
