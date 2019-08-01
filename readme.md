@@ -133,8 +133,9 @@ options:
 
 $ ./enumMaximalSubstring.out -i sample.txt -o sample.min -p 1
 >Minimal substrings in the file  
+>
 >|id      |occurrence      |range(SA)       |string length   |string |
->|:-------|:---------------|:---------------|:---------------|:------|
+>|:-------|:---------------|:---------------|:---------------|-------|
 >|0       |36              |0..35           |0               |  |
 >|1       |1               |0..0            |1               |$(special end character)  |
 >|2       |9               |1..9            |1               | A  |
