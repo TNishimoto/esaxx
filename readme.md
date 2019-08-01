@@ -132,7 +132,7 @@ options:
   -?, --help           print this message  
 
 $ ./enumMaximalSubstring.out -i sample.txt -o sample.min -p 1
->Minimal substrings in the file
+>Minimal substrings in the file  
 >|id      |occurrence      |range(SA)       |string length   |string |
 >|:-------|:---------------|:---------------|:---------------|-------|
 >|0       |36              |0..35           |0               |  |
