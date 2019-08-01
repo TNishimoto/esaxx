@@ -9,7 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
-#include "esa.hxx"
+#include "../esa.hxx"
 #include "stool/src/io.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     {
       if (nodeCount < 1000)
       {
-        interval.print(i, T, SA);
+       std::cout << interval.getCSVLine(i, T, SA) << std::endl;
       }
       else if (nodeCount == 1000)
       {

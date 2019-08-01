@@ -201,46 +201,6 @@ std::vector<std::string> naive_compute_minimal_substrings(std::vector<char> &T)
   std::sort(output.begin(), output.end());
   return output;
 }
-template <typename CHAR = char, typename INDEX = uint64_t>
-std::string toLogLine(std::vector<CHAR> &text, std::vector<INDEX> &sa, stool::LCPInterval<INDEX> &interval)
-{
-  std::cout << interval.to_string() << std::endl;
-  std::string T(text.begin(), text.end());
-  std::string log = "";
-  
-  std::string mstr = T.substr(sa[interval.i], interval.lcp);
-  log.append("\"");
-  log.append(mstr);
-  log.append("\" ");
 
-  log.append("SA[");
-  log.append(std::to_string(interval.i));
-  log.append(", ");
-  log.append(std::to_string(interval.j));
-  log.append("] ");
-  //log.append(std::to_string(interval.lcp));
-
-  if(interval.lcp == 0) return log;
-  log.append("occ: ");
-
-  std::vector<uint64_t> occs;
-  for (uint64_t x = interval.i; x <= interval.j; x++)
-  {
-    uint64_t pos = sa[x];
-    occs.push_back(pos);
-  }
-  std::sort(occs.begin(), occs.end());
-
-  for (uint64_t i = 0; i < occs.size(); i++)
-  {
-    uint64_t pos = occs[i];
-    uint64_t endPos = occs[i] + interval.lcp - 1;
-    std::string occ = "[" + std::to_string(pos) + ".." + std::to_string(endPos) + "]";
-    log.append(occ);
-  }
-  
-
-  return log;
-}
 } // namespace exaxx
 } // namespace stool

@@ -11,8 +11,8 @@
 #include "stool/src/io.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
 
-#include "minimal_substrings/minimal_substring_tree.hpp"
-#include "minimal_substrings/naive_minimal_substrings.hpp"
+#include "../minimal_substrings/minimal_substring_tree.hpp"
+#include "../minimal_substrings/naive_minimal_substrings.hpp"
 
 using namespace std;
 using namespace stool;

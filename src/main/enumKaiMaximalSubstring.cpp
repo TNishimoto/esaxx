@@ -9,8 +9,8 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
-#include "esa.hxx"
-#include "postorder_maximal_substrings.hpp"
+#include "../esa.hxx"
+#include "../postorder_maximal_substrings.hpp"
 
 using namespace std;
 using INDEXTYPE = int64_t;
