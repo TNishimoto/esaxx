@@ -52,9 +52,8 @@ add_executable(enumMinimalSubstring.out ${STOOL_SOURCES} src/main/enumMinimalSub
 target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
 
 
-
-#add_executable(print.out src/print.cpp)
-#target_link_libraries(print.out divsufsort divsufsort64)
+add_executable(print.out ${STOOL_SOURCES} src/main/print.cpp)
+target_link_libraries(print.out divsufsort divsufsort64)
 
 
 

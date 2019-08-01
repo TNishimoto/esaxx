@@ -10,14 +10,15 @@
 #include "divsufsort64.h"
 #include "stool/src/io.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
+#include "common.hpp"
 
-#include "../minimal_substrings/minimal_substring_tree.hpp"
 #include "../minimal_substrings/naive_minimal_substrings.hpp"
 
 using namespace std;
 using namespace stool;
 
 using INDEXTYPE = int64_t;
+using CHAR = char;
 
 int main(int argc, char *argv[])
 {
@@ -25,40 +26,22 @@ int main(int argc, char *argv[])
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
     p.add<string>("lcp_interval_file", 'l', "LCP interval file name", true);
-    p.add<string>("tree_file", 't', "file type", false, "NULL");
+    //p.add<string>("tree_file", 't', "file type", false, "NULL");
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
     string intervalFile = p.get<string>("lcp_interval_file");
-    string type = p.get<string>("tree_file");
+    //string type = p.get<string>("tree_file");
 
-    if (type != "NULL")
-    {
-        
-        vector<uint8_t> T = stool::load_text2(inputFile); // input text
-        stool::esaxx::MinimalSubstringTree<uint8_t, uint64_t> mstree;
-        mstree.load(type, T);
-        std::cout << "load!" << std::endl;
-        T.pop_back();
-        vector<uint64_t> sa = stool::constructSA<>(T);
-        string otext = "";
+std::vector<char> T = stool::load_text(inputFile); // input text
+std::vector<LCPInterval<uint64_t>> intervals;
+        stool::load_vector<LCPInterval<uint64_t>>(intervalFile,intervals);
 
-        for (uint64_t i = 0; i < mstree.nodes.size(); i++)
-        {
-            otext.append(stool::esaxx::toLogLine<>(T, sa, mstree.nodes[i]));
-            if (i + 1 != mstree.nodes.size())
-                otext.append("\r\n");
-        }
-        return 0;
-    }
-    else
-    {
-        vector<char> T = stool::load_text(inputFile); // input text
-
-        vector<LCPInterval<INDEXTYPE>> intervals = stool::load<LCPInterval<INDEXTYPE>>(intervalFile);
-        vector<int64_t> SA = stool::construct_sa(T);
+  std::vector<uint64_t> sa = stool::constructSA<CHAR, uint64_t>(T);
+        stool::esaxx::print<char, uint64_t>(intervals, T, sa);
+        /*
         std::cout << "id"
-                  << "\t\t"
+                  << "\t"
                   << "occurrence"
                   << "\t"
                   << "range(SA)"
@@ -70,7 +53,7 @@ int main(int argc, char *argv[])
         {
             intervals[i].print(i, T, SA);
         }
+        */
 
         return 0;
-    }
 }
