@@ -136,7 +136,7 @@ public:
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
-    std::cout << "Constructing Minimal Substrings..." << std::flush;
+    std::cout << "Conputing minimal substrings" << std::flush;
     stool::Counter counter;
     while (!msi.isEnded())
     {
