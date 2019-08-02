@@ -1,6 +1,6 @@
 #pragma once
 #include "minimal_substring_candidates.hpp"
-
+#include "stool/src/print.hpp"
 namespace stool
 {
 namespace esaxx
@@ -136,16 +136,14 @@ public:
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
-    INDEX maxNodeCount = bwt.size() * 2;
+    std::cout << "Constructing Minimal Substrings..." << std::flush;
+    stool::Counter counter;
     while (!msi.isEnded())
     {
       stool::LCPInterval<INDEX> p = *msi;
       r.push_back(stool::LCPInterval<INDEX>(p.i, p.j, p.lcp));
 
-
-      if (msi.get_counter() % 100000 == 0)
-        std::cout << "\r"
-                  << "constructing Minimal Substrings : [" << msi.get_st_counter() << "/" << maxNodeCount << "]" << std::flush;
+      counter.increment();
 
 #ifdef DEBUG
       for (uint64_t x = p.i; x <= p.j; x++)
@@ -164,6 +162,7 @@ public:
 
       ++msi;
     }
+    std::cout << "[END]"<< std::endl;
     std::sort(
         r.begin(),
         r.end(),
@@ -175,12 +174,12 @@ public:
   {
     std::vector<INDEX> outputParents;
     std::stack<INDEX> stack;
+        std::cout << "Constructing minimal substring tree..." << std::flush;
+    stool::Counter counter;
     outputParents.resize(intervals.size(), std::numeric_limits<INDEX>::max());
     for (INDEX i = 0; i < intervals.size(); i++)
     {
-      if (i % 100000 == 0)
-        std::cout << "\r"
-                  << "Computing minimal substrings... :[4/4][" << i << "/" << intervals.size() << "]" << std::flush;
+      counter.increment();
       LCPInterval<INDEX> &interval = intervals[i];
 
       while (stack.size() > 0)
