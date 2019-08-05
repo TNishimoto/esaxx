@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   vector<CHAR> T = stool::load_text_from_file(inputFile, true); // input text
   std::cout << "Constructing Suffix Array" << std::endl;
   std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(T);
-  std::cout << "Constructing LCP Array" << std::endl;
+  //std::cout << "Constructing LCP Array" << std::endl;
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
   std::cout << "Constructing BWT" << std::endl;
   std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(T, sa);
