@@ -163,6 +163,9 @@ public:
       ++msi;
     }
     std::cout << "[END]"<< std::endl;
+
+
+
     std::sort(
         r.begin(),
         r.end(),
@@ -170,6 +173,16 @@ public:
 
     return r;
   }
+  static void getKMinimalSubstrings(std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength){
+      std::vector<LCPInterval<INDEX>> r;
+      for(uint64_t i=0;i<intervals.size();i++){
+        if(intervals[i].lcp <= limitLength){
+        r.push_back(intervals[i]);
+        }
+      }
+      intervals.swap(r);
+  }
+
   static std::vector<INDEX> constructMSIntervalParents(std::vector<LCPInterval<INDEX>> &intervals)
   {
     std::vector<INDEX> outputParents;
