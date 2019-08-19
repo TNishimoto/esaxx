@@ -87,7 +87,7 @@ class MinimalSubstringIterator
 
 public:
   MinimalSubstringIterator() = default;
-  MinimalSubstringIterator(std::vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
+  MinimalSubstringIterator(const std::vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
@@ -129,7 +129,7 @@ public:
   {
     return this->counter_i;
   }
-  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
+  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const std::vector<CHAR> &bwt,const  VEC &sa,const  VEC &lcpArray)
   {
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
@@ -173,7 +173,7 @@ public:
 
     return r;
   }
-  static void getKMinimalSubstrings(std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength){
+  static void getKMinimalSubstrings(const std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength){
       std::vector<LCPInterval<INDEX>> r;
       for(uint64_t i=0;i<intervals.size();i++){
         if(intervals[i].lcp <= limitLength){
@@ -183,7 +183,7 @@ public:
       intervals.swap(r);
   }
 
-  static std::vector<INDEX> constructMSIntervalParents(std::vector<LCPInterval<INDEX>> &intervals)
+  static std::vector<INDEX> constructMSIntervalParents(const std::vector<LCPInterval<INDEX>> &intervals)
   {
     std::vector<INDEX> outputParents;
     std::stack<INDEX> stack;
