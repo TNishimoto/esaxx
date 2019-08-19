@@ -173,7 +173,7 @@ public:
 
     return r;
   }
-  static void getKMinimalSubstrings(const std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength){
+  static void getKMinimalSubstrings(std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength){
       std::vector<LCPInterval<INDEX>> r;
       for(uint64_t i=0;i<intervals.size();i++){
         if(intervals[i].lcp <= limitLength){
@@ -187,17 +187,17 @@ public:
   {
     std::vector<INDEX> outputParents;
     std::stack<INDEX> stack;
-        std::cout << "Constructing minimal substring tree..." << std::flush;
+        std::cout << "Constructing minimal substring tree" << std::flush;
     stool::Counter counter;
     outputParents.resize(intervals.size(), std::numeric_limits<INDEX>::max());
     for (INDEX i = 0; i < intervals.size(); i++)
     {
       counter.increment();
-      LCPInterval<INDEX> &interval = intervals[i];
+      const LCPInterval<INDEX> &interval = intervals[i];
 
       while (stack.size() > 0)
       {
-        LCPInterval<INDEX> &parentInterval = intervals[stack.top()];
+        const LCPInterval<INDEX> &parentInterval = intervals[stack.top()];
 
         if (parentInterval.i <= interval.i && interval.j <= parentInterval.j)
         {
