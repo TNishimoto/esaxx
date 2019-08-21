@@ -76,7 +76,7 @@ public:
 };
 
 template <typename CHAR = uint8_t, typename INDEX = uint64_t>
-std::unordered_map<CHAR, INDEX> constructCMap(std::vector<CHAR> &text)
+std::unordered_map<CHAR, INDEX> constructCMap(const std::vector<CHAR> &text)
 {
   std::unordered_map<CHAR, INDEX> C;
   std::vector<CHAR> chars;

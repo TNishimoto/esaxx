@@ -87,7 +87,7 @@ class MinimalSubstringIterator
 
 public:
   MinimalSubstringIterator() = default;
-  MinimalSubstringIterator(std::vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
+  MinimalSubstringIterator(const std::vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
@@ -129,21 +129,21 @@ public:
   {
     return this->counter_i;
   }
-  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(std::vector<CHAR> &bwt, VEC &sa, VEC &lcpArray)
+  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const std::vector<CHAR> &bwt,const  VEC &sa,const  VEC &lcpArray)
   {
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
-    std::cout << "Constructing Minimal Substrings..." << std::flush;
+    if(bwt.size() > 100000)std::cout << "Conputing minimal substrings" << std::flush;
     stool::Counter counter;
     while (!msi.isEnded())
     {
       stool::LCPInterval<INDEX> p = *msi;
       r.push_back(stool::LCPInterval<INDEX>(p.i, p.j, p.lcp));
 
-      counter.increment();
+      if(bwt.size() > 100000)counter.increment();
 
 #ifdef DEBUG
       for (uint64_t x = p.i; x <= p.j; x++)
@@ -162,7 +162,10 @@ public:
 
       ++msi;
     }
-    std::cout << "[END]"<< std::endl;
+    if(bwt.size() > 100000)std::cout << "[END]"<< std::endl;
+
+
+
     std::sort(
         r.begin(),
         r.end(),
@@ -170,21 +173,31 @@ public:
 
     return r;
   }
-  static std::vector<INDEX> constructMSIntervalParents(std::vector<LCPInterval<INDEX>> &intervals)
+  static void getKMinimalSubstrings(std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength){
+      std::vector<LCPInterval<INDEX>> r;
+      for(uint64_t i=0;i<intervals.size();i++){
+        if(intervals[i].lcp <= limitLength){
+        r.push_back(intervals[i]);
+        }
+      }
+      intervals.swap(r);
+  }
+
+  static std::vector<INDEX> constructMSIntervalParents(const std::vector<LCPInterval<INDEX>> &intervals)
   {
     std::vector<INDEX> outputParents;
     std::stack<INDEX> stack;
-        std::cout << "Constructing minimal substring tree..." << std::flush;
+        std::cout << "Constructing minimal substring tree" << std::flush;
     stool::Counter counter;
     outputParents.resize(intervals.size(), std::numeric_limits<INDEX>::max());
     for (INDEX i = 0; i < intervals.size(); i++)
     {
       counter.increment();
-      LCPInterval<INDEX> &interval = intervals[i];
+      const LCPInterval<INDEX> &interval = intervals[i];
 
       while (stack.size() > 0)
       {
-        LCPInterval<INDEX> &parentInterval = intervals[stack.top()];
+        const LCPInterval<INDEX> &parentInterval = intervals[stack.top()];
 
         if (parentInterval.i <= interval.i && interval.j <= parentInterval.j)
         {

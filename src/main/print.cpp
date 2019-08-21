@@ -33,13 +33,13 @@ int main(int argc, char *argv[])
     string intervalFile = p.get<string>("lcp_interval_file");
     //string type = p.get<string>("tree_file");
 
-std::vector<char> T = stool::load_text(inputFile); // input text
-std::vector<LCPInterval<uint64_t>> intervals;
-        stool::load_vector<LCPInterval<uint64_t>>(intervalFile,intervals);
+    std::vector<char> T = stool::load_text(inputFile); // input text
+    std::vector<LCPInterval<uint64_t>> intervals;
+    stool::load_vector<LCPInterval<uint64_t>>(intervalFile, intervals, true);
 
-  std::vector<uint64_t> sa = stool::constructSA<CHAR, uint64_t>(T);
-        stool::esaxx::print<char, uint64_t>(intervals, T, sa);
-        /*
+    std::vector<uint64_t> sa = stool::constructSA<CHAR, uint64_t>(T);
+    stool::esaxx::print<char, uint64_t>(intervals, T, sa);
+    /*
         std::cout << "id"
                   << "\t"
                   << "occurrence"
@@ -55,5 +55,5 @@ std::vector<LCPInterval<uint64_t>> intervals;
         }
         */
 
-        return 0;
+    return 0;
 }

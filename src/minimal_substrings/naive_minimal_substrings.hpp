@@ -15,60 +15,8 @@ namespace stool
 {
 namespace esaxx
 {
-/*
-    template <typename INDEX = uint64_t>
-    std::std::vector<std::string> naive_compute_minimal_substrings(std::vector<char> &T)
-  {
-    string text(T.begin(), T.end());
-    std::unordered_map<std::string, INDEX> map;
-    for (INDEX i = 0; i < text.size(); i++)
-    {
-      std::cout << "[" << i << "/" << text.size() << "]\r" << std::flush;
-      for (INDEX j = i; j < text.size(); j++)
-      {
-        std::string sub = text.substr(i, 1 + j - i);
-        auto it = map.find(sub);
-        if (it != map.end())
-        {
-          map[sub]++;
-        }
-        else
-        {
-          map[sub] = 1;
-        }
-      }
-    }
-    std::cout << std::endl;
-    std::vector<std::string> r;
-    INDEX counter = 0;
-    for (auto p : map)
-    {
-      std::cout << "[" << counter++ << "/" << map.size() << "]\r" << std::flush;
-
-      std::string sub = p.first;
-      if (sub.size() > 1)
-      {
-        std::string pref = sub.substr(0, sub.size() - 1);
-        std::string suf = sub.substr(1);
-        bool b1 = map[pref] != p.second;
-        bool b2 = map[suf] != p.second;
-        if (b1 && b2)
-        {
-          r.push_back(sub);
-        }
-      }
-      else if (sub.size() == 0)
-      {
-        r.push_back(sub);
-      }
-    }
-    std::cout << std::endl;
-    std::sort(r.begin(), r.end());
-    return r;
-  }
-  */
 template <typename INDEX = uint64_t>
-void naive_compute_minimal_substrings(std::string &text, std::unordered_map<INDEX, INDEX> &previousPositionSet, INDEX strlen, std::vector<std::string> &output)
+void naive_compute_minimal_substrings(std::string &text, std::unordered_map<INDEX, INDEX> &previousPositionSet, INDEX strlen, std::vector<std::pair<INDEX, INDEX>> &output)
 {
   if (strlen == 1)
   {
@@ -84,7 +32,9 @@ void naive_compute_minimal_substrings(std::string &text, std::unordered_map<INDE
       else
       {
         countMap[c] = 1;
-        output.push_back(std::string(1, c));
+        output.push_back(std::pair<INDEX,INDEX>(i, 1) );
+
+        //output.push_back(std::string(1, c));
       }
     }
     for (INDEX i = 0; i < text.size(); i++)
@@ -162,7 +112,7 @@ void naive_compute_minimal_substrings(std::string &text, std::unordered_map<INDE
           countMap[uniquePos] = std::pair<INDEX, uint8_t>(count, 1);
           std::string minimalSubstr = text.substr(pos, strlen);
 
-          output.push_back(minimalSubstr);
+          output.push_back(std::pair<INDEX,INDEX>(pos, strlen) );
         }
         else
         {
@@ -178,16 +128,78 @@ void naive_compute_minimal_substrings(std::string &text, std::unordered_map<INDE
   }
 }
 
+template <typename CHAR = char>
+bool computeSubstr(const std::vector<CHAR> &T, const std::vector<CHAR> &pattern, uint64_t suf_pos, bool isBeg, bool isComp)
+{
+  uint64_t suf_len = T.size() - suf_pos;
+  uint64_t min = pattern.size() < suf_len ? pattern.size() : suf_len;
+  for (size_t i = 0; i < min; i++)
+  {
+    if (pattern[i] != T[suf_pos + i])
+    {
+      return isComp ? pattern[i] < T[suf_pos + i] : pattern[i] > T[suf_pos + i];
+    }
+  }
+  uint64_t sufLastChar = suf_len > min ? 2 : 1; 
+  uint64_t patternLastChar = pattern.size() > min ? 2 : isBeg ? 0 : 3; 
+
+  return isComp ? patternLastChar < sufLastChar : patternLastChar > sufLastChar;
+}
+
+template <typename CHAR = char, typename INDEX = uint64_t>
+stool::LCPInterval<INDEX> computeLCPInterval(const std::vector<CHAR> &T, const std::vector<CHAR> &pattern, const std::vector<INDEX> &sa)
+{
+  uint64_t p = T.size();
+  auto beg = std::upper_bound(
+      sa.begin(),
+      sa.end(),
+      p,
+      [&](const INDEX &x, const INDEX &y) {
+        if (x == T.size())
+        {
+          bool b = computeSubstr(T, pattern, y, true, true);
+          return b;
+        }
+        else
+        {
+          bool b = computeSubstr(T, pattern, x, true, false);
+          return b;
+        }
+      });
+
+  auto end = std::upper_bound(
+      sa.begin(),
+      sa.end(),
+      p,
+      [&](const INDEX &x, const INDEX &y) {
+        if (x == T.size())
+        {
+          bool b = computeSubstr(T, pattern, y, false, true);
+          return b;
+        }
+        else
+        {
+          bool b = computeSubstr(T, pattern, y, false, false);
+          return b;
+        }
+      });
+
+  std::size_t begi = std::distance(sa.begin(), beg);
+  std::size_t endi = std::distance(sa.begin(), end) - 1;
+
+  return stool::LCPInterval<INDEX>(begi, endi, pattern.size());
+}
+
 template <typename INDEX = uint64_t>
-std::vector<std::string> naive_compute_minimal_substrings(std::vector<char> &T)
+std::vector<stool::LCPInterval<INDEX>> naive_compute_minimal_substrings(std::vector<char> &T, const std::vector<INDEX> &sa)
 {
   std::string text(T.begin(), T.end());
   std::unordered_map<INDEX, INDEX> positionCountSet;
-  std::vector<std::string> output;
+  std::vector<std::pair<INDEX, INDEX>> output;
   stool::esaxx::naive_compute_minimal_substrings<INDEX>(text, positionCountSet, 1, output);
   for (INDEX len = 2; len <= text.size(); len++)
   {
-    std::cout << "[" << len << "/" << positionCountSet.size() << "]\r" << std::flush;
+    //std::cout << "[" << len << "/" << positionCountSet.size() << "]\r" << std::flush;
     if (positionCountSet.size() == 0)
     {
       break;
@@ -197,10 +209,46 @@ std::vector<std::string> naive_compute_minimal_substrings(std::vector<char> &T)
       stool::esaxx::naive_compute_minimal_substrings<INDEX>(text, positionCountSet, len, output);
     }
   }
-  std::cout << std::endl;
-  std::sort(output.begin(), output.end());
-  return output;
+
+  std::vector<stool::LCPInterval<INDEX>> r;
+  r.push_back(stool::LCPInterval<INDEX>(0, text.size()-1,0 ));
+  for(auto &it : output){
+    std::vector<char> pattern;
+    uint64_t pos = it.first;
+    uint64_t len = it.second;
+    for(uint64_t x=0;x<len;x++){
+      pattern.push_back(T[pos+x]);
+    }
+    stool::LCPInterval<INDEX> intv = computeLCPInterval(T, pattern, sa);
+    r.push_back(intv);
+  }
+
+    std::sort(
+        r.begin(),
+        r.end(),
+        [](const stool::LCPInterval<INDEX> &x, const stool::LCPInterval<INDEX> &y) {
+        if (x.i == y.i)
+    {
+      if (x.j == y.j)
+      {
+        return x.lcp < y.lcp;
+      }
+      else
+      {
+        return x.j > y.j;
+      }
+    }
+    else
+    {
+      return x.i < y.i;
+    }
+      }
+        );
+
+  //std::cout << std::endl;
+  //std::sort(output.begin(), output.end());
+  return r;
 }
 
-} // namespace exaxx
+} // namespace esaxx
 } // namespace stool

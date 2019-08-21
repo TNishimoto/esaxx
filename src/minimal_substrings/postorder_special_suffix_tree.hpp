@@ -72,7 +72,7 @@ template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename VEC = std
 class PostorderSSTIterator
 {
     PostorderSTIterator<INDEX, VEC> _iterator;
-    std::vector<CHAR> &_bwt;
+    const std::vector<CHAR> &_bwt;
     //INDEX counter_i = 0;
     INDEX current_i = 0;
     std::unordered_map<CHAR, INDEX> charRankMap;
@@ -162,7 +162,7 @@ class PostorderSSTIterator
 public:
     PostorderSSTIterator() = default;
 
-    PostorderSSTIterator(std::vector<CHAR> &__bwt, PostorderSTIterator<> &__iterator, bool isBegin) : _iterator(__iterator), _bwt(__bwt)
+    PostorderSSTIterator(const std::vector<CHAR> &__bwt, PostorderSTIterator<> &__iterator, bool isBegin) : _iterator(__iterator), _bwt(__bwt)
     {
         if (isBegin)
         {
@@ -195,7 +195,7 @@ public:
         return this->current_i;
     }
 
-    static PostorderSSTIterator<CHAR, INDEX, VEC> constructIterator(std::vector<CHAR> &__bwt, VEC &_SA, VEC &_LCPArray)
+    static PostorderSSTIterator<CHAR, INDEX, VEC> constructIterator(const std::vector<CHAR> &__bwt,const  VEC &_SA,const  VEC &_LCPArray)
     {
         if (_SA[0] != _SA.size() - 1)
         {
