@@ -14,8 +14,9 @@ template <typename T>
 void lcp_interval_test(vector<T> &text){
     //stool::Printer::print("text", text);
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<T, INDEX>(text);
+    std::vector<INDEX> sa = stool::construct_naive_SA<T, INDEX>(text);
 
-    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<T, INDEX>(text);
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<T, INDEX>(text,sa);
     
     /*
     for(auto& p : correct_intervals){
@@ -104,43 +105,42 @@ int main(int argc, char *argv[]){
 
     std::cout << std::endl;
     
-    /*
+    
     for(size_t i=0;i<loop;i++){
         if(i %100 == 0) std::cout << "+" << std::flush;
         std::vector<uint8_t> text = stool::create_deterministic_integers<uint8_t>(size, 255, 0, i);
-        suffix_array_test(text);
+        lcp_interval_test(text);
     }
     std::cout << std::endl;
-
+    
     for(size_t i=0;i<loop;i++){
         if(i %100 == 0) std::cout << "+" << std::flush;
         std::vector<int32_t> text = stool::create_deterministic_integers<int32_t>(size, 255, -255, i);
-        suffix_array_test(text);
+        lcp_interval_test(text);
     }
     std::cout << std::endl;
 
     for(size_t i=0;i<loop;i++){
         if(i %100 == 0) std::cout << "+" << std::flush;
         std::vector<uint32_t> text = stool::create_deterministic_integers<uint32_t>(size, 510, 0, i);
-        suffix_array_test(text);
+        lcp_interval_test(text);
     }
     std::cout << std::endl;
 
     for(size_t i=0;i<loop;i++){
         if(i %100 == 0) std::cout << "+" << std::flush;
         std::vector<int64_t> text = stool::create_deterministic_integers<int64_t>(size, 1024, -1024, i);
-        suffix_array_test(text);
+        lcp_interval_test(text);
     }
     std::cout << std::endl;
 
     for(size_t i=0;i<loop;i++){
         if(i %100 == 0) std::cout << "+" << std::flush;
         std::vector<uint64_t> text = stool::create_deterministic_integers<uint64_t>(size, 2048, 0, i);
-        suffix_array_test(text);
+        lcp_interval_test(text);
     }
     std::cout << std::endl;
 
-    */
    std::cout << "END" << std::endl;
 
 }
