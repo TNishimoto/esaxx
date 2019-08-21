@@ -115,7 +115,7 @@ class PostorderSTIterator
           break;
         }
       }
-      std::cout << "[" << fst.i << "] " << fst.i_lcp << "/" << fst.lcp << std::endl; 
+      //std::cout << "[" << fst.i << "] " << fst.i_lcp << "/" << fst.lcp << std::endl; 
       //if(fst.i_lcp != fst.lcp)this->outputQueue.push(fst);
       if(counter_i + 1 == n){
         if(fst.i_lcp != fst.lcp){
@@ -140,6 +140,7 @@ class PostorderSTIterator
 
       incompleteStack.pop();
       INDEX newLCP = second.i_lcp;
+      if(newLCP == 0) continue;
       INDEX newj = second.j;
       INDEX newi = second.i;
       INDEX newi_lcp = second.i_lcp;
@@ -159,8 +160,16 @@ class PostorderSTIterator
       this->outputQueue.push(newInterval);
       return true;
     }
+
+    if(this->counter_i == n){
+      
+      this->outputQueue.push(IncompleteLCPInterval<INDEX>(0, n-1, 0, 0));
+      ++counter_i;
+      return true;
+    }else{
+      return false;
+    }
     
-    return false;
   }
   bool succ()
   {
