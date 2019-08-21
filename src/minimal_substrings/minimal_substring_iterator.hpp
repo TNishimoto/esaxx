@@ -169,7 +169,7 @@ public:
     std::sort(
         r.begin(),
         r.end(),
-        LCPIntervalComp<INDEX>());
+        stool::LCPIntervalPreorderComp<INDEX>());
 
     return r;
   }

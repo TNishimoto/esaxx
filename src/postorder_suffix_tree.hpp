@@ -12,7 +12,8 @@
 
 namespace stool
 {
-  namespace esaxx{
+namespace esaxx
+{
 template <typename INDEX = uint64_t>
 class IncompleteLCPInterval
 {
@@ -35,7 +36,7 @@ public:
 template <typename INDEX = uint64_t, typename VEC = std::vector<uint64_t>>
 class PostorderSTIterator
 {
-  
+
   const VEC *SA;
   const VEC *LCPArray;
   INDEX counter_i = 0;
@@ -187,7 +188,8 @@ public:
     return this->_currenct_lcp_interval;
   }
 
-  INDEX get_current_i(){
+  INDEX get_current_i()
+  {
     return this->current_i;
   }
 
@@ -195,7 +197,8 @@ public:
   {
     return _currenct_lcp_interval.lcp != rhs._currenct_lcp_interval.lcp;
   }
-  bool isEnded(){
+  bool isEnded()
+  {
     return this->_currenct_lcp_interval.lcp == std::numeric_limits<INDEX>::max();
   }
 };
@@ -210,7 +213,7 @@ class PostorderSuffixTree
   bool deleteFlag = false;
 
 public:
-  PostorderSuffixTree(VEC &&__SA, VEC &&__LCPArray) : _SA(new VEC(std::move(__SA))), _LCPArray(new VEC(std::move(__LCPArray))),deleteFlag(true)
+  PostorderSuffixTree(VEC &&__SA, VEC &&__LCPArray) : _SA(new VEC(std::move(__SA))), _LCPArray(new VEC(std::move(__LCPArray))), deleteFlag(true)
   {
   }
   PostorderSuffixTree() : deleteFlag(false)
@@ -219,7 +222,8 @@ public:
 
   ~PostorderSuffixTree()
   {
-    if (deleteFlag){
+    if (deleteFlag)
+    {
       delete _SA;
       delete _LCPArray;
     }
@@ -227,8 +231,8 @@ public:
 
   PostorderSuffixTree(PostorderSuffixTree &&obj)
   {
-    this->_SA= obj._SA;
-    this->_LCPArray= obj._LCPArray;
+    this->_SA = obj._SA;
+    this->_LCPArray = obj._LCPArray;
 
     this->deleteFlag = obj.deleteFlag;
     obj.deleteFlag = false;
@@ -247,6 +251,13 @@ public:
     this->_LCPArray = new VEC(std::move(__LCPArray));
 
     deleteFlag = true;
+  }
+  void set(VEC &__SA, VEC &__LCPArray)
+  {
+    this->_SA = &__SA;
+    this->_LCPArray = &__LCPArray;
+
+    deleteFlag = false;
   }
 
   PostorderSTIterator<INDEX, VEC> begin() const
@@ -271,6 +282,24 @@ public:
     return r;
   }
 };
-  }
+
+template <typename CHAR = char, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text)
+{
+  std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(text);
+  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  stool::esaxx::PostorderSuffixTree<INDEX> st;
+  st.set(sa, lcpArray);
+  std::vector<stool::LCPInterval<INDEX>> intervals = st.to_lcp_intervals();
+
+  std::sort(
+      intervals.begin(),
+      intervals.end(),
+      stool::LCPIntervalPreorderComp<INDEX>());
+
+  return intervals;
+}
+
+} // namespace esaxx
 
 } // namespace stool

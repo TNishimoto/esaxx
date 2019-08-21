@@ -13,28 +13,7 @@ namespace stool
 namespace esaxx
 {
 
-template <typename INDEX = uint64_t>
-struct LCPIntervalComp
-{
-  bool operator()(LCPInterval<INDEX> &x, LCPInterval<INDEX> &y)
-  {
-    if (x.i == y.i)
-    {
-      if (x.j == y.j)
-      {
-        return x.lcp < y.lcp;
-      }
-      else
-      {
-        return x.j > y.j;
-      }
-    }
-    else
-    {
-      return x.i < y.i;
-    }
-  }
-};
+
 
 template <typename INDEX = uint64_t>
 struct VRInfo

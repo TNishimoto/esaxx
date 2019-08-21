@@ -9,6 +9,32 @@
 #include "../src/minimal_substrings/minimal_substring_iterator.hpp"
 
 using namespace std;
+using INDEX = uint64_t;
+template <typename T>
+void lcp_interval_test(vector<T> &text){
+    stool::Printer::print(text);
+    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<T, INDEX>(text);
+
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<T, INDEX>(text);
+    
+
+    for(auto& p : correct_intervals){
+        std::cout << p.to_string() << std::endl;
+    }
+    std::cout << std::endl;
+
+
+    for(auto& p : test_intervals){
+        std::cout << p.to_string() << std::endl;
+    }
+    std::cout << std::endl;
+
+
+    stool::equal_check(correct_intervals, test_intervals);
+
+
+}
+
 
 template <typename T>
 void minimal_substrings_test(vector<T> &text){
@@ -61,11 +87,12 @@ int main(int argc, char *argv[]){
     
     for(size_t i=0;i<loop;i++){
         if(i %100 == 0) std::cout << "+" << std::flush;
-        std::vector<char> text = stool::create_deterministic_integers<char>(size, 10, 1, i);
+        std::vector<char> text = stool::create_deterministic_integers<char>(10, 10, 0, i);
         text.push_back(0);
+        lcp_interval_test(text);
         
         
-        minimal_substrings_test(text);
+        //minimal_substrings_test(text);
         //suffix_array_test(text);
     }
     std::cout << std::endl;

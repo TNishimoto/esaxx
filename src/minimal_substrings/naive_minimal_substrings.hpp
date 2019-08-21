@@ -7,6 +7,7 @@
 #include <queue>
 #include <unordered_set>
 #include "stool/src/io.hpp"
+#include "stool/src/debug.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
 
 #include <stack>
@@ -226,29 +227,47 @@ std::vector<stool::LCPInterval<INDEX>> naive_compute_minimal_substrings(std::vec
     std::sort(
         r.begin(),
         r.end(),
-        [](const stool::LCPInterval<INDEX> &x, const stool::LCPInterval<INDEX> &y) {
-        if (x.i == y.i)
-    {
-      if (x.j == y.j)
-      {
-        return x.lcp < y.lcp;
-      }
-      else
-      {
-        return x.j > y.j;
-      }
-    }
-    else
-    {
-      return x.i < y.i;
-    }
-      }
+        stool::LCPIntervalPreorderComp<INDEX>()
         );
 
   //std::cout << std::endl;
   //std::sort(output.begin(), output.end());
   return r;
 }
+
+
+template <typename CHAR, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::vector<CHAR> &text){
+    std::vector<stool::LCPInterval<INDEX>> r;
+    std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
+    std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+    for(uint64_t i=0;i<sa.size();i++){
+      uint64_t limit_lcp = i == 0 ? 0 : lcpArray[i];
+      uint64_t current_lcp = sa.size() - sa[i];
+      for(uint64_t x=i+1;x <= sa.size();x++){
+        uint64_t lcp = x == sa.size() ? 0 : lcpArray[x];
+        std::cout << i << "/" << x << "/" << current_lcp << "/"<< lcp << "/" << limit_lcp<< std::endl;
+
+        if(current_lcp > lcp){
+          r.push_back(stool::LCPInterval<INDEX>(i, x-1, current_lcp));
+          current_lcp = lcp;
+        }
+
+        if(current_lcp <= limit_lcp){
+          break;
+        }
+      }
+    }
+    r.push_back(stool::LCPInterval<INDEX>(0, sa.size()-1, 0 ));
+        std::sort(
+        r.begin(),
+        r.end(),
+        stool::LCPIntervalPreorderComp<INDEX>()
+        );
+
+    return r;
+}
+
 
 } // namespace esaxx
 } // namespace stool
