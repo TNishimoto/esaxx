@@ -12,7 +12,7 @@ using namespace std;
 using INDEX = uint64_t;
 template <typename T>
 void lcp_interval_test(vector<T> &text){
-    stool::Printer::print(text);
+    stool::Printer::print("text", text);
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<T, INDEX>(text);
 
     vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<T, INDEX>(text);

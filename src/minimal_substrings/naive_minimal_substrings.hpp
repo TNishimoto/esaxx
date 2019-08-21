@@ -246,7 +246,7 @@ std::vector<stool::LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::ve
       uint64_t current_lcp = sa.size() - sa[i];
       for(uint64_t x=i+1;x <= sa.size();x++){
         uint64_t lcp = x == sa.size() ? 0 : lcpArray[x];
-        std::cout << i << "/" << x << "/" << current_lcp << "/"<< lcp << "/" << limit_lcp<< std::endl;
+        //std::cout << i << "/" << x << "/" << current_lcp << "/"<< lcp << "/" << limit_lcp<< std::endl;
 
         if(current_lcp > lcp){
           r.push_back(stool::LCPInterval<INDEX>(i, x-1, current_lcp));

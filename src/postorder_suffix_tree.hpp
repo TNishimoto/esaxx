@@ -22,6 +22,7 @@ public:
   INDEX j;
   INDEX lcp;
   INDEX i_lcp;
+  
 
   IncompleteLCPInterval();
   IncompleteLCPInterval(INDEX _i, INDEX _j, INDEX _lcp, INDEX _i_lcp) : i(_i), j(_j), lcp(_lcp), i_lcp(_i_lcp)
@@ -52,18 +53,38 @@ class PostorderSTIterator
   {
 
     INDEX n = SA->size();
-    //INDEX counter_i = _lcp_forward_iterator.get_sa_index();
 
     while (counter_i < n)
     {
-      //counter_i = _lcp_forward_iterator.get_sa_index();
       INDEX sa_value = (*SA)[counter_i];
       INDEX lcp_value = (*LCPArray)[counter_i];
+      bool b = false;
 
       IncompleteLCPInterval<INDEX> fst = IncompleteLCPInterval<INDEX>(counter_i, counter_i, n - sa_value, lcp_value);
+      if(incompleteStack.size() >= 1){
+        IncompleteLCPInterval<INDEX> prev= incompleteStack.top();
+        assert(prev.i == prev.j);
+        assert(prev.lcp >= fst.i_lcp);
+
+        if(prev.i_lcp != prev.lcp && prev.lcp > fst.i_lcp){
+          this->outputQueue.push(prev);
+        }
+      }
+      //Reporting ST interval ending at position counter_i-1.
+      /*
+      if(incompleteStack.size() > 0){
+        IncompleteLCPInterval<INDEX> second = incompleteStack.top();
+        if(second.i == second.j == second.i_lcp != second.lcp && second.lcp != fst.i_lcp){
+          this->outputQueue.push(second);
+          b = true;
+        }
+      }
+      */
       while (incompleteStack.size() > 1)
       {
         IncompleteLCPInterval<INDEX> second = incompleteStack.top();
+        assert(second.j + 1 == fst.i);
+        // If second.i_lcp > fst.i_lcp, then SA[?..second.j] is the ST interval with lcp = second.i_lcp.
         if (second.i_lcp > fst.i_lcp)
         {
           incompleteStack.pop();
@@ -84,28 +105,39 @@ class PostorderSTIterator
             }
           }
           IncompleteLCPInterval<INDEX> newInterval(newi, newj, newLCP, newi_lcp);
+          assert(newi != newj);
           this->outputQueue.push(newInterval);
           incompleteStack.push(newInterval);
+          b = true;
         }
         else
         {
           break;
         }
       }
-      this->outputQueue.push(fst);
+      std::cout << "[" << fst.i << "] " << fst.i_lcp << "/" << fst.lcp << std::endl; 
+      //if(fst.i_lcp != fst.lcp)this->outputQueue.push(fst);
+      if(counter_i + 1 == n){
+        if(fst.i_lcp != fst.lcp){
+          this->outputQueue.push(fst);
+        }
+      }
       incompleteStack.push(fst);
 
       //++_lcp_forward_iterator;
       ++counter_i;
 
       //counter_i++;
-
-      return true;
+      if(b){
+        return true;
+      }
+      //return true;
     }
 
     while (incompleteStack.size() > 1)
     {
       IncompleteLCPInterval<INDEX> second = incompleteStack.top();
+
       incompleteStack.pop();
       INDEX newLCP = second.i_lcp;
       INDEX newj = second.j;
@@ -127,6 +159,7 @@ class PostorderSTIterator
       this->outputQueue.push(newInterval);
       return true;
     }
+    
     return false;
   }
   bool succ()
