@@ -30,6 +30,7 @@ void lcp_interval_test(vector<T> &text){
     std::cout << std::endl;
     */
     
+    
 
     stool::equal_check(correct_intervals, test_intervals);
 
