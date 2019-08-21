@@ -136,14 +136,14 @@ public:
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
-    std::cout << "Conputing minimal substrings" << std::flush;
+    if(bwt.size() > 100000)std::cout << "Conputing minimal substrings" << std::flush;
     stool::Counter counter;
     while (!msi.isEnded())
     {
       stool::LCPInterval<INDEX> p = *msi;
       r.push_back(stool::LCPInterval<INDEX>(p.i, p.j, p.lcp));
 
-      counter.increment();
+      if(bwt.size() > 100000)counter.increment();
 
 #ifdef DEBUG
       for (uint64_t x = p.i; x <= p.j; x++)
@@ -162,7 +162,7 @@ public:
 
       ++msi;
     }
-    std::cout << "[END]"<< std::endl;
+    if(bwt.size() > 100000)std::cout << "[END]"<< std::endl;
 
 
 
