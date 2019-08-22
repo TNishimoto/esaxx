@@ -200,12 +200,12 @@ public:
   {
     std::vector<INDEX> outputParents;
     std::stack<INDEX> stack;
-        std::cout << "Constructing minimal substring tree" << std::flush;
+    if(intervals.size() > 100000)std::cout << "Constructing minimal substring tree" << std::flush;
     stool::Counter counter;
     outputParents.resize(intervals.size(), std::numeric_limits<INDEX>::max());
     for (INDEX i = 0; i < intervals.size(); i++)
     {
-      counter.increment();
+      if(intervals.size() > 100000)counter.increment();
       const LCPInterval<INDEX> &interval = intervals[i];
 
       while (stack.size() > 0)
@@ -227,7 +227,7 @@ public:
       }
       stack.push(i);
     }
-    std::cout << "[END]" << std::endl;
+    if(intervals.size() > 100000)std::cout << "[END]" << std::endl;
     return outputParents;
   }
 };
