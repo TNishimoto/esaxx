@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include "stool/src/io.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
+#include "libdivsufsort/sa.hpp"
 
 #include <stack>
 
@@ -305,7 +306,7 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vecto
 template <typename CHAR = char, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text)
 {
-  std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(text);
+  std::vector<INDEX> sa = stool::construct_suffix_array(text);
   return compute_preorder_lcp_intervals(text,sa);
 }
 

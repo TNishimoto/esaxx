@@ -10,6 +10,7 @@
 #include "divsufsort64.h"
 #include "stool/src/io.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
+#include "libdivsufsort/sa.hpp"
 #include "common.hpp"
 
 //#include "../minimal_substrings/naive_minimal_substrings.hpp"
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])
     std::vector<LCPInterval<uint64_t>> intervals;
     stool::load_vector<LCPInterval<uint64_t>>(intervalFile, intervals, true);
 
-    std::vector<uint64_t> sa = stool::constructSA<CHAR, uint64_t>(T);
+    std::vector<uint64_t> sa = stool::construct_suffix_array(T);
     stool::esaxx::print<char, uint64_t>(intervals, T, sa);
     /*
         std::cout << "id"

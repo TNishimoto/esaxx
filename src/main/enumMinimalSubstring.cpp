@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   auto start = std::chrono::system_clock::now();
   vector<CHAR> T = stool::load_text_from_file(inputFile, true); // input text
   std::cout << "Constructing Suffix Array" << std::endl;
-  std::vector<INDEX> sa = stool::constructSA<CHAR, INDEX>(T);
+  std::vector<INDEX> sa = stool::construct_suffix_array(T);
   //std::cout << "Constructing LCP Array" << std::endl;
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
   std::cout << "Constructing BWT" << std::endl;
