@@ -91,8 +91,10 @@ public:
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
-    if (!b)
-      throw std::logic_error("error");
+    if (!b){
+      std::cout << this->outputQueue.size() << std::endl;
+      throw std::logic_error("MinimalSubstringIterator Initialization error");
+    }
     this->_currenct_lcp_interval = this->outputQueue.front();
     this->outputQueue.pop();
   }
@@ -131,6 +133,7 @@ public:
   }
   static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const std::vector<CHAR> &bwt,const  VEC &sa,const  VEC &lcpArray)
   {
+    if(bwt.size() == 0) return std::vector<LCPInterval<INDEX>>();
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
     stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
@@ -218,5 +221,17 @@ public:
     return outputParents;
   }
 };
+
+template <typename CHAR = char, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::vector<CHAR> &text, std::vector<INDEX> &sa)
+{  
+  stool::Printer::print(text);
+  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
+
+  std::vector<LCPInterval<INDEX>> r = MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
+  return r;
+}
+
 } // namespace esaxx
 } // namespace stool
