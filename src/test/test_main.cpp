@@ -5,7 +5,7 @@
 #include "stool/src/cmdline.h"
 #include "stool/src/io.hpp"
 #include "stool/src/debug.hpp"
-#include "../src/minimal_substrings/naive_minimal_substrings.hpp"
+#include "naive_algorithms.hpp"
 #include "../src/minimal_substrings/minimal_substring_iterator.hpp"
 
 using namespace std;
@@ -38,7 +38,7 @@ template <typename CHAR>
 void minimal_substrings_test(vector<CHAR> &text)
 {    
     std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
-    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings2<CHAR, INDEX>(text, sa);
+    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings<CHAR, INDEX>(text, sa);
     vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa);
 
     try
@@ -153,18 +153,6 @@ void minimal_substrings_test(uint64_t loop, uint64_t size){
         minimal_substrings_test(text);
     }
     std::cout << std::endl;
-}
-
-void test()
-{
-    std::vector<char> text{'m', 'i', 's', 'i', 's', 's', 'i', 'p', 'p', 'i', '$'};
-    vector<uint64_t> sa = stool::construct_naive_SA<char, uint64_t>(text);
-    stool::Printer::print("SA", sa);
-    auto intvVec = stool::esaxx::naive_compute_minimal_substrings(text, sa);
-    for (auto &p : intvVec)
-    {
-        std::cout << p.to_string() << std::endl;
-    }
 }
 
 int main(int argc, char *argv[])

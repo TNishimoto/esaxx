@@ -53,8 +53,8 @@ target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
 add_executable(enumMinimalSubstring.out ${STOOL_SOURCES} src/main/enumMinimalSubstring.cpp )
 target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
 
-add_executable(random_test.out ${STOOL_SOURCES} src/main/random_test.cpp )
-target_link_libraries(random_test.out divsufsort divsufsort64)
+add_executable(test.out ${STOOL_SOURCES} src/test/test_main.cpp )
+target_link_libraries(test.out divsufsort divsufsort64)
 
 
 add_executable(print.out ${STOOL_SOURCES} src/main/print.cpp)
