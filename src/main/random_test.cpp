@@ -36,8 +36,7 @@ void lcp_interval_test(vector<T> &text)
 
 template <typename CHAR>
 void minimal_substrings_test(vector<CHAR> &text)
-{
-    
+{    
     std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings2<CHAR, INDEX>(text, sa);
     vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa);
@@ -69,6 +68,92 @@ void minimal_substrings_test(vector<CHAR> &text)
         throw e;
     }
 }
+void minimal_substrings_test(uint64_t loop, uint64_t size){
+    std::cout << "Minimal substrings tests" << std::endl;
+
+    std::cout << ":Short string" << std::endl;
+    for (size_t i = 0; i < 100; i++)
+    {
+        for (uint64_t alphabet = 1; alphabet < 64; alphabet *= 2)
+        {
+            if (i % 100 == 0)
+                std::cout << "+" << std::flush;
+            std::vector<char> text = stool::create_deterministic_integers<char>(i, alphabet, 0, i);
+            text.push_back(std::numeric_limits<char>::min());
+            minimal_substrings_test(text);
+        }
+    }
+    std::cout << std::endl;
+
+    
+    std::cout << ":Char string" << std::endl;
+    for (size_t i = 0; i < loop; i++)
+    {
+        if (i % 100 == 0)
+            std::cout << "+" << std::flush;
+        std::vector<char> text = stool::create_deterministic_integers<char>(size, 64, 0, i);
+        text.push_back(std::numeric_limits<char>::min());
+        minimal_substrings_test(text);
+    }
+    std::cout << std::endl;
+
+
+    std::cout << ":uint8_t string" << std::endl;
+    for (size_t i = 0; i < loop; i++)
+    {
+        if (i % 100 == 0)
+            std::cout << "+" << std::flush;
+        std::vector<uint8_t> text = stool::create_deterministic_integers<uint8_t>(size, 255, 1, i);
+        text.push_back(std::numeric_limits<uint8_t>::min());
+
+        minimal_substrings_test(text);
+    }
+    std::cout << std::endl;
+
+    std::cout << ":int32_t string" << std::endl;
+    for (size_t i = 0; i < loop; i++)
+    {
+        if (i % 100 == 0)
+            std::cout << "+" << std::flush;
+        std::vector<int32_t> text = stool::create_deterministic_integers<int32_t>(size, 255, -255, i);
+        text.push_back(std::numeric_limits<int32_t>::min());
+        minimal_substrings_test(text);
+    }
+    std::cout << std::endl;
+
+    std::cout << ":uint32_t string" << std::endl;
+    for (size_t i = 0; i < loop; i++)
+    {
+        if (i % 100 == 0)
+            std::cout << "+" << std::flush;
+        std::vector<uint32_t> text = stool::create_deterministic_integers<uint32_t>(size, 510, 1, i);
+        text.push_back(std::numeric_limits<uint32_t>::min());
+        minimal_substrings_test(text);
+    }
+    std::cout << std::endl;
+
+    std::cout << ":int64_t string" << std::endl;
+    for (size_t i = 0; i < loop; i++)
+    {
+        if (i % 100 == 0)
+            std::cout << "+" << std::flush;
+        std::vector<int64_t> text = stool::create_deterministic_integers<int64_t>(size, 1024, -1024, i);
+        text.push_back(std::numeric_limits<int64_t>::min());
+        minimal_substrings_test(text);
+    }
+    std::cout << std::endl;
+
+    std::cout << ":uint64_t string" << std::endl;
+    for (size_t i = 0; i < loop; i++)
+    {
+        if (i % 100 == 0)
+            std::cout << "+" << std::flush;
+        std::vector<uint64_t> text = stool::create_deterministic_integers<uint64_t>(size, 2048, 1, i);
+        text.push_back(std::numeric_limits<uint64_t>::min());
+        minimal_substrings_test(text);
+    }
+    std::cout << std::endl;
+}
 
 void test()
 {
@@ -91,6 +176,9 @@ int main(int argc, char *argv[])
     uint64_t size = p.get<uint64_t>("size");
     uint64_t loop = 10000;
 
+
+    std::cout << "Suffix tree intervals tests" << std::endl;
+    std::cout << ":Short string" << std::endl;
     for (size_t i = 0; i < 100; i++)
     {
         for (uint64_t alphabet = 1; alphabet < 64; alphabet *= 2)
@@ -99,21 +187,23 @@ int main(int argc, char *argv[])
                 std::cout << "+" << std::flush;
             std::vector<char> text = stool::create_deterministic_integers<char>(i, alphabet, 0, i);
             lcp_interval_test(text);
-            minimal_substrings_test(text);
         }
     }
+    std::cout << std::endl;
 
+    std::cout << ":char string" << std::endl;
     for (size_t i = 0; i < loop; i++)
     {
         if (i % 100 == 0)
             std::cout << "+" << std::flush;
         std::vector<char> text = stool::create_deterministic_integers<char>(size, 64, 0, i);
         lcp_interval_test(text);
-            minimal_substrings_test(text);
     }
 
     std::cout << std::endl;
 
+
+    std::cout << ":uint8_t string" << std::endl;
     for (size_t i = 0; i < loop; i++)
     {
         if (i % 100 == 0)
@@ -123,6 +213,7 @@ int main(int argc, char *argv[])
     }
     std::cout << std::endl;
 
+    std::cout << ":int32_t string" << std::endl;
     for (size_t i = 0; i < loop; i++)
     {
         if (i % 100 == 0)
@@ -132,6 +223,7 @@ int main(int argc, char *argv[])
     }
     std::cout << std::endl;
 
+    std::cout << ":uint32_t string" << std::endl;
     for (size_t i = 0; i < loop; i++)
     {
         if (i % 100 == 0)
@@ -141,6 +233,7 @@ int main(int argc, char *argv[])
     }
     std::cout << std::endl;
 
+    std::cout << ":int64_t string" << std::endl;
     for (size_t i = 0; i < loop; i++)
     {
         if (i % 100 == 0)
@@ -150,6 +243,7 @@ int main(int argc, char *argv[])
     }
     std::cout << std::endl;
 
+    std::cout << ":uint64_t string" << std::endl;
     for (size_t i = 0; i < loop; i++)
     {
         if (i % 100 == 0)
@@ -159,5 +253,6 @@ int main(int argc, char *argv[])
     }
     std::cout << std::endl;
 
+    minimal_substrings_test(loop, size);
     std::cout << "END" << std::endl;
 }

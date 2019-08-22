@@ -88,11 +88,12 @@ class PostorderSSTIterator
     {
         LCPInterval<INDEX> x = *_iterator;
         INDEX id = this->_iterator.get_current_i();
-
         while (childStack.size() > 0)
         {
+
             SSTChildIntervalInfo<INDEX> top = childStack.top();
             LCPInterval<INDEX> &childInterval = top.interval;
+
             if (x.i <= childInterval.i && childInterval.j <= x.j)
             {
                 if (childInterval.i == childInterval.j)

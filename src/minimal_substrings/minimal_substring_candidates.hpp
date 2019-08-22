@@ -13,8 +13,6 @@ namespace stool
 namespace esaxx
 {
 
-
-
 template <typename INDEX = uint64_t>
 struct VRInfo
 {
@@ -73,10 +71,11 @@ std::unordered_map<CHAR, INDEX> constructCMap(const std::vector<CHAR> &text)
     }
   }
   std::sort(chars.begin(), chars.end());
-  if (chars[0] != 0)
+  if (chars[0] != std::numeric_limits<CHAR>::min() )
   {
-    assert(false);
-    throw std::logic_error("The first character of the bwt string must be '0'");
+    //assert(false);
+    std::string msg = "The first character of the bwt string must be " + std::to_string(std::numeric_limits<CHAR>::min());
+    throw std::logic_error(msg);
   }
   INDEX counter = 0;
   for (INDEX i = 0; i < chars.size(); i++)
@@ -124,14 +123,12 @@ public:
   }
   bool take(std::unordered_map<CHAR, INDEX> &first_occcurrence_map_on_F, std::queue<LCPInterval<INDEX>> &output)
   {
-    INDEX lcp = interval.lcp + 2;
+    INDEX lvrLen = interval.lcp + 2;
     bool b = false;
     for (auto &it : this->map)
     {
       const CHAR &c = it.first;
       INDEX lvOcc = it.second.count;
-      //if (it.second.intervals.size() >= 2)
-      //{
       for (auto &ms : it.second.intervals)
       {
         INDEX lvrOcc = ms.count;
@@ -145,27 +142,21 @@ public:
         if (lvOcc != lvrOcc && lvrOcc != vrOcc)
         {
           INDEX i = first_occcurrence_map_on_F[c] + ms.rank;
-          output.push(LCPInterval<INDEX>(i, i + ms.count - 1, lcp));
-
-          if (c == 0)
+          output.push(LCPInterval<INDEX>(i, i + ms.count - 1, lvrLen));
+          if (c == std::numeric_limits<CHAR>::min())
           {
-            std::cout << LCPInterval<INDEX>(i, i + ms.count - 1, lcp).to_string() << std::endl;
-
+            std::cout << LCPInterval<INDEX>(i, i + ms.count - 1, lvrLen).to_string() << std::endl;
             std::cout << (char)c << std::endl;
-
             assert(false);
           }
-
 #ifdef DEBUG_PRINT
           std::cout << "output!";
-          auto outputInterval = LCPInterval<INDEX>(i, i + ms.count - 1, lcp);
+          auto outputInterval = LCPInterval<INDEX>(i, i + ms.count - 1, lvrLen);
           std::cout << interval.to_string() << "->" << outputInterval.to_string() << std::endl;
 #endif
-
           b = true;
         }
       }
-      //}
       if (interval.lcp == 0)
       {
         INDEX i = first_occcurrence_map_on_F[c];
@@ -189,5 +180,5 @@ public:
     std::cout << ">>>-------------------" << std::endl;
   }
 };
-}
-}
+} // namespace esaxx
+} // namespace stool

@@ -25,11 +25,12 @@ class MinimalSubstringIterator
     }
     IntervalInfoForMinimalSubstrings<CHAR, INDEX> &parent_info = this->map[interval_info.parent];
 
-    if (interval_info.interval.i == interval_info.interval.j)
+    bool b = false;
+
+    if (interval_info.interval.i == interval_info.interval.j && interval_info.interval.lcp != 0)
     {
       parent_info.addChar(interval_info.bwtChar, 1, interval_info.charRankOrID, 1);
       //std::cout << id << ": addChar, parent=" << interval_info.parent << "/" << interval_info.bwtChar << "/" << 1 << "/" << interval_info.charRank << std::endl;
-      return false;
     }
     else
     {
@@ -37,16 +38,17 @@ class MinimalSubstringIterator
       //std::cout << id << std::endl;
       IntervalInfoForMinimalSubstrings<CHAR, INDEX> &item_info = this->map[id];
       item_info.interval = interval_info.interval;
-      bool b = item_info.take(first_occcurrence_map_on_F, this->outputQueue);
+      b = item_info.take(first_occcurrence_map_on_F, this->outputQueue);
       parent_info.add(item_info);
       this->map.erase(id);
-
-      if(interval_info.interval.lcp == 0){
-        this->outputQueue.push(interval_info.interval);
-      }
-
-      return b;
     }
+
+    if(interval_info.interval.lcp == 0){
+      this->outputQueue.push(interval_info.interval);
+      b = true;
+    }
+    return b;
+
   }
 
   bool succ()
@@ -91,12 +93,20 @@ public:
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
+    
+    if(b){
+      this->_currenct_lcp_interval = this->outputQueue.front();
+      this->outputQueue.pop();
+    }else{
+      this->_currenct_lcp_interval = LCPInterval<INDEX>::create_end_marker();
+
+    }
+    /*
     if (!b){
       std::cout << this->outputQueue.size() << std::endl;
       throw std::logic_error("MinimalSubstringIterator Initialization error");
     }
-    this->_currenct_lcp_interval = this->outputQueue.front();
-    this->outputQueue.pop();
+    */
   }
   MinimalSubstringIterator &operator++()
   {
@@ -225,7 +235,7 @@ public:
 template <typename CHAR = char, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::vector<CHAR> &text, std::vector<INDEX> &sa)
 {  
-  stool::Printer::print(text);
+  //stool::Printer::print(text);
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
   std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
 
