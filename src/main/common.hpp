@@ -116,7 +116,7 @@ void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &int
 template <typename CHAR>
 void printText(std::vector<CHAR> &text){
     for(uint64_t i=0;i<text.size();i++){
-        std::cout << ( text[i] == 0 ? '$' : text[i]);        
+        std::cout << ( text[i] == 0 ? '$' : (char)text[i]);        
     }
     std::cout << std::endl;
 }
