@@ -113,5 +113,42 @@ void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &int
     out.write((const char *)(&otext[0]), sizeof(char) * otext.size());
 }
 
+template <typename CHAR, typename INDEX>
+void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<char> &text, std::vector<INDEX> &sa){
+    text[text.size()-1] = '$';
+    //text.push_back('$');
+    for(uint64_t i=0;i<text.size();i++){
+        std::cout << i % 10;        
+    }
+    std::cout << std::endl;
+    for(uint64_t i=0;i<text.size();i++){
+        std::cout << text[i];        
+    }
+    std::cout << std::endl;
+    for(uint64_t i=0;i<intervals.size();i++){
+        stool::LCPInterval<INDEX> &interval = intervals[i];
+        std::string s;
+        std::string ministr;        
+        s.resize(text.size(),' ');
+        ministr.resize(interval.lcp,' ');
+        for(uint64_t x=interval.i;x<=interval.j;x++){
+            uint64_t pos = sa[x];
+            for(uint64_t l=0;l<interval.lcp;l++){
+                s[pos + l] = text[pos + l];
+                ministr[l] = s[pos + l];
+            }
+        }
+        s += '(' + ministr + ')';
+
+        std::cout << "\033[36m";
+        std::cout << s;
+        std::cout << "\033[39m" << std::endl;
+    }
+
+    std::cout << std::endl;
+        text[text.size()-1] = 0;
+
+}
+
 } // namespace esaxx
 } // namespace stool
