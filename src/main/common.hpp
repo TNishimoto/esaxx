@@ -14,7 +14,7 @@ namespace esaxx
 {
 
 template <typename CHAR, typename INDEX>
-void print(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<char> &text, std::vector<INDEX> &sa){
+void print(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa){
 
     std::cout << "id"
               << "\t"
@@ -86,7 +86,7 @@ std::string toLogLine(uint64_t id, std::vector<CHAR> &text, std::vector<INDEX> &
 
 
 template <typename CHAR, typename INDEX>
-void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<char> &text, std::vector<INDEX> &sa){
+void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa){
     std::string otext = "";
 
 
@@ -114,7 +114,7 @@ void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &int
 }
 
 template <typename CHAR, typename INDEX>
-void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<char> &text, std::vector<INDEX> &sa){
+void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa){
     text[text.size()-1] = '$';
     //text.push_back('$');
     for(uint64_t i=0;i<text.size();i++){
