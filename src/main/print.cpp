@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     std::vector<uint64_t> sa = stool::construct_suffix_array(T);
     stool::esaxx::print<char, uint64_t>(intervals, T, sa);
     stool::esaxx::printText<char>(T);
-    stool::esaxx::printColor<char, uint64_t>(intervals, T, sa);
+    stool::esaxx::printColor<char, uint64_t>(intervals, T, sa, true);
 
     /*
         std::cout << "id"
