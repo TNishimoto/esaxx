@@ -128,9 +128,9 @@ void printText(std::vector<CHAR> &text)
 }
 
 template <typename CHAR, typename INDEX>
-uint64_t printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa, bool printFirstOccurrenceFlag = false)
+void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa, bool printFirstOccurrenceFlag = false)
 {
-    uint64_t wholeFstOcc = text.size();
+    //uint64_t wholeFstOcc = text.size();
     for (uint64_t i = 0; i < intervals.size(); i++)
     {
         stool::LCPInterval<INDEX> &interval = intervals[i];
@@ -167,9 +167,9 @@ uint64_t printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vect
         std::cout << "\033[36m";
         std::cout << s;
         std::cout << "\033[39m" << std::endl;
-        if(fstOcc < wholeFstOcc) wholeFstOcc = fstOcc;
+        //if(fstOcc < wholeFstOcc) wholeFstOcc = fstOcc;
     }
-    return wholeFstOcc;
+    //return wholeFstOcc;
 }
 
 } // namespace esaxx
