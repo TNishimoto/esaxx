@@ -133,9 +133,13 @@ void printText(std::vector<CHAR> &text)
 }
 
 template <typename CHAR, typename INDEX>
-void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa, bool printFirstOccurrenceFlag = false)
+void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa, bool printFirstOccurrenceFlag = false, int64_t printVerticalLinePosition = -1, std::string intervalName = "")
 {
     //uint64_t wholeFstOcc = text.size();
+    if(intervalName != ""){
+        for(uint64_t i=0;i<=text.size();i++) std::cout << " ";
+        std::cout << intervalName << std::endl;
+    }
     for (uint64_t i = 0; i < intervals.size(); i++)
     {
         stool::LCPInterval<INDEX> &interval = intervals[i];
@@ -166,6 +170,9 @@ void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<C
                 if (s[x] == ' ')
                     s[x] = '-';
             }
+        }
+        if(printVerticalLinePosition != -1 && printVerticalLinePosition < (int64_t)s.size() && s[printVerticalLinePosition] == ' '){
+                s[printVerticalLinePosition] = '|';
         }
         s += '(' + ministr + ')';
 
