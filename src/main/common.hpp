@@ -120,10 +120,13 @@ void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &int
 template <typename CHAR>
 void printText(std::vector<CHAR> &text)
 {
+    std::cout << "\033[42m";
     for (uint64_t i = 0; i < text.size(); i++)
     {
         std::cout << (text[i] == 0 ? '$' : (char)text[i]);
     }
+        std::cout << "\033[49m";
+    std::cout << " Text";
     std::cout << std::endl;
 }
 
