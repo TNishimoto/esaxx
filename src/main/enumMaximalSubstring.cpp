@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
   else
   {
 
-    stool::write_vector(outputFile, intervals);
+    stool::write_vector(outputFile, intervals, false);
   }
 
 

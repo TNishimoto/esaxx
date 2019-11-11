@@ -15,7 +15,6 @@ endif(CPP_STATIC)
 
 #set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG -DDEBUG_PRINT")
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
-
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
 #### Modules
@@ -33,6 +32,12 @@ else()
 LINK_DIRECTORIES(./lib)
 INCLUDE_DIRECTORIES(./include)
 endif()
+
+#SDSL lib and include directory are here
+#Please modify it appropriately.
+LINK_DIRECTORIES(~/lib)
+include_directories(~/include)
+
 
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
@@ -60,6 +65,8 @@ target_link_libraries(test.out divsufsort divsufsort64)
 add_executable(print.out ${STOOL_SOURCES} src/main/print.cpp)
 target_link_libraries(print.out divsufsort divsufsort64)
 
+add_executable(sdsl.out ${STOOL_SOURCES} src/main/sdsl_main.cpp)
+target_link_libraries(sdsl.out sdsl divsufsort divsufsort64)
 
 
 

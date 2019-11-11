@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    stool::write_vector(outputFile, minimalSubstrings);
+    stool::write_vector(outputFile, minimalSubstrings, false);
   }
   std::cout << "\033[36m";
   std::cout << "___________RESULT___________" << std::endl;
