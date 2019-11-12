@@ -13,6 +13,31 @@
 
 namespace stool
 {
+
+class DistinctCharacterCheckerOnInterval{
+    std::vector<uint64_t> vec;
+    public:
+    bool contains(uint64_t left, uint64_t right) const {
+        return vec[right]-vec[left] != 0;
+    }
+
+    template <typename CHAR, typename TEXT, typename SA>
+    void construct(TEXT &text, SA &sa){
+        vec.resize(text.size(), 0);
+        for(uint64_t i=1;i<text.size();i++){
+            uint64_t p = sa[i];
+            CHAR prev_c = p == 0 ? text[text.size()-1] : text[p-1];
+            CHAR c = text[p];
+            if(c != prev_c){
+                vec[i] = vec[i-1]+1;
+            }else{
+                vec[i] = vec[i-1];
+            }
+        }
+    }
+};
+
+
 template <typename INDEXTYPE>
 class PostorderMSIterator
 {
@@ -46,6 +71,64 @@ class PostorderMSIterator
         return index != rhs.index;
     }
 };
+
+template <typename INDEXTYPE, typename POSTORDER_ST_ITERATOR, typename DISTINCT_CHARACTER_CHECKER>
+class PostorderMaximalSubstringIterator
+{
+    POSTORDER_ST_ITERATOR &st;
+    const DISTINCT_CHARACTER_CHECKER &distinct_character_checker;
+    INDEXTYPE index;
+    stool::LCPInterval<INDEXTYPE> currentMSInterval;
+    public:
+    PostorderMaximalSubstringIterator() = default;
+    PostorderMaximalSubstringIterator(POSTORDER_ST_ITERATOR &_st, const DISTINCT_CHARACTER_CHECKER &_distinct_character_checker) : st(_st), distinct_character_checker(_distinct_character_checker)
+    {
+        if(st.isEnded()){
+            this->index = std::numeric_limits<INDEXTYPE>::max();
+        }else{
+            this->index = 0;
+            ++(*this);
+            /*
+            auto interval = *st;
+                if(distinct_character_checker.contains(interval.i, interval.j)){
+                    index = 0;
+                }else{
+                    ++this;
+                    //++st;
+                }
+            */
+        }
+    }
+    PostorderMaximalSubstringIterator &operator++()
+    {
+        ++st;
+        while(!st.isEnded()){
+                auto interval = *st;
+                if(distinct_character_checker.contains(interval.i, interval.j)){
+                    //this->currentMSInterval = it;
+                    index++;
+                    break;
+                }else{
+                    ++st;
+                }
+        }
+        if(st.isEnded()){
+            this->index = std::numeric_limits<INDEXTYPE>::max();
+        }
+        return *this;
+    }
+    stool::LCPInterval<INDEXTYPE> operator*() const
+    {
+        return *st;
+    }
+    bool operator!=(const PostorderMaximalSubstringIterator &rhs) const
+    {
+        return index != rhs.index;
+    }
+};
+
+
+
 template <typename INDEXTYPE>
 class PostorderMaximalSubstrings
 {
