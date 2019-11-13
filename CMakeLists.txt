@@ -8,9 +8,9 @@ cmake_minimum_required(VERSION 2.8)
 #endif(APPLE)
 
 if(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++14 -m64 -Wall -Wextra -static")
+set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -Wextra -static")
 else(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++14 -m64 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -Wextra")
 endif(CPP_STATIC)
 
 #set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG -DDEBUG_PRINT")
@@ -58,8 +58,9 @@ target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
 add_executable(enumMinimalSubstring.out ${STOOL_SOURCES} src/main/enumMinimalSubstring.cpp )
 target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
 
-add_executable(test.out ${STOOL_SOURCES} src/test/test_main.cpp )
+add_executable(test.out ${STOOL_SOURCES} src/main/test_main.cpp )
 target_link_libraries(test.out divsufsort divsufsort64)
+
 
 
 add_executable(print.out ${STOOL_SOURCES} src/main/print.cpp)
@@ -67,6 +68,9 @@ target_link_libraries(print.out divsufsort divsufsort64)
 
 add_executable(sdsl.out ${STOOL_SOURCES} src/main/sdsl_main.cpp)
 target_link_libraries(sdsl.out sdsl divsufsort divsufsort64)
+
+add_executable(test2.out ${STOOL_SOURCES} src/main/test2_main.cpp )
+target_link_libraries(test2.out sdsl divsufsort divsufsort64)
 
 
 

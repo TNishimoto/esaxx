@@ -7,35 +7,12 @@
 #include "esa.hxx"
 #include <exception>
 #include "stool/src/io.hpp"
+#include "stool/src/print.hpp"
+
 #include "stool/src/sa_bwt_lcp.hpp"
-
-
 
 namespace stool
 {
-
-class DistinctCharacterCheckerOnInterval{
-    std::vector<uint64_t> vec;
-    public:
-    bool contains(uint64_t left, uint64_t right) const {
-        return vec[right]-vec[left] != 0;
-    }
-
-    template <typename CHAR, typename TEXT, typename SA>
-    void construct(TEXT &text, SA &sa){
-        vec.resize(text.size(), 0);
-        for(uint64_t i=1;i<text.size();i++){
-            uint64_t p = sa[i];
-            CHAR prev_c = p == 0 ? text[text.size()-1] : text[p-1];
-            CHAR c = text[p];
-            if(c != prev_c){
-                vec[i] = vec[i-1]+1;
-            }else{
-                vec[i] = vec[i-1];
-            }
-        }
-    }
-};
 
 
 template <typename INDEXTYPE>
@@ -45,7 +22,8 @@ class PostorderMSIterator
     const std::vector<INDEXTYPE> &R; // right boundaries of internal node
     const std::vector<INDEXTYPE> &D; // depths of internal node
     INDEXTYPE index;
-    public:
+
+public:
     PostorderMSIterator() = default;
     PostorderMSIterator(const std::vector<INDEXTYPE> &_L, const std::vector<INDEXTYPE> &_R, const std::vector<INDEXTYPE> &_D, INDEXTYPE _index) : L(_L), R(_R), D(_D), index(_index)
     {
@@ -71,62 +49,6 @@ class PostorderMSIterator
         return index != rhs.index;
     }
 };
-
-template <typename INDEXTYPE, typename POSTORDER_ST_ITERATOR, typename DISTINCT_CHARACTER_CHECKER>
-class PostorderMaximalSubstringIterator
-{
-    POSTORDER_ST_ITERATOR &st;
-    const DISTINCT_CHARACTER_CHECKER &distinct_character_checker;
-    INDEXTYPE index;
-    stool::LCPInterval<INDEXTYPE> currentMSInterval;
-    public:
-    PostorderMaximalSubstringIterator() = default;
-    PostorderMaximalSubstringIterator(POSTORDER_ST_ITERATOR &_st, const DISTINCT_CHARACTER_CHECKER &_distinct_character_checker) : st(_st), distinct_character_checker(_distinct_character_checker)
-    {
-        if(st.isEnded()){
-            this->index = std::numeric_limits<INDEXTYPE>::max();
-        }else{
-            this->index = 0;
-            ++(*this);
-            /*
-            auto interval = *st;
-                if(distinct_character_checker.contains(interval.i, interval.j)){
-                    index = 0;
-                }else{
-                    ++this;
-                    //++st;
-                }
-            */
-        }
-    }
-    PostorderMaximalSubstringIterator &operator++()
-    {
-        ++st;
-        while(!st.isEnded()){
-                auto interval = *st;
-                if(distinct_character_checker.contains(interval.i, interval.j)){
-                    //this->currentMSInterval = it;
-                    index++;
-                    break;
-                }else{
-                    ++st;
-                }
-        }
-        if(st.isEnded()){
-            this->index = std::numeric_limits<INDEXTYPE>::max();
-        }
-        return *this;
-    }
-    stool::LCPInterval<INDEXTYPE> operator*() const
-    {
-        return *st;
-    }
-    bool operator!=(const PostorderMaximalSubstringIterator &rhs) const
-    {
-        return index != rhs.index;
-    }
-};
-
 
 
 template <typename INDEXTYPE>
@@ -199,13 +121,14 @@ public:
             }
         }
         //y;
-        L.resize(y+1);        
-        R.resize(y+1);
-        D.resize(y+1);
-        while(y >= 1){
-            L[y] = L[y-1];
-            R[y] = R[y-1];
-            D[y] = D[y-1];
+        L.resize(y + 1);
+        R.resize(y + 1);
+        D.resize(y + 1);
+        while (y >= 1)
+        {
+            L[y] = L[y - 1];
+            R[y] = R[y - 1];
+            D[y] = D[y - 1];
             y--;
         }
 
@@ -213,8 +136,7 @@ public:
         R[0] = (SA_first_index);
         D[0] = (n);
 
-
-        PostorderMaximalSubstrings<INDEXTYPE> r(std::move(L), std::move(R), std::move(D) );
+        PostorderMaximalSubstrings<INDEXTYPE> r(std::move(L), std::move(R), std::move(D));
         return r;
     }
 
@@ -228,12 +150,13 @@ public:
         auto it = PostorderMSIterator<INDEXTYPE>(this->L, this->R, this->D, std::numeric_limits<INDEXTYPE>::max());
         return it;
     }
-    INDEXTYPE size() const {
+    INDEXTYPE size() const
+    {
         return this->L.size();
     }
-    stool::LCPInterval<INDEXTYPE> operator[](INDEXTYPE i) {
+    stool::LCPInterval<INDEXTYPE> operator[](INDEXTYPE i)
+    {
         return stool::LCPInterval<INDEXTYPE>(L[i], R[i], D[i]);
-        
     }
 };
 

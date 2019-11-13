@@ -5,7 +5,7 @@
 #include "stool/src/cmdline.h"
 #include "stool/src/io.hpp"
 #include "stool/src/debug.hpp"
-#include "naive_algorithms.hpp"
+#include "../test/naive_algorithms.hpp"
 #include "../src/minimal_substrings/minimal_substring_iterator.hpp"
 
 using namespace std;

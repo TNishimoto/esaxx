@@ -286,7 +286,7 @@ public:
     return r;
   }
 };
-
+/*
 template <typename CHAR = char, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text, std::vector<INDEX> &sa)
 {  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
@@ -303,13 +303,15 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vecto
 }
 
 
+
+
 template <typename CHAR = char, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text)
 {
   std::vector<INDEX> sa = stool::construct_suffix_array(text);
   return compute_preorder_lcp_intervals(text,sa);
 }
-
+*/
 
 
 } // namespace esaxx

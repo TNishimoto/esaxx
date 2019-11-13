@@ -15,7 +15,9 @@
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
-#include "../postorder_suffix_tree_template.hpp"
+#include "../postorder_suffix_tree_intervals.hpp"
+#include "../test/naive_algorithms.hpp"
+#include "../postorder_maximal_substring_intervals.hpp"
 
 using namespace std;
 using CHAR = uint8_t;
@@ -29,11 +31,14 @@ std::vector<stool::LCPInterval<uint64_t>> iterateLCPIntervalsWithSDSL(std::strin
     construct(dac, filename, 1);
 
     std::vector<stool::LCPInterval<uint64_t>> r;
-    stool::esaxx::GPostorderSuffixTree<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>> gst;
+    stool::esaxx::PostorderSuffixTreeIntervals<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>> gst;
     gst.set(std::move(csa), std::move(dac) );
     for(auto it : gst){
       r.push_back(it);
     }
+
+
+
     /*
     while(!gst.isEnded()){
       auto it = *gst;
@@ -53,22 +58,38 @@ std::vector<stool::LCPInterval<uint64_t>> iterateMSIntervalsWithSDSL(std::string
 
     using CHAR = uint8_t;
     vector<CHAR> T = stool::load_text_from_file(filename, true); // input text
+    assert(T.size() == csa.size());
+        std::cout << "size = " << T.size() << std::endl;
+
 
     stool::DistinctCharacterCheckerOnInterval dcc;
     dcc.construct<CHAR, vector<CHAR>, sdsl::csa_sada<>>(T, csa);
   
-    using ST = stool::esaxx::GPostorderSuffixTree<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>>;
-    using STIT = stool::esaxx::GPostorderSTIterator<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>>;
+    using ST = stool::esaxx::PostorderSuffixTreeIntervals<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>>;
+    using STIT = stool::esaxx::PostorderSTIntervalIterator<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>>;
 
     ST gst;
     gst.set(std::move(csa), std::move(dac) );
+
+    //stool::PostorderMaximalSubstringIntervals<uint64_t, ST, stool::DistinctCharacterCheckerOnInterval> msi;
+    //msi.set(std::move(gst), std::move(dcc) );
+
+    std::vector<stool::LCPInterval<uint64_t>> r;
+    /*
+    for(auto it : msi){
+      r.push_back(it);
+
+    }
+    */
+
+    //auto ppp = msi.begin();
+
     STIT beg = gst.begin();
     STIT end = gst.end();
 
-    stool::PostorderMaximalSubstringIterator<uint64_t, STIT, stool::DistinctCharacterCheckerOnInterval> ms_begin(beg, dcc);
-    stool::PostorderMaximalSubstringIterator<uint64_t, STIT, stool::DistinctCharacterCheckerOnInterval> ms_end(end, dcc);
+    stool::PostorderMaximalSubstringIntervalIterator<uint64_t, STIT, stool::DistinctCharacterCheckerOnInterval> ms_begin(beg, dcc);
+    stool::PostorderMaximalSubstringIntervalIterator<uint64_t, STIT, stool::DistinctCharacterCheckerOnInterval> ms_end(end, dcc);
     
-    std::vector<stool::LCPInterval<uint64_t>> r;
     while(ms_begin != ms_end ){
       auto it = *ms_begin;
       r.push_back(it);
@@ -97,23 +118,35 @@ std::vector<stool::LCPInterval<uint64_t>> iterateLCPIntervals(std::string filena
     return r;
 }
 
-std::vector<stool::LCPInterval<int64_t>> iterateMSIntervals(std::string filename){
-    using INDEX = int64_t;
-    //using CHAR = uint8_t;
+std::vector<stool::LCPInterval<uint64_t>> iterateMSIntervals(std::string filename){
+    using INDEX = uint64_t;
+    using CHAR = uint8_t;
 
-  vector<char> T = stool::load_text(filename); // input text
-    //vector<char> T = stool::load_text_from_file(filename, true); // input text
-    std::cout << "Constructing Suffix Array" << std::endl;
-    std::vector<INDEX> sa;
-    std::cout << "end" << std::endl;
+    vector<CHAR> T = stool::load_text_from_file(filename, true); // input text
+    std::cout << "size = " << T.size() << std::endl;
+    std::vector<INDEX> sa = stool::construct_suffix_array(T);
+    std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
+
+
+    stool::DistinctCharacterCheckerOnInterval dcc;
+    dcc.construct<CHAR, vector<CHAR>, std::vector<INDEX> >(T, sa);
+  
+    using ST = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, std::vector<INDEX>, std::vector<INDEX> >;
+    using STIT = stool::esaxx::PostorderSTIntervalIterator<INDEX, std::vector<INDEX>, std::vector<INDEX> >;
+
+    ST gst;
+    gst.set(std::move(sa), std::move(lcpArray) );
+
+    stool::PostorderMaximalSubstringIntervals<INDEX, ST, stool::DistinctCharacterCheckerOnInterval> msi;
+    msi.set(std::move(gst), std::move(dcc) );
+
+    std::vector<stool::LCPInterval<uint64_t>> r;
     
-    stool::PostorderMaximalSubstrings<INDEX> iterator = stool::PostorderMaximalSubstrings<INDEX>::construct(T, sa);
-    std::vector<stool::LCPInterval<INDEX>> r;
-    for (auto it : iterator)
-    {
+    for(auto it : msi){
       r.push_back(it);
     }
-        
+    
+
     return r;
 }
 
@@ -130,16 +163,6 @@ int main(int argc, char *argv[])
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   /*
-  vector<char> T = stool::load_text(inputFile); // input text
-  std::string s;  
-  T[T.size()-1] = 100;
-  for(auto& it : T){
-    s.push_back(it);
-    std::cout << (int)it << " ";
-  }
-  std::cout << std::endl;
-  */
-
    std::cout << "SDSL version" << std::endl;
   auto vec = iterateLCPIntervalsWithSDSL(inputFile);
    std::cout << "Our version" << std::endl;
@@ -147,6 +170,9 @@ int main(int argc, char *argv[])
    std::cout << "End" << std::endl;
 
   std::cout << vec.size() << "/" << vec2.size() << std::endl;
+  for(auto it : vec2){
+    std::cout << it.to_string() << std::endl;
+  }
   for(int i=0;i<vec.size();i++){
     if(vec[i] != vec2[i]){
       throw -1;
@@ -154,12 +180,45 @@ int main(int argc, char *argv[])
   }
 
 
-  auto msVec = iterateMSIntervalsWithSDSL(inputFile);
-  std::cout << msVec.size() << std::endl;
+  vector<uint8_t> T = stool::load_text_from_file(inputFile, true); // input text
+  std::vector<uint64_t> sa = stool::construct_suffix_array(T);
 
+  std::vector<stool::LCPInterval<uint64_t>> correctMSIntervals = stool::esaxx::naive_compute_maximal_substrings(T,sa);
+
+  std::vector<uint8_t> bwt = stool::constructBWT(T,sa);
+
+  */
+  /*
+  auto msVec = iterateMSIntervalsWithSDSL(inputFile);
+    std::sort(
+      msVec.begin(),
+      msVec.end(),
+      stool::LCPIntervalPreorderComp<uint64_t>());
+  std::cout << msVec.size() << std::endl;
+  */
+
+
+  /*
+  for(auto it : msVec){
+    std::cout << it.to_string() << std::endl;
+  }
+  */
+
+  //std::cout <<correctMSIntervals.size() << std::endl;
+  /*
+  for(auto it : correctMSIntervals){
+    std::cout << it.to_string() << std::endl;
+  }
+  */
+  
+  
+  
   auto msVec2 = iterateMSIntervals(inputFile);
   std::cout << msVec2.size() << std::endl;
-
+  for(auto it : msVec2){
+    std::cout << it.to_string() << std::endl;
+  }
+  
 
   /*
   for(auto& it: vec){
@@ -191,7 +250,7 @@ int main(int argc, char *argv[])
       std::cout << *p << " ";
     }
 
-    stool::esaxx::GPostorderSTIterator<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>> gst(&csa, &dac, true);
+    stool::esaxx::PostorderSTIntervalIterator<uint64_t, sdsl::csa_sada<>, sdsl::lcp_dac<>> gst(&csa, &dac, true);
 
     while(!gst.isEnded()){
       auto it = *gst;

@@ -17,7 +17,7 @@ namespace esaxx
     Each node stores its lcp interval and its depth.
   */
 template <typename INDEX = uint64_t, typename SAITERATOR = std::vector<uint64_t>, typename LCPITERATOR = std::vector<uint64_t>>
-class GPostorderSTIterator
+class PostorderSTIntervalIterator
 {
 
   const SAITERATOR *SA;
@@ -81,7 +81,6 @@ class GPostorderSTIterator
 
   bool compute_next_lcp_Interval()
   {
-
     INDEX n = SA->size();
 
     while (counter_i <= n)
@@ -119,6 +118,7 @@ class GPostorderSTIterator
   {
     while (true)
     {
+      assert(this->outputQueue.size() < this->get_text_size() * 3);
       if (this->outputQueue.size() > 0)
       {
         IncompleteLCPInterval<INDEX> sli = this->outputQueue.front();
@@ -144,8 +144,8 @@ class GPostorderSTIterator
   }
 
 public:
-  GPostorderSTIterator() = default;
-  GPostorderSTIterator(const SAITERATOR *_SA, const LCPITERATOR *_LCPArray, bool isBegin) : SA(_SA), LCPArray(_LCPArray)
+  PostorderSTIntervalIterator() = default;
+  PostorderSTIntervalIterator(const SAITERATOR *_SA, const LCPITERATOR *_LCPArray, bool isBegin) : SA(_SA), LCPArray(_LCPArray)
   {
     if (isBegin)
     {
@@ -163,7 +163,7 @@ public:
 
   //bool takeFront(LCPInterval &outputInterval);
 
-  GPostorderSTIterator &operator++()
+  PostorderSTIntervalIterator &operator++()
   {
     this->succ();
     this->current_i++;
@@ -179,7 +179,7 @@ public:
     return this->current_i;
   }
 
-  bool operator!=(const GPostorderSTIterator &rhs)
+  bool operator!=(const PostorderSTIntervalIterator &rhs)
   {
     return _currenct_lcp_interval.lcp != rhs._currenct_lcp_interval.lcp;
   }
@@ -190,7 +190,7 @@ public:
 };
 
 template <typename INDEX = uint64_t, typename SAITERATOR = std::vector<uint64_t>, typename LCPITERATOR = std::vector<uint64_t>>
-class GPostorderSuffixTree
+class PostorderSuffixTreeIntervals
 {
 
   const SAITERATOR *_SA;
@@ -200,15 +200,15 @@ class GPostorderSuffixTree
 
 public:
 /*
-  GPostorderSuffixTree(SAITERATOR &&__SA, VEC &&__LCPArray) : _SAITERATOR(new SAITERATOR(std::move(__SA))), _LCPArray(new VEC(std::move(__LCPArray))), deleteFlag(true)
+  PostorderSuffixTreeIntervals(SAITERATOR &&__SA, VEC &&__LCPArray) : _SAITERATOR(new SAITERATOR(std::move(__SA))), _LCPArray(new VEC(std::move(__LCPArray))), deleteFlag(true)
   {
   }
   */
-  GPostorderSuffixTree() : deleteFlag(false)
+  PostorderSuffixTreeIntervals() : deleteFlag(false)
   {
   }
 
-  ~GPostorderSuffixTree()
+  ~PostorderSuffixTreeIntervals()
   {
     if (deleteFlag)
     {
@@ -217,7 +217,7 @@ public:
     }
   }
 
-  GPostorderSuffixTree(GPostorderSuffixTree &&obj)
+  PostorderSuffixTreeIntervals(PostorderSuffixTreeIntervals &&obj)
   {
     this->_SA = obj._SA;
     this->_LCPArray = obj._LCPArray;
@@ -225,7 +225,7 @@ public:
     this->deleteFlag = obj.deleteFlag;
     obj.deleteFlag = false;
   }
-  GPostorderSuffixTree(const GPostorderSuffixTree &obj)
+  PostorderSuffixTreeIntervals(const PostorderSuffixTreeIntervals &obj)
   {
     if (obj._SA != nullptr)
     {
@@ -248,16 +248,16 @@ public:
     deleteFlag = false;
   }
 
-  GPostorderSTIterator<INDEX, SAITERATOR, LCPITERATOR> begin() const
+  PostorderSTIntervalIterator<INDEX, SAITERATOR, LCPITERATOR> begin() const
   {
     //LCPIterator<INDEX, VEC> lcp_it = this->_lcp_generator->begin();
-    auto it = GPostorderSTIterator<INDEX, SAITERATOR, LCPITERATOR>(this->_SA, this->_LCPArray, true);
+    auto it = PostorderSTIntervalIterator<INDEX, SAITERATOR, LCPITERATOR>(this->_SA, this->_LCPArray, true);
     return it;
   }
-  GPostorderSTIterator<INDEX, SAITERATOR, LCPITERATOR> end() const
+  PostorderSTIntervalIterator<INDEX, SAITERATOR, LCPITERATOR> end() const
   {
     //LCPIterator<INDEX, VEC> lcp_it = this->_lcp_generator->begin();
-    auto it = GPostorderSTIterator<INDEX, SAITERATOR, LCPITERATOR>(this->_SA, this->_LCPArray, false);
+    auto it = PostorderSTIntervalIterator<INDEX, SAITERATOR, LCPITERATOR>(this->_SA, this->_LCPArray, false);
     return it;
   }
   std::vector<LCPInterval<INDEX>> to_lcp_intervals() const
@@ -270,6 +270,48 @@ public:
     return r;
   }
 };
+
+
+template <typename CHAR = char, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
+{  
+  //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  stool::esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP> st;
+  st.set(sa, lcpArray);
+  std::vector<stool::LCPInterval<INDEX>> intervals = st.to_lcp_intervals();
+
+  std::sort(
+      intervals.begin(),
+      intervals.end(),
+      stool::LCPIntervalPreorderComp<INDEX>());
+
+  return intervals;
+}
+
+
+template <typename CHAR = char, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text, std::vector<INDEX> &sa)
+{  
+  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  stool::esaxx::PostorderSuffixTreeIntervals<INDEX> st;
+  st.set(sa, lcpArray);
+  std::vector<stool::LCPInterval<INDEX>> intervals = st.to_lcp_intervals();
+
+  std::sort(
+      intervals.begin(),
+      intervals.end(),
+      stool::LCPIntervalPreorderComp<INDEX>());
+
+  return intervals;
+}
+
+template <typename CHAR = char, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text)
+{
+  std::vector<INDEX> sa = stool::construct_suffix_array(text);
+  return compute_preorder_lcp_intervals(text,sa);
+}
+
 
 
 } // namespace rlbwt
