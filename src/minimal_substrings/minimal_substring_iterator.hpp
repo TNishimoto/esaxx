@@ -6,10 +6,10 @@ namespace stool
 namespace esaxx
 {
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename VEC = std::vector<uint64_t>>
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SST = PostorderSSTIterator<CHAR, INDEX>>
 class MinimalSubstringIterator
 {
-  PostorderSSTIterator<CHAR, INDEX, VEC> _iterator;
+  SST _iterator;
   std::unordered_map<INDEX, IntervalInfoForMinimalSubstrings<CHAR, INDEX>> map;
   std::queue<LCPInterval<INDEX>> outputQueue;
   std::unordered_map<CHAR, INDEX> first_occcurrence_map_on_F;
@@ -89,7 +89,7 @@ class MinimalSubstringIterator
 
 public:
   MinimalSubstringIterator() = default;
-  MinimalSubstringIterator(const std::vector<CHAR> &__bwt, PostorderSSTIterator<CHAR, INDEX, VEC> &__iterator) : _iterator(__iterator)
+  MinimalSubstringIterator(const std::vector<CHAR> &__bwt, SST &__iterator) : _iterator(__iterator)
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
@@ -141,12 +141,13 @@ public:
   {
     return this->counter_i;
   }
-  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const std::vector<CHAR> &bwt,const  VEC &sa,const  VEC &lcpArray)
+  template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
+  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const std::vector<CHAR> &bwt,const SA &sa,const LCP &lcpArray)
   {
     if(bwt.size() == 0) return std::vector<LCPInterval<INDEX>>();
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
-    stool::esaxx::PostorderSSTIterator<CHAR, INDEX> sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
+    auto sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
     if(bwt.size() > 100000)std::cout << "Conputing minimal substrings" << std::flush;

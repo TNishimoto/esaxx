@@ -31,19 +31,23 @@ public:
     INDEX charRankOrID;
     // If this node is a leaf, the bwtChar is the character of the bwt on this leaf.
     CHAR bwtChar;
+    bool hasSingleBWTCharacter;
+
     SpecializedLCPInterval()
     {
     }
-    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, CHAR _c, INDEX _charRank) : interval(_interval), parent(_parent), charRankOrID(_charRank), bwtChar(_c)
+    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, CHAR _c, INDEX _charRank, bool _hasSingleBWTCharacter) : interval(_interval), parent(_parent), charRankOrID(_charRank), bwtChar(_c), hasSingleBWTCharacter(_hasSingleBWTCharacter)
     {
     }
-    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, INDEX _id) : interval(_interval), parent(_parent), charRankOrID(_id), bwtChar(0)
+    /*
+    SpecializedLCPInterval(LCPInterval<INDEX> _interval, INDEX _parent, INDEX _id, bool _hasSingleBWTCharacter) : interval(_interval), parent(_parent), charRankOrID(_id), bwtChar(0), hasSingleBWTCharacter(_hasSingleBWTCharacter)
     {
     }
+    */
 
     static SpecializedLCPInterval<CHAR, INDEX> create_end_marker()
     {
-        return SpecializedLCPInterval<CHAR, INDEX>(LCPInterval<INDEX>::create_end_marker(), std::numeric_limits<INDEX>::max(), 0, 0);
+        return SpecializedLCPInterval<CHAR, INDEX>(LCPInterval<INDEX>::create_end_marker(), std::numeric_limits<INDEX>::max(), 0, 0,false);
     }
 
     std::string to_string()
@@ -56,31 +60,35 @@ public:
         return this->interval.is_special_marker() && this->parent == std::numeric_limits<INDEX>::max() && this->bwtChar == 0;
     }
 };
-template <typename INDEX>
+template <typename CHAR, typename INDEX>
 struct SSTChildIntervalInfo
 {
     LCPInterval<INDEX> interval;
     INDEX id;
     INDEX charRank;
+    CHAR bwt;
+    bool hasSingleBWTCharacters;
+
     SSTChildIntervalInfo()
     {
     }
-    SSTChildIntervalInfo(LCPInterval<INDEX> _interval, INDEX _id, INDEX _charRank) : interval(_interval), id(_id), charRank(_charRank)
+    SSTChildIntervalInfo(LCPInterval<INDEX> _interval, INDEX _id, INDEX _charRank, CHAR _bwt, bool _hasSingleBWTCharacters) : interval(_interval), id(_id), charRank(_charRank), bwt(_bwt), hasSingleBWTCharacters(_hasSingleBWTCharacters)
     {
     }
 };
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename VEC = std::vector<uint64_t>>
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename ST_ITERATOR = PostorderSTIntervalIterator<INDEX>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator  >
 class PostorderSSTIterator
 {
-    PostorderSTIterator<INDEX, VEC> _iterator;
-    const std::vector<CHAR> &_bwt;
+    ST_ITERATOR _iterator;
+    BWT_ITERATOR _bwt_iterator;
     //INDEX counter_i = 0;
     INDEX current_i = 0;
     std::unordered_map<CHAR, INDEX> charRankMap;
-    std::stack<SSTChildIntervalInfo<INDEX>> childStack;
+    std::stack<SSTChildIntervalInfo<CHAR, INDEX>> childStack;
     std::queue<SpecializedLCPInterval<CHAR, INDEX>> outputQueue;
-    SpecializedLCPInterval<CHAR, INDEX> _currenct_lcp_interval;
+    SpecializedLCPInterval<CHAR, INDEX> _currenct_lcp_interval;    
+    INDEX bwt_index = 0;
 
     //LCPIterator<INDEX, VEC> _lcp_forward_iterator;
     //std::queue<LCPInterval<INDEX>> parentQueue;
@@ -90,21 +98,45 @@ class PostorderSSTIterator
     {
         LCPInterval<INDEX> x = *_iterator;
         INDEX id = this->_iterator.get_current_i();
+
+        bool x_hasSingleBWTCharacter = true;
+        CHAR x_BWTChar;
+            bool x_hasAtLeastOneChild = false;
+
+
         while (childStack.size() > 0)
         {
 
-            SSTChildIntervalInfo<INDEX> top = childStack.top();
+            SSTChildIntervalInfo<CHAR, INDEX> top = childStack.top();
             LCPInterval<INDEX> &childInterval = top.interval;
 
             if (x.i <= childInterval.i && childInterval.j <= x.j)
             {
+                if(x_hasAtLeastOneChild){
+                    if(top.hasSingleBWTCharacters){
+                        if(top.bwt != x_BWTChar){
+                            x_hasSingleBWTCharacter = false;
+                        }
+                    }else{
+                        x_hasSingleBWTCharacter = false;
+                    }
+                }else{
+                    if(top.hasSingleBWTCharacters){
+                        x_hasSingleBWTCharacter = true;
+                        x_BWTChar = top.bwt;
+                    }else{
+                        x_hasSingleBWTCharacter = false;
+                    }                    
+                    x_hasAtLeastOneChild = true;
+                }
+
                 if (childInterval.i == childInterval.j)
                 {
-                    outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(childInterval, id, _bwt[childInterval.i], top.charRank));
+                    outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(childInterval, id, top.bwt, top.charRank, top.hasSingleBWTCharacters));
                 }
                 else
                 {
-                    outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(childInterval, id, top.id));
+                    outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(childInterval, id, 0      , top.id,top.hasSingleBWTCharacters));
                 }
                 childStack.pop();
             }
@@ -115,19 +147,29 @@ class PostorderSSTIterator
         }
         if (x.i == x.j)
         {
-            if (this->charRankMap.find(_bwt[x.i]) == this->charRankMap.end())
+            while(bwt_index < x.i){
+                ++_bwt_iterator;
+                ++bwt_index;
+            }
+            CHAR bwtChar = *_bwt_iterator;
+            if (this->charRankMap.find(bwtChar ) == this->charRankMap.end())
             {
-                this->charRankMap[_bwt[x.i]] = 0;
+                this->charRankMap[bwtChar] = 0;
             }
             else
             {
-                this->charRankMap[_bwt[x.i]]++;
+                this->charRankMap[bwtChar ]++;
             }
-            childStack.push(SSTChildIntervalInfo<INDEX>(x, id, this->charRankMap[_bwt[x.i]]));
+            childStack.push(SSTChildIntervalInfo<CHAR, INDEX>(x, id, this->charRankMap[bwtChar], bwtChar, true ));
         }
         else
         {
-            childStack.push(SSTChildIntervalInfo<INDEX>(x, id, 0));
+            if(x_hasSingleBWTCharacter){
+            childStack.push(SSTChildIntervalInfo<CHAR, INDEX>(x, id, 0, x_BWTChar, true));
+            //childStack.push(SSTChildIntervalInfo<CHAR, INDEX>(x, id, 0, x_BWTChar, false));
+            }else{
+            childStack.push(SSTChildIntervalInfo<CHAR, INDEX>(x, id, 0, 0, false));
+            }
         }
 
         ++_iterator;
@@ -142,8 +184,8 @@ class PostorderSSTIterator
         }
         if (_iterator.isEnded() && childStack.size() == 1)
         {
-            SSTChildIntervalInfo<INDEX> top = childStack.top();
-            outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(top.interval, std::numeric_limits<INDEX>::max(), 0, top.id));
+            SSTChildIntervalInfo<CHAR, INDEX> top = childStack.top();
+            outputQueue.push(SpecializedLCPInterval<CHAR, INDEX>(top.interval, std::numeric_limits<INDEX>::max(), top.bwt, top.id, top.hasSingleBWTCharacters));
             childStack.pop();
         }
 
@@ -165,7 +207,7 @@ class PostorderSSTIterator
 public:
     PostorderSSTIterator() = default;
 
-    PostorderSSTIterator(const std::vector<CHAR> &__bwt, PostorderSTIterator<> &__iterator, bool isBegin) : _iterator(__iterator), _bwt(__bwt)
+    PostorderSSTIterator(BWT_ITERATOR &__bwt, ST_ITERATOR &__iterator, bool isBegin) : _iterator(__iterator), _bwt_iterator(__bwt)
     {
         if (isBegin)
         {
@@ -198,14 +240,21 @@ public:
         return this->current_i;
     }
 
-    static PostorderSSTIterator<CHAR, INDEX, VEC> constructIterator(const std::vector<CHAR> &__bwt,const  VEC &_SA,const  VEC &_LCPArray)
+    INDEX get_text_size()
+    {
+    return _iterator.get_text_size();
+      }
+
+    template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
+    static PostorderSSTIterator<CHAR, INDEX, PostorderSTIntervalIterator<INDEX, SA, LCP>, typename std::vector<CHAR>::const_iterator > constructIterator(const std::vector<CHAR> &__bwt,const  SA &_SA,const  LCP &_LCPArray)
     {
         if (_SA[0] != _SA.size() - 1)
         {
             throw std::logic_error("The first value of SA must be the last position of the text.");
         }
-        PostorderSTIterator<INDEX, VEC> st(&_SA, &_LCPArray, true);
-        return PostorderSSTIterator<CHAR, INDEX, VEC>(__bwt, st, true);
+        PostorderSTIntervalIterator<INDEX, SA, LCP> st(&_SA, &_LCPArray, true);
+        typename std::vector<CHAR>::const_iterator bwt_iterator = __bwt.begin();
+        return PostorderSSTIterator<CHAR, INDEX, PostorderSTIntervalIterator<INDEX, SA, LCP>, typename std::vector<CHAR>::const_iterator>(bwt_iterator, st, true);
     }
 
     bool isEnded()

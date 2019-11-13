@@ -75,6 +75,34 @@ void minimal_substring_test(std::string filename)
 
 }
 
+void maximal_substring_test(std::string filename)
+{
+    std::cout << "maximal substring intervals test";
+
+    vector<uint8_t> text = stool::load_text_from_file(filename, true); // input text
+    std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
+    std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+
+
+    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<CHAR, INDEX>(text, sa);
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::compute_preorder_maximal_substrings<CHAR, INDEX>(text, sa);
+    /*
+    for(auto it : correct_intervals){
+      std::cout << it.to_string() << std::endl;      
+    }
+    std::cout << "end" << std::endl;
+    for(auto it : test_intervals){
+      std::cout << it.to_string() << std::endl;      
+    }
+    */
+
+
+    stool::equal_check(correct_intervals, test_intervals);
+
+    std::cout << "[OK!]" << std::endl;
+
+}
+
 
 
 int main(int argc, char *argv[])
@@ -88,5 +116,6 @@ int main(int argc, char *argv[])
 
   lcp_interval_test(inputFile);
   minimal_substring_test(inputFile);
+  maximal_substring_test(inputFile);
 
 }
