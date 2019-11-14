@@ -108,7 +108,7 @@ class iterator
         INDEX id = this->_iterator.get_current_i();
 
         bool x_hasSingleBWTCharacter = true;
-        CHAR x_BWTChar;
+        CHAR x_BWTChar = 0;
             bool x_hasAtLeastOneChild = false;
 
 
