@@ -134,7 +134,7 @@ class PostorderSuffixTreeIntervals
     {
       while (true)
       {
-        assert(this->outputQueue.size() < this->get_text_size() * 3);
+        //assert(this->outputQueue.size() < this->get_text_size() * 3);
         if (this->outputQueue.size() > 0)
         {
           IncompleteLCPInterval<INDEX> sli = this->outputQueue.front();
@@ -246,7 +246,7 @@ public:
       throw std::logic_error("PostorderSuffixTree instances cannot call the copy constructor.");
     }
   }
-
+  /*
   void set(SA &&__SA, LCP &&__LCPArray)
   {
     this->_SA = new SA(std::move(__SA));
@@ -254,6 +254,8 @@ public:
 
     deleteFlag = true;
   }
+  */
+ /*
   void set(SA &__SA, LCP &__LCPArray)
   {
     this->_SA = &__SA;
@@ -261,6 +263,7 @@ public:
 
     deleteFlag = false;
   }
+  */
 
   void construct(const SA* __sa,const LCP* __lcp)
   {
@@ -314,12 +317,12 @@ public:
 
 };
 
-template <typename CHAR = char, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
 {
   //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
   stool::esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP> st;
-  st.set(sa, lcpArray);
+  st.construct(&sa, &lcpArray);
   std::vector<stool::LCPInterval<INDEX>> intervals = st.to_lcp_intervals();
 
   std::sort(
@@ -330,12 +333,13 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vecto
   return intervals;
 }
 
-template <typename CHAR = char, typename INDEX = uint64_t>
+template <typename CHAR = uint8_t, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text, std::vector<INDEX> &sa)
 {
+  //assert(sa.size() != 0);
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
   stool::esaxx::PostorderSuffixTreeIntervals<INDEX> st;
-  st.set(sa, lcpArray);
+  st.construct(&sa, &lcpArray);
   std::vector<stool::LCPInterval<INDEX>> intervals = st.to_lcp_intervals();
 
   std::sort(
@@ -346,7 +350,7 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vecto
   return intervals;
 }
 
-template <typename CHAR = char, typename INDEX = uint64_t>
+template <typename CHAR = uint8_t, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text)
 {
   std::vector<INDEX> sa = stool::construct_suffix_array(text);

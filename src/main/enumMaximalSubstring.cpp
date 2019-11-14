@@ -12,11 +12,21 @@
 #include "../esa.hxx"
 #include "../postorder_maximal_substrings.hpp"
 #include "common.hpp"
+#include "libdivsufsort/sa.hpp"
+#include "../postorder_maximal_substring_intervals.hpp"
 
 using namespace std;
-using CHAR = uint8_t;
-using INDEXTYPE = int64_t;
+using CHAR = char;
+using INDEXTYPE = uint64_t;
 
+/*
+void iterateMSwithSDSL(){
+
+}
+void iterateMS(){
+
+}
+*/
 int main(int argc, char *argv[])
 {
 
@@ -25,11 +35,14 @@ int main(int argc, char *argv[])
   p.add<string>("output_file", 'o', "output file name", false, "");
   p.add<bool>("print", 'p', "print info", false, true);
   p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
+  p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
+
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
   string format = p.get<string>("format");
+  string mode = p.get<string>("mode");
 
   if (format != "binary")
   {
@@ -47,27 +60,36 @@ int main(int argc, char *argv[])
     }
   }
 
-  vector<char> T = stool::load_text(inputFile); // input text
-  //vector<uint8_t> T = stool::load_text_from_file(inputFile, true); // input text
+  //vector<char> T = stool::load_text(inputFile); // input text
+  vector<CHAR> T = stool::load_char_vec_from_file(inputFile, true); // input text
   //INDEXTYPE n = T.size();
-  vector<INDEXTYPE> SA; // suffix array
 
+  std::vector<INDEXTYPE> sa = stool::construct_suffix_array(T);
+  std::cout << "Constructing LCP Array" << std::endl;
+  std::vector<INDEXTYPE> lcpArray = stool::constructLCP<CHAR, INDEXTYPE>(T, sa);
 
-  stool::PostorderMaximalSubstrings<INDEXTYPE> iterator = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, SA);
+  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEXTYPE, std::vector<INDEXTYPE>>(T, sa);
+  std::cout << "Constructing PST" << std::endl;
+  //vector<INDEXTYPE> SA; // suffix array
+
+  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, std::vector<INDEXTYPE>, std::vector<INDEXTYPE>, std::vector<CHAR> > pmsi;
+  pmsi.construct(&sa, &lcpArray, &bwt);
+
+  //stool::PostorderMaximalSubstrings<INDEXTYPE> iterator = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, sa);
     std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
-    for (auto it : iterator)
+    for (auto it : pmsi)
     {
       intervals.push_back(it);
     }
     if (isPrint)
     {
       std::cout << "Maximal substrings in the file" << std::endl;
-      stool::esaxx::print<char, INDEXTYPE>(intervals, T, SA );
+      stool::esaxx::print<CHAR, INDEXTYPE>(intervals, T, sa );
     }
 
   if (format != "binary")
   {
-    stool::esaxx::writeText<char, INDEXTYPE>(outputFile, intervals, T, SA );
+    stool::esaxx::writeText<CHAR, INDEXTYPE>(outputFile, intervals, T, sa );
   }
   else
   {

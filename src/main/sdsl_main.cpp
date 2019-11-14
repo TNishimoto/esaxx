@@ -22,7 +22,7 @@
 using namespace std;
 using CHAR = uint8_t;
 using INDEXTYPE = int64_t;
-
+/*
 std::vector<stool::LCPInterval<uint64_t>> iterateLCPIntervalsWithSDSL(std::string filename){
     sdsl::csa_sada<> csa;
     construct(csa, filename, 1);
@@ -37,18 +37,9 @@ std::vector<stool::LCPInterval<uint64_t>> iterateLCPIntervalsWithSDSL(std::strin
       r.push_back(it);
     }
 
-
-
-    /*
-    while(!gst.isEnded()){
-      auto it = *gst;
-      r.push_back(it);
-      //std::cout << it.to_string() << std::endl;
-      ++gst;
-    }
-    */
     return r;
 }
+*/
 /*
 std::vector<stool::LCPInterval<uint64_t>> iterateMSIntervalsWithSDSL(std::string filename){
     sdsl::csa_sada<> csa;
@@ -93,6 +84,7 @@ std::vector<stool::LCPInterval<uint64_t>> iterateMSIntervalsWithSDSL(std::string
     return r;
 }
 */
+/*
 std::vector<stool::LCPInterval<uint64_t>> iterateLCPIntervals(std::string filename){
     using INDEX = uint64_t;
     using CHAR = uint8_t;
@@ -112,6 +104,7 @@ std::vector<stool::LCPInterval<uint64_t>> iterateLCPIntervals(std::string filena
     
     return r;
 }
+*/
 /*
 std::vector<stool::LCPInterval<uint64_t>> iterateMSIntervals(std::string filename){
     using INDEX = uint64_t;
