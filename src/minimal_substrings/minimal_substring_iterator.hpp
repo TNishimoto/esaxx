@@ -8,10 +8,18 @@ namespace stool
 namespace esaxx
 {
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SST = PostorderSSTIterator<CHAR, INDEX>>
-class MinimalSubstringIterator
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<uint64_t>, typename LCP = std::vector<uint64_t>, typename BWT = std::vector<CHAR>>
+class MinimalSubstringIntervals{
+
+using STI = PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
+using PSSTI = PostorderSpecialSuffixTreeIntervals<CHAR, INDEX, SA, LCP, BWT>;
+public: 
+template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator>
+class iterator
 {
-  SST _iterator;
+  using PSSTI_ITERATOR = typename PSSTI::template iterator<SA_ITERATOR, LCP_ITERATOR, BWT_ITERATOR>;
+
+  PSSTI_ITERATOR _iterator;
   std::unordered_map<INDEX, IntervalInfoForMinimalSubstrings<CHAR, INDEX>> map;
   std::queue<LCPInterval<INDEX>> outputQueue;
   std::unordered_map<CHAR, INDEX> first_occcurrence_map_on_F;
@@ -90,8 +98,8 @@ class MinimalSubstringIterator
   }
 
 public:
-  MinimalSubstringIterator() = default;
-  MinimalSubstringIterator(const std::vector<CHAR> &__bwt, SST &__iterator) : _iterator(__iterator)
+  iterator() = default;
+  iterator(const BWT &__bwt, PSSTI_ITERATOR &__iterator) : _iterator(__iterator)
   {
     this->first_occcurrence_map_on_F = constructCMap(__bwt);
     bool b = this->succ();
@@ -110,7 +118,7 @@ public:
     }
     */
   }
-  MinimalSubstringIterator &operator++()
+  iterator &operator++()
   {
     bool b = this->succ();
     ++counter_i;
@@ -131,6 +139,12 @@ public:
     return this->_currenct_lcp_interval;
   }
 
+    bool operator!=(const iterator &rhs)
+    {
+      //return false;
+        return this->_iterator != rhs._iterator;
+    }
+
   bool isEnded()
   {
     return this->_currenct_lcp_interval.is_special_marker();
@@ -143,16 +157,21 @@ public:
   {
     return this->counter_i;
   }
-  template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
-  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const std::vector<CHAR> &bwt,const SA &sa,const LCP &lcpArray)
+  //template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
+  static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const BWT &bwt,const SA &sa,const LCP &lcpArray)
   {
+    std::vector<LCPInterval<INDEX>> r;
+    //using PSSTI = PostorderSpecialSuffixTreeIntervals<SA, LCP, std::vector<CHAR>>;
+      /*
     if(bwt.size() == 0) return std::vector<LCPInterval<INDEX>>();
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
+    PSSTI pssti;
+    pssti.construct(sa, lcpArray, bwt);
+
     using SSTL = PostorderSSTIterator<CHAR, INDEX, typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(sa.begin()), decltype(lcpArray.begin())>  >;
     SSTL sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::template constructIterator<SA, LCP>(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, SSTL> msi(bwt, sst);
-    std::vector<LCPInterval<INDEX>> r;
     if(bwt.size() > 100000)std::cout << "Conputing minimal substrings" << std::flush;
     stool::Counter counter;
     while (!msi.isEnded())
@@ -187,6 +206,7 @@ public:
         r.begin(),
         r.end(),
         stool::LCPIntervalPreorderComp<INDEX>());
+        */
 
     return r;
   }
@@ -236,14 +256,110 @@ public:
   }
 };
 
+private:
+  PSSTI *_pssti;
+  bool deleteFlag = false;
+  public:
+
+    /*
+  void set(BWT &__bwt, STI &__sti)
+  {
+    this->_bwt = &__bwt;
+    this->_sti = &__sti;
+    deleteFlag = false;
+  }
+  */
+
+  void construct(SA* __sa, LCP* __lcp, BWT* __bwt){
+      this->_pssti = new PSSTI();
+      this->_pssti->construct(__sa, __lcp, __bwt);
+      //this->_bwt = __bwt;
+      //this->sti = new STI();
+      //  this->sti->set(__sa, __lcp);
+  }
+  /*
+  const BWT* get_bwt_pointer() const {
+    return this->_bwt;
+  }
+  */
+  const PSSTI* get_pssti_pointer() const {
+    return this->_pssti;
+  }
+  const BWT* get_bwt_pointer() const {
+    return this->_pssti->get_bwt_pointer();
+  }
+  const SA* get_sa_pointer() const{
+      return this->_pssti->get_sa_pointer();
+  }
+  const LCP* get_lcp_pointer() const{
+      return this->_pssti->get_lcp_pointer();
+  }
+
+auto begin() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decltype(this->get_lcp_pointer()->begin() ) ,  decltype(this->get_bwt_pointer()->begin() )>
+  {
+    using BWT_IT = decltype(this->get_bwt_pointer()->begin() );
+    using SA_IT = decltype(this->get_sa_pointer()->begin() );
+    using LCP_IT = decltype(this->get_lcp_pointer()->begin() );
+
+    auto bwt = this->get_bwt_pointer();
+    auto pssti_beg = this->get_pssti_pointer()->begin();
+
+
+    auto it = iterator<SA_IT, LCP_IT, BWT_IT>(*bwt, pssti_beg);
+    return it;
+  }
+  
+  auto end() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decltype(this->get_lcp_pointer()->begin() ) ,  decltype(this->get_bwt_pointer()->begin() )>
+  {    
+    using BWT_IT = decltype(this->get_bwt_pointer()->begin() );
+    using SA_IT = decltype(this->get_sa_pointer()->begin() );
+    using LCP_IT = decltype(this->get_lcp_pointer()->begin() );
+
+    auto bwt = this->get_bwt_pointer();
+    auto pssti_end = this->get_pssti_pointer()->end();
+
+
+    auto it = iterator<SA_IT, LCP_IT, BWT_IT>(*bwt, pssti_end);
+    return it;
+  }
+  
+
+};
+
 template <typename CHAR = char, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
 {  
   //stool::Printer::print(text);
   //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
   std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
+  std::vector<LCPInterval<INDEX>> r;
 
-  std::vector<LCPInterval<INDEX>> r = MinimalSubstringIterator<CHAR, INDEX>::template constructSortedMinimalSubstrings<SA, LCP>(bwt, sa, lcpArray);
+  MinimalSubstringIntervals<CHAR, INDEX, SA, LCP, std::vector<CHAR>> msi;
+  msi.construct(&sa, &lcpArray, &bwt);
+  /*
+  for(auto it = msi.begin();it != msi.end();++it){
+    r.push_back(*it);
+  }
+  */
+  /*
+  for(auto it : msi){
+    r.push_back(it);
+  }
+  */
+  
+  auto it = msi.begin();
+
+  while(!it.isEnded()){
+    r.push_back(*it);
+    ++it;
+  }
+  
+
+    std::sort(
+        r.begin(),
+        r.end(),
+        stool::LCPIntervalPreorderComp<INDEX>());
+  //std::vector<LCPInterval<INDEX>> r = MinimalSubstringIterator<CHAR, INDEX>::template constructSortedMinimalSubstrings<SA, LCP>(bwt, sa, lcpArray);
   return r;
 }
 

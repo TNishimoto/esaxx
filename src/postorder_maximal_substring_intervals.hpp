@@ -51,20 +51,27 @@ public:
     }
 };
 
-template <typename INDEXTYPE, typename POSTORDER_SST_ITERATOR>
-class PostorderMaximalSubstringIntervalIterator
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<uint64_t>, typename LCP = std::vector<uint64_t>, typename BWT = std::vector<CHAR>>
+class PostorderMaximalSubstringIntervals{
+
+using STI = esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
+using PSSTI = esaxx::PostorderSpecialSuffixTreeIntervals<CHAR, INDEX, SA, LCP, BWT>;
+
+template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator>
+class iterator
 {
-    POSTORDER_SST_ITERATOR st;
-    INDEXTYPE index;
-    stool::LCPInterval<INDEXTYPE> currentMSInterval;
+  using PSSTI_ITERATOR = typename PSSTI::template iterator<SA_ITERATOR, LCP_ITERATOR, BWT_ITERATOR>;
+    PSSTI_ITERATOR st;
+    INDEX index;
+    stool::LCPInterval<INDEX> currentMSInterval;
 
 public:
-    PostorderMaximalSubstringIntervalIterator() = default;
-    PostorderMaximalSubstringIntervalIterator(POSTORDER_SST_ITERATOR &_st) : st(std::move(_st))
+    iterator() = default;
+    iterator(PSSTI_ITERATOR &_st) : st(std::move(_st))
     {
         if (st.isEnded())
         {
-            this->index = std::numeric_limits<INDEXTYPE>::max();
+            this->index = std::numeric_limits<INDEX>::max();
         }
         else
         {
@@ -95,7 +102,7 @@ private:
     }
 
 public:
-    PostorderMaximalSubstringIntervalIterator &operator++()
+    iterator &operator++()
     {
         ++st;
         while (!st.isEnded())
@@ -110,15 +117,15 @@ public:
         }
         if (st.isEnded())
         {
-            this->index = std::numeric_limits<INDEXTYPE>::max();
+            this->index = std::numeric_limits<INDEX>::max();
         }
         return *this;
     }
-    stool::LCPInterval<INDEXTYPE> operator*()
+    stool::LCPInterval<INDEX> operator*()
     {
         return (*st).interval;
     }
-    bool operator!=(const PostorderMaximalSubstringIntervalIterator &rhs) const
+    bool operator!=(const iterator &rhs) const
     {
         return index != rhs.index;
     }
@@ -127,14 +134,82 @@ public:
     }
 };
 
+
+private:
+  PSSTI *_pssti;
+  bool deleteFlag = false;
+  public:
+
+
+  void construct(const SA* __sa,const LCP* __lcp,const BWT* __bwt){
+      this->_pssti = new PSSTI();
+      this->_pssti->construct(__sa, __lcp, __bwt);
+  }
+  const PSSTI* get_pssti_pointer() const {
+    return this->_pssti;
+  }
+  const BWT* get_bwt_pointer() const {
+    return this->_pssti->get_bwt_pointer();
+  }
+  const SA* get_sa_pointer() const{
+      return this->_pssti->get_sa_pointer();
+  }
+  const LCP* get_lcp_pointer() const{
+      return this->_pssti->get_lcp_pointer();
+  }
+auto begin() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decltype(this->get_lcp_pointer()->begin() ) ,  decltype(this->get_bwt_pointer()->begin() )>
+  {
+    using BWT_IT = decltype(this->get_bwt_pointer()->begin() );
+    using SA_IT = decltype(this->get_sa_pointer()->begin() );
+    using LCP_IT = decltype(this->get_lcp_pointer()->begin() );
+
+    auto pssti_beg = this->get_pssti_pointer()->begin();
+
+
+    auto it = iterator<SA_IT, LCP_IT, BWT_IT>(pssti_beg);
+    return it;
+  }
+  
+  auto end() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decltype(this->get_lcp_pointer()->begin() ) ,  decltype(this->get_bwt_pointer()->begin() )>
+  {    
+    using BWT_IT = decltype(this->get_bwt_pointer()->begin() );
+    using SA_IT = decltype(this->get_sa_pointer()->begin() );
+    using LCP_IT = decltype(this->get_lcp_pointer()->begin() );
+
+    auto pssti_end = this->get_pssti_pointer()->end();
+
+
+    auto it = iterator<SA_IT, LCP_IT, BWT_IT>(pssti_end);
+    return it;
+  }
+  
+};
+
+
+
+
 template <typename CHAR = char, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_maximal_substrings(const std::vector<CHAR> &text, const SA &sa, const LCP &lcpArray)
 {  
   //stool::Printer::print(text);
   //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
   //std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
+  std::vector<LCPInterval<INDEX>> r;
+  
   std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
+  PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, std::vector<CHAR>> pmsi;
+    pmsi.construct(&sa, &lcpArray, &bwt);
+    for(auto it : pmsi){
+        r.push_back(it);
+    }
 
+
+    std::sort(
+        r.begin(),
+        r.end(),
+        stool::LCPIntervalPreorderComp<INDEX>());
+
+    /*
   using PST = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
   using PSTIT = typename PST::template iterator<decltype(sa.begin()), decltype(lcpArray.begin()) >;
   using BWTIT = typename std::vector<CHAR>::const_iterator;
@@ -142,27 +217,17 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_maximal_substrings(const
 
     using SSTL = stool::esaxx::PostorderSSTIterator<CHAR, INDEX, typename esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(sa.begin()), decltype(lcpArray.begin())>  >;
     SSTL sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::template constructIterator<SA, LCP>(bwt, sa, lcpArray);
-    /*
-  PST pst;
-  pst.set(sa, lcpArray);
-  PSTIT pstbeg = pst.begin();
-  BWTIT bwtI = bwt.cbegin();
-  SST sst(bwtI, pstbeg, true);
-  */
   PostorderMaximalSubstringIntervalIterator<INDEX, SST> msi(sst);
+  */
   
-  std::vector<LCPInterval<INDEX>> r;
+  /*
   
   while(!msi.isEnded()){
       r.push_back(*msi);
       ++msi;
   }
 
-    std::sort(
-        r.begin(),
-        r.end(),
-        stool::LCPIntervalPreorderComp<INDEX>());
-        
+        */
   return r;
 }
 

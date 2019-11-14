@@ -24,7 +24,7 @@ class PostorderSuffixTreeIntervals
   template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>>
   class iterator
   {
-    //using SA_ITERATOR = decltype(&SA::begin() );
+    //using SA_ITERATOR = decltype(this->get_SA_ponter()->begin() );
     //using LCP_ITERATOR = decltype(LCP::begin() );
 
     SA_ITERATOR _sa_iterator;
@@ -161,7 +161,7 @@ class PostorderSuffixTreeIntervals
 
   public:
     iterator() = default;
-    iterator(SA_ITERATOR &__sa_iterator, LCP_ITERATOR &__lcp_iterator, bool isBegin, INDEX __text_size) : _sa_iterator(__sa_iterator), _lcp_iterator(__lcp_iterator), _text_size(__text_size)
+    iterator(SA_ITERATOR &__sa_iterator, LCP_ITERATOR &__lcp_iterator, bool isBegin, INDEX __text_size) : _sa_iterator(std::move(__sa_iterator) ), _lcp_iterator(std::move(__lcp_iterator) ), _text_size(__text_size)
     {
       if (isBegin)
       {
@@ -262,16 +262,35 @@ public:
     deleteFlag = false;
   }
 
-  auto begin() const
+  void construct(const SA* __sa,const LCP* __lcp)
   {
+    this->_SA = __sa;
+    this->_LCPArray = __lcp;
+
+    deleteFlag = false;
+  }
+
+
+  const SA* get_SA_pointer() const {
+    return this->_SA;
+  }
+  const LCP* get_LCP_pointer() const {
+    return this->_LCPArray;
+  }
+
+  auto begin() const -> iterator< decltype(this->get_SA_pointer()->begin() ), decltype(this->get_LCP_pointer()->begin() )>
+  {
+    using SA_IT = decltype(this->get_SA_pointer()->begin() );
+    using LCP_IT = decltype(this->get_LCP_pointer()->begin() );
+
     //LCPIterator<INDEX, VEC> lcp_it = this->_lcp_generator->begin();
-    decltype(this->_SA->begin()) sa_beg = this->_SA->begin();
-    decltype(this->_LCPArray->begin()) lcp_beg = this->_LCPArray->begin();
-    auto it = iterator<decltype(this->_SA->begin()), decltype(this->_LCPArray->begin())>(sa_beg, lcp_beg, true, this->_SA->size() );
+    SA_IT sa_beg = this->_SA->begin();
+    LCP_IT lcp_beg = this->_LCPArray->begin();
+    auto it = iterator<SA_IT, LCP_IT>(sa_beg, lcp_beg, true, this->_SA->size() );
     return it;
   }
-  auto end() const
-  {
+  auto end() const -> iterator< decltype(this->get_SA_pointer()->begin() ), decltype(this->get_LCP_pointer()->begin() )>
+  {    
     //LCPIterator<INDEX, VEC> lcp_it = this->_lcp_generator->begin();
     decltype(this->_SA->begin()) sa_beg = this->_SA->begin();
     decltype(this->_LCPArray->begin()) lcp_beg = this->_LCPArray->begin();
@@ -279,15 +298,19 @@ public:
     auto it = iterator<decltype(this->_SA->begin()), decltype(this->_LCPArray->begin())>(sa_beg, lcp_beg, false, this->_SA->size());
     return it;
   }
+  
   std::vector<LCPInterval<INDEX>> to_lcp_intervals() const
   {
     std::vector<LCPInterval<INDEX>> r;
-    for (LCPInterval<INDEX> c : *this)
+    
+    for (auto c : *this)
     {
       r.push_back(c);
     }
+    
     return r;
   }
+  
 
 };
 

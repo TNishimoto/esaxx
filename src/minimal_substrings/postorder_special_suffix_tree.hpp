@@ -77,9 +77,17 @@ struct SSTChildIntervalInfo
     }
 };
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename ST_ITERATOR = typename PostorderSuffixTreeIntervals<INDEX>::template iterator<>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator  >
-class PostorderSSTIterator
+
+
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<uint64_t>, typename LCP = std::vector<uint64_t>, typename BWT = std::vector<CHAR>>
+class PostorderSpecialSuffixTreeIntervals{
+    using STI = PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
+
+public: 
+template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator>
+class iterator
 {
+    using ST_ITERATOR = typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<SA_ITERATOR, LCP_ITERATOR>;
     ST_ITERATOR _iterator;
     BWT_ITERATOR _bwt_iterator;
     //INDEX counter_i = 0;
@@ -205,9 +213,9 @@ class PostorderSSTIterator
     }
 
 public:
-    PostorderSSTIterator() = default;
+    iterator() = default;
 
-    PostorderSSTIterator(BWT_ITERATOR &__bwt, ST_ITERATOR &__iterator, bool isBegin) : _iterator(__iterator), _bwt_iterator(__bwt)
+    iterator(BWT_ITERATOR &__bwt, ST_ITERATOR &__iterator, bool isBegin) : _iterator(__iterator), _bwt_iterator(__bwt)
     {
         if (isBegin)
         {
@@ -221,7 +229,7 @@ public:
 
     //bool takeFront(LCPInterval &outputInterval);
 
-    PostorderSSTIterator &operator++()
+    iterator &operator++()
     {
         this->succ();
         current_i++;
@@ -231,9 +239,9 @@ public:
     {
         return this->_currenct_lcp_interval;
     }
-    bool operator!=(const PostorderSSTIterator &rhs)
+    bool operator!=(const iterator &rhs)
     {
-        return _currenct_lcp_interval.parentEdgeLength != rhs._currenct_lcp_interval.parentEdgeLength;
+        return _iterator != rhs._iterator;
     }
     INDEX get_current_i()
     {
@@ -244,7 +252,7 @@ public:
     {
     return _iterator.get_text_size();
       }
-
+    /*
     template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
     static auto constructIterator(const std::vector<CHAR> &__bwt,const  SA &_SA,const  LCP &_LCPArray)
     {
@@ -256,14 +264,79 @@ public:
         auto lcp_beg = _LCPArray.begin();
         typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(_SA.begin()) , decltype(_LCPArray.begin())> st(sa_beg, lcp_beg, true,_SA.size() );
         typename std::vector<CHAR>::const_iterator bwt_iterator = __bwt.begin();
-        return PostorderSSTIterator<CHAR, INDEX, typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(_SA.begin()) , decltype(_LCPArray.begin()) > , typename std::vector<CHAR>::const_iterator>(bwt_iterator, st, true);
+        return iterator<typename std::vector<CHAR>::const_iterator, typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template ) > > (bwt_iterator, st, true);
     }
-
+    */
     bool isEnded()
     {
         return _currenct_lcp_interval.isEnd();
     }
 };
+
+ private:
+  const BWT *_bwt;
+  STI *_sti;
+  bool deleteFlag = false;
+  public:
+
+    /*
+  void set(BWT &__bwt, STI &__sti)
+  {
+    this->_bwt = &__bwt;
+    this->_sti = &__sti;
+    deleteFlag = false;
+  }
+  */
+
+  void construct(const SA* __sa,const LCP* __lcp,const BWT* __bwt){
+      this->_bwt = __bwt;
+      this->_sti = new STI();
+    this->_sti->construct(__sa, __lcp);
+  }
+
+  const BWT* get_bwt_pointer() const {
+    return this->_bwt;
+  }
+  const SA* get_sa_pointer() const{
+      return this->_sti->get_SA_pointer();
+  }
+  const LCP* get_lcp_pointer() const{
+      return this->_sti->get_LCP_pointer();
+  }
+  
+  const STI* get_sti_pointer() const {
+    return this->_sti;
+  }
+  
+
+  auto begin() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decltype(this->get_lcp_pointer()->begin() ) ,  decltype(this->get_bwt_pointer()->begin() )>
+  {
+    using BWT_IT = decltype(this->get_bwt_pointer()->begin() );
+    using SA_IT = decltype(this->get_sa_pointer()->begin() );
+    using LCP_IT = decltype(this->get_lcp_pointer()->begin() );
+
+    BWT_IT bwt_beg = this->_bwt->begin();
+    auto sti_beg = this->get_sti_pointer()->begin();
+    //LCP_IT sti_beg = this->get_sti_pointer()->get_LCP_pointer()->begin();
+
+
+    auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg, sti_beg, true );
+    return it;
+  }
+  auto end() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decltype(this->get_lcp_pointer()->begin() ) ,  decltype(this->get_bwt_pointer()->begin() )>
+  {    
+    using BWT_IT = decltype(this->get_bwt_pointer()->begin() );
+    using SA_IT = decltype(this->get_sa_pointer()->begin() );
+    using LCP_IT = decltype(this->get_lcp_pointer()->begin() );
+
+    BWT_IT bwt_beg = this->_bwt->begin();
+    //using STI_IT = decltype(this->get_sti_pointer()->begin());
+    auto sti_beg = this->get_sti_pointer()->begin();
+    auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg, sti_beg, false );
+    return it;
+  }
+};
+
 /*
 template <typename INDEX = uint64_t, typename VEC = std::vector<INDEX>>
 class PostorderSpecialSuffixTree

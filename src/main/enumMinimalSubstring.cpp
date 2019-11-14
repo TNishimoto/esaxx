@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
   std::cout << "Constructing BWT" << std::endl;
   std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(T, sa);
 
+  /*
   vector<stool::LCPInterval<INDEX>> minimalSubstrings = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, vector<INDEX>>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
 
   auto end = std::chrono::system_clock::now();
@@ -93,4 +94,6 @@ int main(int argc, char *argv[])
   std::cout << "[" << charperms << "chars/ms]" << std::endl;
   std::cout << "_________________________________" << std::endl;
   std::cout << "\033[39m" << std::endl;
+  */
+  
 }
