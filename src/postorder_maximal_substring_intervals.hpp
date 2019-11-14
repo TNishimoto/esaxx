@@ -8,6 +8,7 @@
 #include <exception>
 #include "stool/src/io.hpp"
 #include "stool/src/print.hpp"
+#include "main/common.hpp"
 
 #include "stool/src/sa_bwt_lcp.hpp"
 
@@ -99,7 +100,7 @@ public:
         ++st;
         while (!st.isEnded())
         {
-            auto interval = *st;
+            //auto interval = *st;
             if(this->isMSInterval()){
                 index++;
                 break;
@@ -126,21 +127,25 @@ public:
     }
 };
 
-template <typename CHAR = char, typename INDEX = uint64_t>
-std::vector<stool::LCPInterval<INDEX>> compute_preorder_maximal_substrings(std::vector<CHAR> &text, std::vector<INDEX> &sa)
+template <typename CHAR = char, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_maximal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
 {  
   //stool::Printer::print(text);
-  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
-  std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
+  //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  //std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
+  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
 
+  using PST = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
+  using PSTIT = stool::esaxx::PostorderSTIntervalIterator<INDEX, SA, LCP>;
+  using BWTIT = typename std::vector<CHAR>::const_iterator;
+  using SST = stool::esaxx::PostorderSSTIterator<CHAR, INDEX, PSTIT, BWTIT>;
 
-
-  stool::esaxx::PostorderSuffixTreeIntervals<> pst;
+  PST pst;
   pst.set(sa, lcpArray);
-  stool::esaxx::PostorderSTIntervalIterator<> pstbeg = pst.begin();
-  typename std::vector<CHAR>::const_iterator bwtI = bwt.cbegin();
-  stool::esaxx::PostorderSSTIterator<> sst(bwtI, pstbeg, true);
-  PostorderMaximalSubstringIntervalIterator<INDEX, stool::esaxx::PostorderSSTIterator<>> msi(sst);
+  PSTIT pstbeg = pst.begin();
+  BWTIT bwtI = bwt.cbegin();
+  SST sst(bwtI, pstbeg, true);
+  PostorderMaximalSubstringIntervalIterator<INDEX, SST> msi(sst);
   std::vector<LCPInterval<INDEX>> r;
   while(!msi.isEnded()){
       r.push_back(*msi);

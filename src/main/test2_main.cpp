@@ -65,11 +65,20 @@ void minimal_substring_test(std::string filename)
     std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
 
 
+    sdsl::csa_sada<> csa;
+    construct(csa, filename, 1);
+
+    sdsl::lcp_dac<> dac;
+    construct(dac, filename, 1);
+
+
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings<CHAR, INDEX>(text, sa);
-    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa);
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa, lcpArray);
+    vector<stool::LCPInterval<INDEX>> sdsl_test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX, sdsl::csa_sada<>, sdsl::lcp_dac<>>(text, csa, dac);
 
 
     stool::equal_check(correct_intervals, test_intervals);
+    stool::equal_check(correct_intervals, sdsl_test_intervals);
 
     std::cout << "[OK!]" << std::endl;
 
@@ -83,9 +92,16 @@ void maximal_substring_test(std::string filename)
     std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
     std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
 
+    sdsl::csa_sada<> csa;
+    construct(csa, filename, 1);
+
+    sdsl::lcp_dac<> dac;
+    construct(dac, filename, 1);
+
 
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<CHAR, INDEX>(text, sa);
-    vector<stool::LCPInterval<INDEX>> test_intervals = stool::compute_preorder_maximal_substrings<CHAR, INDEX>(text, sa);
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::compute_preorder_maximal_substrings<CHAR, INDEX>(text, sa, lcpArray);
+    vector<stool::LCPInterval<INDEX>> sdsl_test_intervals = stool::compute_preorder_maximal_substrings<CHAR, INDEX, sdsl::csa_sada<>, sdsl::lcp_dac<>>(text, csa, dac);
     /*
     for(auto it : correct_intervals){
       std::cout << it.to_string() << std::endl;      
@@ -98,6 +114,7 @@ void maximal_substring_test(std::string filename)
 
 
     stool::equal_check(correct_intervals, test_intervals);
+    stool::equal_check(correct_intervals, sdsl_test_intervals);
 
     std::cout << "[OK!]" << std::endl;
 

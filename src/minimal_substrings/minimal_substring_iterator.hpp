@@ -1,6 +1,8 @@
 #pragma once
 #include "minimal_substring_candidates.hpp"
 #include "stool/src/print.hpp"
+#include "../main/common.hpp"
+
 namespace stool
 {
 namespace esaxx
@@ -147,8 +149,9 @@ public:
     if(bwt.size() == 0) return std::vector<LCPInterval<INDEX>>();
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
-    auto sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::constructIterator(bwt, sa, lcpArray);
-    stool::esaxx::MinimalSubstringIterator<CHAR, INDEX> msi(bwt, sst);
+    using SSTL = PostorderSSTIterator<CHAR, INDEX, PostorderSTIntervalIterator<INDEX, SA, LCP> >;
+    SSTL sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::template constructIterator<SA, LCP>(bwt, sa, lcpArray);
+    stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, SSTL> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;
     if(bwt.size() > 100000)std::cout << "Conputing minimal substrings" << std::flush;
     stool::Counter counter;
@@ -233,14 +236,14 @@ public:
   }
 };
 
-template <typename CHAR = char, typename INDEX = uint64_t>
-std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::vector<CHAR> &text, std::vector<INDEX> &sa)
+template <typename CHAR = char, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
 {  
   //stool::Printer::print(text);
-  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
-  std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
+  //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
 
-  std::vector<LCPInterval<INDEX>> r = MinimalSubstringIterator<CHAR, INDEX>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
+  std::vector<LCPInterval<INDEX>> r = MinimalSubstringIterator<CHAR, INDEX>::template constructSortedMinimalSubstrings<SA, LCP>(bwt, sa, lcpArray);
   return r;
 }
 

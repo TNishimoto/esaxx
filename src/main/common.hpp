@@ -13,6 +13,26 @@ namespace stool
 namespace esaxx
 {
 
+
+template <typename CHAR, typename INDEX, typename SA = std::vector<INDEX>>
+std::vector<CHAR> constructBWT(const std::vector<CHAR> &text, const SA &sa)
+{
+    std::vector<CHAR> bwt;
+    bwt.resize(text.size());
+    INDEX n = text.size();
+    for (INDEX i = 0; i < text.size(); i++)
+    {
+        if (sa[i] == 0)
+        {
+            bwt[i] = text[n - 1];
+        }
+        else
+        {
+            bwt[i] = text[sa[i] - 1];
+        }
+    }
+    return bwt;
+}
 template <typename CHAR, typename INDEX>
 void print(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa)
 {

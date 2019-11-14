@@ -38,8 +38,9 @@ template <typename CHAR>
 void minimal_substrings_test(vector<CHAR> &text)
 {    
     std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
+    std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings<CHAR, INDEX>(text, sa);
-    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa);
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa, lcpArray);
 
     try
     {
