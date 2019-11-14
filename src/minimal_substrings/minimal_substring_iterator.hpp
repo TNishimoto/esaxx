@@ -149,7 +149,7 @@ public:
     if(bwt.size() == 0) return std::vector<LCPInterval<INDEX>>();
     assert(bwt.size() == sa.size());
     assert(bwt.size() == lcpArray.size());
-    using SSTL = PostorderSSTIterator<CHAR, INDEX, PostorderSTIntervalIterator<INDEX, SA, LCP> >;
+    using SSTL = PostorderSSTIterator<CHAR, INDEX, typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(sa.begin()), decltype(lcpArray.begin())>  >;
     SSTL sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::template constructIterator<SA, LCP>(bwt, sa, lcpArray);
     stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, SSTL> msi(bwt, sst);
     std::vector<LCPInterval<INDEX>> r;

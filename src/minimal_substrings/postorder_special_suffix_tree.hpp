@@ -77,7 +77,7 @@ struct SSTChildIntervalInfo
     }
 };
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename ST_ITERATOR = PostorderSTIntervalIterator<INDEX>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator  >
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename ST_ITERATOR = typename PostorderSuffixTreeIntervals<INDEX>::template iterator<>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator  >
 class PostorderSSTIterator
 {
     ST_ITERATOR _iterator;
@@ -246,15 +246,17 @@ public:
       }
 
     template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
-    static PostorderSSTIterator<CHAR, INDEX, PostorderSTIntervalIterator<INDEX, SA, LCP>, typename std::vector<CHAR>::const_iterator > constructIterator(const std::vector<CHAR> &__bwt,const  SA &_SA,const  LCP &_LCPArray)
+    static auto constructIterator(const std::vector<CHAR> &__bwt,const  SA &_SA,const  LCP &_LCPArray)
     {
         if (_SA[0] != _SA.size() - 1)
         {
             throw std::logic_error("The first value of SA must be the last position of the text.");
         }
-        PostorderSTIntervalIterator<INDEX, SA, LCP> st(&_SA, &_LCPArray, true);
+        auto sa_beg = _SA.begin();
+        auto lcp_beg = _LCPArray.begin();
+        typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(_SA.begin()) , decltype(_LCPArray.begin())> st(sa_beg, lcp_beg, true,_SA.size() );
         typename std::vector<CHAR>::const_iterator bwt_iterator = __bwt.begin();
-        return PostorderSSTIterator<CHAR, INDEX, PostorderSTIntervalIterator<INDEX, SA, LCP>, typename std::vector<CHAR>::const_iterator>(bwt_iterator, st, true);
+        return PostorderSSTIterator<CHAR, INDEX, typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(_SA.begin()) , decltype(_LCPArray.begin()) > , typename std::vector<CHAR>::const_iterator>(bwt_iterator, st, true);
     }
 
     bool isEnded()
