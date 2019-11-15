@@ -6,6 +6,6 @@ filearr=( "fib41" "rs.13" "tm29" "dblp.xml.00001.1" "dblp.xml.00001.2" "dblp.xml
 
 for file in ${filearr[@]}; do
 	echo "esaxx ms ${file}"
-    nohup /usr/bin/time -f "#esaxx ms ${file}, %e time, %M KB" ~/esaxx-master/build/enumMaximumSubstring.out -i ${folderpath}/${file} -o ${outputpath}/${file}.msi2 -p 0 >> /mnt/server/nishimoto/result/esaxx_ms_output.log
+    nohup /usr/bin/time -f "#esaxx ms ${file}, %e time, %M KB" ~/esaxx/build/enumMaximumSubstring.out -i ${folderpath}/${file} -o ${outputpath}/${file}.msi2 -p 0 >> /mnt/server/nishimoto/result/esaxx_ms_output.log
  done
  echo "Finished."

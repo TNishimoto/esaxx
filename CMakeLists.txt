@@ -29,8 +29,8 @@ include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 else()
 #libdivsufsort directory is here.
 #Please modify it appropriately.
-LINK_DIRECTORIES(./lib)
-INCLUDE_DIRECTORIES(./include)
+LINK_DIRECTORIES(~/lib)
+INCLUDE_DIRECTORIES(~/include)
 endif()
 
 #SDSL lib and include directory are here
@@ -50,7 +50,7 @@ add_executable(enumSubstring.out ${STOOL_SOURCES} src/main/enumSubstring.cpp)
 target_link_libraries(enumSubstring.out divsufsort divsufsort64)
 
 add_executable(enumMaximalSubstring.out ${STOOL_SOURCES} src/main/enumMaximalSubstring.cpp)
-target_link_libraries(enumMaximalSubstring.out divsufsort divsufsort64)
+target_link_libraries(enumMaximalSubstring.out sdsl divsufsort divsufsort64)
 
 add_executable(enumKaiMaximalSubstring.out ${STOOL_SOURCES} src/main/enumKaiMaximalSubstring.cpp)
 target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)

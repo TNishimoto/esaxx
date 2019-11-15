@@ -14,6 +14,9 @@
 #include "common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
+#include <sdsl/suffix_arrays.hpp>
+#include <sdsl/lcp_dac.hpp>
+#include <sdsl/lcp_support_sada.hpp>
 
 using namespace std;
 using CHAR = char;
@@ -23,10 +26,105 @@ using INDEXTYPE = uint64_t;
 void iterateMSwithSDSL(){
 
 }
-void iterateMS(){
-
-}
 */
+
+uint64_t input_text_size = 0;
+double sa_construction_time = 0;
+double lcp_array_construction_time = 0;
+double bwt_construction_time = 0;
+double ms_construction_time = 0;
+
+std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSWithSDSL(string filename){
+  vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
+  input_text_size = T.size();
+
+
+  std::cout << "SA" << std::endl;
+  auto start_sa = std::chrono::system_clock::now();
+  sdsl::csa_sada<> sa;
+  construct(sa, filename, 1);
+  auto end_sa = std::chrono::system_clock::now();
+  sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
+
+  auto start_bwt = std::chrono::system_clock::now();
+  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEXTYPE, sdsl::csa_sada<> >(T, sa);
+  auto end_bwt = std::chrono::system_clock::now();
+  bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
+
+  std::cout << "LCP" << std::endl;
+  auto start_lcp = std::chrono::system_clock::now();
+  sdsl::lcp_dac<> lcpArray;
+  construct(lcpArray, filename, 1);
+  auto end_lcp = std::chrono::system_clock::now();
+  lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
+
+  auto start_ms = std::chrono::system_clock::now();
+  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, sdsl::csa_sada<>, sdsl::lcp_dac<>, std::vector<CHAR>> pmsi;
+  pmsi.construct(&sa, &lcpArray, &bwt);
+
+  std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
+  for (auto it : pmsi)
+  {
+    intervals.push_back(it);
+  }
+  auto end_ms = std::chrono::system_clock::now();
+  ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
+
+  return intervals;
+}
+
+
+std::vector<stool::LCPInterval<INDEXTYPE>> iterateMS(string filename){
+  vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
+  input_text_size = T.size();
+
+  auto start_sa = std::chrono::system_clock::now();
+  std::vector<INDEXTYPE> sa = stool::construct_suffix_array(T);
+  auto end_sa = std::chrono::system_clock::now();
+  sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
+
+  auto start_bwt = std::chrono::system_clock::now();
+  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEXTYPE, std::vector<INDEXTYPE>>(T, sa);
+  auto end_bwt = std::chrono::system_clock::now();
+  bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
+
+
+  auto start_lcp = std::chrono::system_clock::now();
+  std::vector<INDEXTYPE> lcpArray = stool::constructLCP<CHAR, INDEXTYPE>(T, sa);
+  auto end_lcp = std::chrono::system_clock::now();
+  lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
+
+  auto start_ms = std::chrono::system_clock::now();
+  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, std::vector<INDEXTYPE>, std::vector<INDEXTYPE>, std::vector<CHAR>> pmsi;
+  pmsi.construct(&sa, &lcpArray, &bwt);
+
+  std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
+  for (auto it : pmsi)
+  {
+    intervals.push_back(it);
+  }
+  auto end_ms = std::chrono::system_clock::now();
+  ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
+
+  return intervals;
+}
+
+
+std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSwithESAXX(string filename)
+{
+  vector<char> T = stool::load_text(filename);
+  input_text_size = T.size();
+
+  std::vector<int64_t> sa;
+  stool::PostorderMaximalSubstrings<int64_t> pmsi = stool::PostorderMaximalSubstrings<int64_t>::construct(T, sa);
+  std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
+  for (auto it : pmsi)
+  {
+    intervals.push_back(stool::LCPInterval<INDEXTYPE>(it.i, it.j, it.lcp) );
+
+  }
+  return intervals;
+}
 int main(int argc, char *argv[])
 {
 
@@ -36,7 +134,6 @@ int main(int argc, char *argv[])
   p.add<bool>("print", 'p', "print info", false, true);
   p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
   p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
-
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
@@ -53,59 +150,79 @@ int main(int argc, char *argv[])
 
   if (outputFile.size() == 0)
   {
-    if(format == "csv"){
+    if (format == "csv")
+    {
       outputFile = inputFile + ".max.csv";
-    }else{
+    }
+    else
+    {
       outputFile = inputFile + ".max";
     }
   }
 
-  //vector<char> T = stool::load_text(inputFile); // input text
-  vector<CHAR> T = stool::load_char_vec_from_file(inputFile, true); // input text
-  //INDEXTYPE n = T.size();
+  auto start = std::chrono::system_clock::now();
+  
 
-  std::vector<INDEXTYPE> sa = stool::construct_suffix_array(T);
-  std::cout << "Constructing LCP Array" << std::endl;
-  std::vector<INDEXTYPE> lcpArray = stool::constructLCP<CHAR, INDEXTYPE>(T, sa);
+  std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
+  if(mode == "esaxx"){
+    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMS(inputFile);
+    intervals.swap(tmp);
+  }else if(mode == "sdsl"){
+    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSWithSDSL(inputFile);
+    intervals.swap(tmp);
+  }else{
+    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSwithESAXX(inputFile);
+    intervals.swap(tmp);
+  }
 
-  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEXTYPE, std::vector<INDEXTYPE>>(T, sa);
-  std::cout << "Constructing PST" << std::endl;
-  //vector<INDEXTYPE> SA; // suffix array
+  //stool::PostorderMaximalSubstrings<INDEXTYPE> pmsi = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, sa);
+  //std::vector<stool::LCPInterval<INDEXTYPE>> intervals = iterateMSwithESAXX(inputFile);
+  //std::vector<stool::LCPInterval<INDEXTYPE>> intervals = iterateMS(inputFile);
+  //std::vector<stool::LCPInterval<INDEXTYPE>> intervals = iterateMSWithSDSL(inputFile);
 
-  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, std::vector<INDEXTYPE>, std::vector<INDEXTYPE>, std::vector<CHAR> > pmsi;
-  pmsi.construct(&sa, &lcpArray, &bwt);
+  /*
+  for (auto it : pmsi)
+  {
+    intervals.push_back(it);
+  }
+  */
 
-  //stool::PostorderMaximalSubstrings<INDEXTYPE> iterator = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, sa);
-    std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
-    for (auto it : pmsi)
-    {
-      intervals.push_back(it);
-    }
-    if (isPrint)
-    {
-      std::cout << "Maximal substrings in the file" << std::endl;
-      stool::esaxx::print<CHAR, INDEXTYPE>(intervals, T, sa );
-    }
+  if (isPrint)
+  {
+    vector<CHAR> T = stool::load_char_vec_from_file(inputFile, true);
+    std::vector<INDEXTYPE> sa = stool::construct_suffix_array(T);
+    std::cout << "Maximal substrings in the file" << std::endl;
+    stool::esaxx::print<CHAR, INDEXTYPE>(intervals, T, sa);
+  }
 
   if (format != "binary")
   {
-    stool::esaxx::writeText<CHAR, INDEXTYPE>(outputFile, intervals, T, sa );
+    vector<CHAR> T = stool::load_char_vec_from_file(inputFile, true);
+    std::vector<INDEXTYPE> sa = stool::construct_suffix_array(T);
+    stool::esaxx::writeText<CHAR, INDEXTYPE>(outputFile, intervals, T, sa);
   }
   else
   {
-
     stool::write_vector(outputFile, intervals, false);
   }
+  auto end = std::chrono::system_clock::now();
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-
-  std::cout << "\033[36m";
-  std::cout << "___________RESULT___________" << std::endl;
-  std::cout << "File: " << inputFile << std::endl;
-  std::cout << "Output: " << outputFile << std::endl;
-  std::cout << "Output format: " << format << std::endl;
-  std::cout << "The length of the input text: " << T.size() << std::endl;
+  std::cout << "\033[31m";
+  std::cout << "______________________RESULT______________________" << std::endl;
+  std::cout << "mode \t\t\t\t\t : " << mode << std::endl; 
+  std::cout << "File \t\t\t\t\t : " << inputFile << std::endl;
+  std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
+  std::cout << "Output format \t\t\t\t : " << format << std::endl;  
+  std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
   //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
-  std::cout << "The number of maximum substrings: " << intervals.size() << std::endl;
-  std::cout << "_________________________________" << std::endl;
+  std::cout << "The number of maximum substrings \t : " << intervals.size() << std::endl;
+  std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
+  std::cout << "|\t SA Construction time \t\t : " << sa_construction_time << "[ms]" << std::endl;
+  std::cout << "|\t LCP Array Construction time \t : " << lcp_array_construction_time << "[ms]" << std::endl;
+  std::cout << "|\t BWT Construction time \t\t : " << bwt_construction_time << "[ms]" << std::endl;
+  std::cout << "|\t MS Construction time \t\t : " << ms_construction_time << "[ms]" << std::endl;
+  
+  std::cout << "_______________________________________________________" << std::endl;
   std::cout << "\033[39m" << std::endl;
 }
