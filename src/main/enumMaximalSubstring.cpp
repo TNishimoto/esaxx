@@ -110,7 +110,7 @@ std::vector<stool::LCPInterval<INDEXTYPE>> iterateMS(string filename){
 }
 
 
-std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSwithESAXX(string filename)
+std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSwithOldESAXX(string filename)
 {
   vector<char> T = stool::load_text(filename);
   input_text_size = T.size();
@@ -164,28 +164,18 @@ int main(int argc, char *argv[])
   
 
   std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
-  if(mode == "esaxx"){
-    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMS(inputFile);
+  if(mode == "old"){
+    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSwithOldESAXX(inputFile);
     intervals.swap(tmp);
   }else if(mode == "sdsl"){
     std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSWithSDSL(inputFile);
     intervals.swap(tmp);
   }else{
-    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSwithESAXX(inputFile);
+    mode = "non-compressed";
+    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMS(inputFile);
     intervals.swap(tmp);
   }
 
-  //stool::PostorderMaximalSubstrings<INDEXTYPE> pmsi = stool::PostorderMaximalSubstrings<INDEXTYPE>::construct(T, sa);
-  //std::vector<stool::LCPInterval<INDEXTYPE>> intervals = iterateMSwithESAXX(inputFile);
-  //std::vector<stool::LCPInterval<INDEXTYPE>> intervals = iterateMS(inputFile);
-  //std::vector<stool::LCPInterval<INDEXTYPE>> intervals = iterateMSWithSDSL(inputFile);
-
-  /*
-  for (auto it : pmsi)
-  {
-    intervals.push_back(it);
-  }
-  */
 
   if (isPrint)
   {
