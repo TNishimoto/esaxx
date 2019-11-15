@@ -24,7 +24,12 @@ if(NOT MYMOD_DIR)
   set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
   set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
   add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
-endif()
+  add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
+  add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
+  add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
+
+
+  endif()
 include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 else()
 #libdivsufsort directory is here.
@@ -50,7 +55,7 @@ add_executable(enumSubstring.out ${STOOL_SOURCES} src/main/enumSubstring.cpp)
 target_link_libraries(enumSubstring.out divsufsort divsufsort64)
 
 add_executable(enumMaximalSubstring.out ${STOOL_SOURCES} src/main/enumMaximalSubstring.cpp)
-target_link_libraries(enumMaximalSubstring.out sdsl divsufsort divsufsort64)
+target_link_libraries(enumMaximalSubstring.out sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
 
 add_executable(enumKaiMaximalSubstring.out ${STOOL_SOURCES} src/main/enumKaiMaximalSubstring.cpp)
 target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)

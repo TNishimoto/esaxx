@@ -17,7 +17,7 @@
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
-
+#include "../../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
 using namespace std;
 using CHAR = char;
 using INDEXTYPE = uint64_t;
@@ -34,6 +34,48 @@ double lcp_array_construction_time = 0;
 double bwt_construction_time = 0;
 double ms_construction_time = 0;
 
+std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSWithRLBWT(string filename){
+
+  std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
+
+  //vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
+  //input_text_size = T.size();
+  vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
+  input_text_size = T.size();
+
+  using LCP = stool::rlbwt::ForwardLCPArray<INDEXTYPE, std::vector<INDEXTYPE>>;
+  using SA = stool::rlbwt::ForwardSA<INDEXTYPE, std::vector<INDEXTYPE>>;
+  stool::rlbwt::RLBWT<CHAR, INDEXTYPE> rlestr;
+  stool::rlbwt::Constructor::construct_from_file<CHAR, INDEXTYPE>(rlestr, filename);
+
+
+  LCP lcpArray;
+  //lcpArray.to_lcp_array();
+  lcpArray.construct_from_rlbwt(&rlestr, false);
+  
+  
+  const SA* sa_pointer = lcpArray.get_ForwardSA();
+  
+  
+  auto start_bwt = std::chrono::system_clock::now();
+  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEXTYPE, SA >(T, *sa_pointer);
+  auto end_bwt = std::chrono::system_clock::now();
+  bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
+
+
+  auto start_ms = std::chrono::system_clock::now();
+  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, SA, LCP, std::vector<CHAR>> pmsi;
+  pmsi.construct(sa_pointer, &lcpArray, &bwt);
+
+  for (auto it : pmsi)
+  {
+    intervals.push_back(it);
+  }
+  auto end_ms = std::chrono::system_clock::now();
+  ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
+  
+  return intervals;
+}
 std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSWithSDSL(string filename){
   vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
   input_text_size = T.size();
@@ -170,7 +212,12 @@ int main(int argc, char *argv[])
   }else if(mode == "sdsl"){
     std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSWithSDSL(inputFile);
     intervals.swap(tmp);
-  }else{
+  } else if(mode == "rlbwt"){
+
+    std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMSWithRLBWT(inputFile);
+    intervals.swap(tmp);
+  }
+  else{
     mode = "non-compressed";
     std::vector<stool::LCPInterval<INDEXTYPE>> tmp = iterateMS(inputFile);
     intervals.swap(tmp);

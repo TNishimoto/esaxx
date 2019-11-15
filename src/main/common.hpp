@@ -20,6 +20,20 @@ std::vector<CHAR> constructBWT(const std::vector<CHAR> &text, const SA &sa)
     std::vector<CHAR> bwt;
     bwt.resize(text.size());
     INDEX n = text.size();
+    INDEX i = 0;
+    for(auto saValue : sa){
+        if (saValue == 0)
+        {
+            bwt[i] = text[n - 1];
+        }
+        else
+        {
+            bwt[i] = text[saValue - 1];
+        }
+
+        ++i;
+    }
+    /*
     for (INDEX i = 0; i < text.size(); i++)
     {
         if (sa[i] == 0)
@@ -31,6 +45,7 @@ std::vector<CHAR> constructBWT(const std::vector<CHAR> &text, const SA &sa)
             bwt[i] = text[sa[i] - 1];
         }
     }
+    */
     return bwt;
 }
 template <typename CHAR, typename INDEX>
