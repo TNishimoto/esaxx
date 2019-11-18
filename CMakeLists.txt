@@ -18,18 +18,11 @@ set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
 #### Modules
-if(NOT USE_OTHER_LIB)
-if(NOT MYMOD_DIR)
-  set(MYMOD_DIR 1)
-  set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
-  set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
-  add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
-  add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
-  add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
-  add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
+set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
+set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
 
-
-  endif()
+if(COMPILE_LIBDIVSUFSORT)
+add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
 include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 else()
 #libdivsufsort directory is here.
@@ -37,6 +30,10 @@ else()
 LINK_DIRECTORIES(~/lib)
 INCLUDE_DIRECTORIES(~/include)
 endif()
+
+add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
+add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
+add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
 
 #SDSL lib and include directory are here
 #Please modify it appropriately.
