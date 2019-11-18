@@ -20,6 +20,7 @@ set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 #### Modules
 set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
 set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
+set(MYMOD_DIR 1)
 
 if(COMPILE_LIBDIVSUFSORT)
 add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
