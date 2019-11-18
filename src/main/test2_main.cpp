@@ -267,18 +267,24 @@ void maximal_substring_test(std::string filename)
   std::cout << "[SDSL OK!]" << std::endl;
 
   // Postorder suffix interval tree with RLBWT
+  /*
   vector<char> char_text;
   for (auto &it : text)
-    char_text.push_back((char)it);
+    char_text.push_back((char)it);  
   std::vector<char> char_bwt = stool::esaxx::constructBWT<char, INDEX>(char_text, sa);
+  */
   using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
   using SA_RLBWT = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
   stool::rlbwt::RLBWT<char, INDEX> rlestr;
   stool::rlbwt::Constructor::construct_from_file<char, INDEX>(rlestr, filename);
+  using BWT_RLBWT = stool::rlbwt::ForwardBWT<char, INDEX>;
   LCP_RLBWT lcpArrayOnRLBWT;
   lcpArrayOnRLBWT.construct_from_rlbwt(&rlestr, false);
   SA_RLBWT *sa_pointer = const_cast<SA_RLBWT *>(lcpArrayOnRLBWT.get_ForwardSA());
-  vector<stool::LCPInterval<INDEX>> rlbwt_test_intervals = stool::esaxx::PostorderMaximalSubstringIntervals<char, INDEX, SA_RLBWT, LCP_RLBWT, BWT >::compute_maximal_substrings(*sa_pointer, lcpArrayOnRLBWT, bwt);
+
+  BWT_RLBWT bwt_rlbwt(&rlestr);
+
+  vector<stool::LCPInterval<INDEX>> rlbwt_test_intervals = stool::esaxx::PostorderMaximalSubstringIntervals<char, INDEX, SA_RLBWT, LCP_RLBWT, BWT_RLBWT >::compute_maximal_substrings(*sa_pointer, lcpArrayOnRLBWT, bwt_rlbwt );
   //vector<stool::LCPInterval<INDEX>> rlbwt_test_intervals = stool::esaxx::compute_minimal_substrings<char, INDEX, SA_RLBWT, LCP_RLBWT>(char_text, *sa_pointer, lcpArrayOnRLBWT);
   stool::sort_in_preorder(rlbwt_test_intervals);
   stool::equal_check(correct_intervals, rlbwt_test_intervals);
