@@ -41,11 +41,6 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
 
   std::vector<stool::LCPInterval<INDEX>> intervals;
 
-  //vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
-  //input_text_size = T.size();
-  //vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
-  //input_text_size = T.size();
-
   using LCP = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
   using SA = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
   auto start_prep = std::chrono::system_clock::now();
@@ -56,7 +51,6 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   execution_time_messages.push_back(std::pair<std::string, double>("RLBWT construction time\t\t", prep_time));
 
   input_text_size = rlestr.str_size();
-  //lcpArray.to_lcp_array();
 
   auto start_lcp = std::chrono::system_clock::now();
   LCP lcpArray;
@@ -71,17 +65,9 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   using BWT_RLBWT = stool::rlbwt::ForwardBWT<CHAR, INDEX>;
   BWT_RLBWT bwt_rlbwt(&rlestr);
   
-  /*
-  auto start_bwt = std::chrono::system_clock::now();
-  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA >(T, *sa_pointer);
-  auto end_bwt = std::chrono::system_clock::now();
-  bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
-  */
-
   auto start_ms = std::chrono::system_clock::now();
   stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, BWT_RLBWT > pmsi;
   pmsi.construct(sa_pointer, &lcpArray, &bwt_rlbwt);
-
   for (auto it : pmsi)
   {
     intervals.push_back(it);
@@ -93,11 +79,7 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   return intervals;
 }
 std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename){
-  vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
-  input_text_size = T.size();
 
-
-  std::cout << "SA" << std::endl;
   auto start_sa = std::chrono::system_clock::now();
   sdsl::csa_sada<> sa;
   construct(sa, filename, 1);
@@ -105,15 +87,9 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename){
   auto sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
   execution_time_messages.push_back(std::pair<std::string, double>("SA Construction time\t\t", sa_construction_time));
 
+  input_text_size = sa.size();
   using BWT = decltype(sa.bwt);
-  /*
-  auto start_bwt = std::chrono::system_clock::now();
-  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, sdsl::csa_sada<> >(T, sa);
-  auto end_bwt = std::chrono::system_clock::now();
-  bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
-  */
 
-  std::cout << "LCP" << std::endl;
   auto start_lcp = std::chrono::system_clock::now();
   sdsl::lcp_dac<> lcpArray;
   construct(lcpArray, filename, 1);
