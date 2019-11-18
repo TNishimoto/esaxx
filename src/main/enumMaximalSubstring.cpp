@@ -9,8 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
-#include "../esa.hxx"
-#include "../postorder_maximal_substrings.hpp"
+#include "../test/old_postorder_maximal_substrings.hpp"
 #include "common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
@@ -64,7 +63,7 @@ std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSWithRLBWT(string filename){
 
 
   auto start_ms = std::chrono::system_clock::now();
-  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, SA, LCP, std::vector<CHAR>> pmsi;
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, SA, LCP, std::vector<CHAR>> pmsi;
   pmsi.construct(sa_pointer, &lcpArray, &bwt);
 
   for (auto it : pmsi)
@@ -88,10 +87,13 @@ std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSWithSDSL(string filename){
   auto end_sa = std::chrono::system_clock::now();
   sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
 
+  using BWT = decltype(sa.bwt);
+  /*
   auto start_bwt = std::chrono::system_clock::now();
   std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEXTYPE, sdsl::csa_sada<> >(T, sa);
   auto end_bwt = std::chrono::system_clock::now();
   bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
+  */
 
   std::cout << "LCP" << std::endl;
   auto start_lcp = std::chrono::system_clock::now();
@@ -101,8 +103,8 @@ std::vector<stool::LCPInterval<INDEXTYPE>> iterateMSWithSDSL(string filename){
   lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
 
   auto start_ms = std::chrono::system_clock::now();
-  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, sdsl::csa_sada<>, sdsl::lcp_dac<>, std::vector<CHAR>> pmsi;
-  pmsi.construct(&sa, &lcpArray, &bwt);
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, sdsl::csa_sada<>, sdsl::lcp_dac<>, BWT> pmsi;
+  pmsi.construct(&sa, &lcpArray, &sa.bwt);
 
   std::vector<stool::LCPInterval<INDEXTYPE>> intervals;
   for (auto it : pmsi)
@@ -137,7 +139,7 @@ std::vector<stool::LCPInterval<INDEXTYPE>> iterateMS(string filename){
   lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
 
   auto start_ms = std::chrono::system_clock::now();
-  stool::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, std::vector<INDEXTYPE>, std::vector<INDEXTYPE>, std::vector<CHAR>> pmsi;
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEXTYPE, std::vector<INDEXTYPE>, std::vector<INDEXTYPE>, std::vector<CHAR>> pmsi;
   pmsi.construct(&sa, &lcpArray, &bwt);
 
   std::vector<stool::LCPInterval<INDEXTYPE>> intervals;

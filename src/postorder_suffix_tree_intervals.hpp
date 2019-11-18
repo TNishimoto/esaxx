@@ -5,13 +5,25 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "postorder_suffix_tree.hpp"
 
 namespace stool
 {
 namespace esaxx
 {
+template <typename INDEX = uint64_t>
+class IncompleteLCPInterval
+{
+public:
+  INDEX i;
+  INDEX j;
+  INDEX lcp;
+  INDEX i_lcp;
 
+  IncompleteLCPInterval();
+  IncompleteLCPInterval(INDEX _i, INDEX _j, INDEX _lcp, INDEX _i_lcp) : i(_i), j(_j), lcp(_lcp), i_lcp(_i_lcp)
+  {
+  }
+};
 template <typename INDEX = uint64_t, typename SA = std::vector<uint64_t>, typename LCP = std::vector<uint64_t>>
 class PostorderSuffixTreeIntervals
 {
@@ -313,10 +325,17 @@ public:
     
     return r;
   }
+
+  static std::vector<stool::LCPInterval<INDEX>> compute_lcp_intervals(SA &sa, LCP &lcpArray){
+    stool::esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP> st;
+    st.construct(&sa, &lcpArray);
+    std::vector<stool::LCPInterval<INDEX>> intervals = st.to_lcp_intervals();
+    return intervals;
+  }
   
 
 };
-
+/*
 template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
 std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
 {
@@ -356,6 +375,7 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_lcp_intervals(std::vecto
   std::vector<INDEX> sa = stool::construct_suffix_array(text);
   return compute_preorder_lcp_intervals(text, sa);
 }
+*/
 
 } // namespace esaxx
 } // namespace stool

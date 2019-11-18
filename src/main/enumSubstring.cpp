@@ -9,9 +9,10 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
-#include "../esa.hxx"
+#include "../test/esa.hxx"
 #include "stool/src/io.hpp"
 #include "stool/src/sa_bwt_lcp.hpp"
+
 
 
 using namespace std;

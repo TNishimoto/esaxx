@@ -75,7 +75,7 @@ add_executable(sdsl.out ${STOOL_SOURCES} src/main/sdsl_main.cpp)
 target_link_libraries(sdsl.out sdsl divsufsort divsufsort64)
 
 add_executable(test2.out ${STOOL_SOURCES} src/main/test2_main.cpp )
-target_link_libraries(test2.out sdsl divsufsort divsufsort64)
+target_link_libraries(test2.out sdsl divsufsort divsufsort64 online_rlbwt Basics BTree)
 
 
 

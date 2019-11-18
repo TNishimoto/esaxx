@@ -9,8 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
-#include "../esa.hxx"
-#include "../postorder_maximal_substrings.hpp"
+//#include "../postorder_maximal_substrings.hpp"
 #include "common.hpp"
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>

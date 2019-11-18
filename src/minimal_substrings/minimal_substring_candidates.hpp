@@ -71,12 +71,14 @@ std::unordered_map<CHAR, INDEX> constructCMap(const std::vector<CHAR> &text)
     }
   }
   std::sort(chars.begin(), chars.end());
+  /*
   if (chars[0] != std::numeric_limits<CHAR>::min() )
   {
     //assert(false);
     std::string msg = "The first character of the bwt string must be " + std::to_string(std::numeric_limits<CHAR>::min());
     throw std::logic_error(msg);
   }
+  */
   INDEX counter = 0;
   for (INDEX i = 0; i < chars.size(); i++)
   {

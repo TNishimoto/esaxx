@@ -327,7 +327,7 @@ auto begin() const -> iterator< decltype(this->get_sa_pointer()->begin() ), decl
 };
 
 template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
-std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
+std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
 {  
   //stool::Printer::print(text);
   //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
@@ -354,12 +354,6 @@ std::vector<stool::LCPInterval<INDEX>> compute_preorder_minimal_substrings(std::
     ++it;
   }
   
-
-    std::sort(
-        r.begin(),
-        r.end(),
-        stool::LCPIntervalPreorderComp<INDEX>());
-  //std::vector<LCPInterval<INDEX>> r = MinimalSubstringIterator<CHAR, INDEX>::template constructSortedMinimalSubstrings<SA, LCP>(bwt, sa, lcpArray);
   return r;
 }
 

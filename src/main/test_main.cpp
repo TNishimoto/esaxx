@@ -10,14 +10,19 @@
 
 using namespace std;
 using INDEX = uint64_t;
-template <typename T>
-void lcp_interval_test(vector<T> &text)
+template <typename CHAR>
+void lcp_interval_test(vector<CHAR> &text)
 {
     //stool::Printer::print("text", text);
 
-    std::vector<INDEX> sa = stool::construct_naive_SA<T, INDEX>(text);
-    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<T, INDEX>(text, sa);
-    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<T, INDEX>(text, sa);
+    std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
+    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<CHAR, INDEX>(text, sa);
+
+
+    std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, std::vector<INDEX>, std::vector<INDEX> >::compute_lcp_intervals(sa, lcpArray);
+  stool::sort_in_preorder(test_intervals);
+    //vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<T, INDEX>(text, sa);
 
     /*
     for(auto& p : correct_intervals){
@@ -40,7 +45,8 @@ void minimal_substrings_test(vector<CHAR> &text)
     std::vector<INDEX> sa = stool::construct_naive_SA<CHAR, INDEX>(text);
     std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings<CHAR, INDEX>(text, sa);
-    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_minimal_substrings<CHAR, INDEX>(text, sa, lcpArray);
+    vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_minimal_substrings<CHAR, INDEX>(text, sa, lcpArray);
+    stool::sort_in_preorder(test_intervals);
 
     try
     {

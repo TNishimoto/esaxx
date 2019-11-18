@@ -4,7 +4,6 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
-#include "esa.hxx"
 #include <exception>
 #include "stool/src/io.hpp"
 #include "stool/src/print.hpp"
@@ -16,6 +15,7 @@
 
 namespace stool
 {
+    namespace esaxx{
 
 template <typename CHAR, typename INDEX>
 struct MaximalSubstringChildInfo
@@ -45,7 +45,7 @@ class PostorderMaximalSubstringIntervals
         using STI_ITERATOR = typename STI::template iterator<SA_ITERATOR, LCP_ITERATOR>;
         BWT_ITERATOR _bwt_iterator;
         STI_ITERATOR _st_iterator;
-        INDEX bwt_index=0;
+        INDEX bwt_index = 0;
         INDEX index;
         //stool::LCPInterval<INDEX> currentMSInterval;
         std::stack<MaximalSubstringChildInfo<CHAR, INDEX>> childStack;
@@ -133,7 +133,9 @@ class PostorderMaximalSubstringIntervals
             if (isFirst)
             {
                 index = 0;
-            }else{
+            }
+            else
+            {
                 ++_st_iterator;
                 ++index;
             }
@@ -212,7 +214,7 @@ public:
         auto sti_beg = this->get_sti_pointer()->begin();
         auto bwt_beg = this->get_bwt_pointer()->begin();
 
-        auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg,sti_beg);
+        auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg, sti_beg);
         return it;
     }
 
@@ -228,50 +230,20 @@ public:
         auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg, sti_end);
         return it;
     }
-};
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
-std::vector<stool::LCPInterval<INDEX>> compute_preorder_maximal_substrings(const std::vector<CHAR> &text, const SA &sa, const LCP &lcpArray)
-{
-    //stool::Printer::print(text);
-    //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
-    //std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(text, sa);
-    std::vector<LCPInterval<INDEX>> r;
-
-    std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
-    PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, std::vector<CHAR>> pmsi;
-    pmsi.construct(&sa, &lcpArray, &bwt);
-    for (auto it : pmsi)
+    //template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+    static std::vector<stool::LCPInterval<INDEX>> compute_maximal_substrings(const SA &sa, const LCP &lcpArray, const BWT &bwt)
     {
-        r.push_back(it);
+        std::vector<stool::LCPInterval<INDEX>> r;
+        PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, BWT > pmsi;
+        pmsi.construct(&sa, &lcpArray, &bwt);
+        for (auto it : pmsi)
+        {
+            r.push_back(it);
+        }
+        return r;
     }
-
-    std::sort(
-        r.begin(),
-        r.end(),
-        stool::LCPIntervalPreorderComp<INDEX>());
-
-    /*
-  using PST = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
-  using PSTIT = typename PST::template iterator<decltype(sa.begin()), decltype(lcpArray.begin()) >;
-  using BWTIT = typename std::vector<CHAR>::const_iterator;
-  using SST = stool::esaxx::PostorderSSTIterator<CHAR, INDEX, PSTIT, BWTIT>;
-
-    using SSTL = stool::esaxx::PostorderSSTIterator<CHAR, INDEX, typename esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(sa.begin()), decltype(lcpArray.begin())>  >;
-    SSTL sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::template constructIterator<SA, LCP>(bwt, sa, lcpArray);
-  PostorderMaximalSubstringIntervalIterator<INDEX, SST> msi(sst);
-  */
-
-    /*
-  
-  while(!msi.isEnded()){
-      r.push_back(*msi);
-      ++msi;
-  }
-
-        */
-    return r;
-}
+};
 
 /*
 template <typename INDEX, typename POSTORDER_ST, typename DISTINCT_CHARACTER_CHECKER>
@@ -327,5 +299,5 @@ public:
     }
 };
 */
-
+    }
 } // namespace stool

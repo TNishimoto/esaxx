@@ -9,7 +9,6 @@
 #include "stool/src/sa_bwt_lcp.hpp"
 
 #include <stack>
-#include "../postorder_suffix_tree.hpp"
 #include "../postorder_suffix_tree_intervals.hpp"
 
 

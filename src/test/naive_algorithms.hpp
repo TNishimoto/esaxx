@@ -103,6 +103,12 @@ std::vector<stool::LCPInterval<INDEX>> naive_compute_minimal_substrings(const st
   }
   return r2;
 }
+template <typename CHAR, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> naive_compute_minimal_substrings_with_uint64(const std::vector<CHAR> &text, const std::vector<INDEX> &sa){
+    std::vector<uint64_t> text2;
+    for(auto& it:text) text2.push_back(it);
+    return naive_compute_minimal_substrings(text2, sa);
+}
 
 template <typename CHAR, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> naive_compute_maximal_substrings(const std::vector<CHAR> &text, const std::vector<INDEX> &sa)

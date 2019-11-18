@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include "stool/src/cmdline.h"
 #include "stool/src/io.hpp"
-#include "../esa.hxx"
-#include "../postorder_suffix_tree.hpp"
+//#include "../postorder_suffix_tree.hpp"
+#include "libdivsufsort/sa.hpp"
 #include "../minimal_substrings/postorder_special_suffix_tree.hpp"
 #include "../minimal_substrings/minimal_substring_iterator.hpp"
 //#include "../minimal_substrings/naive_minimal_substrings.hpp"
