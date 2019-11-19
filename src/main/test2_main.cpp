@@ -111,7 +111,6 @@ void lcp_interval_test(std::string filename)
   std::cout << "LCP interval test";
 
   vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
-  //vector<uint8_t> text = stool::load_text_from_file(filename, true); // input text
   bool is_contained_minus_character = check_test(text);
   if (is_contained_minus_character)
   {
@@ -123,19 +122,30 @@ void lcp_interval_test(std::string filename)
   std::vector<INDEX> lcpArray = stool::constructLCP<char, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, std::vector<INDEX>, std::vector<INDEX>>::compute_lcp_intervals(sa, lcpArray);
   stool::sort_in_preorder(test_intervals);
-
   stool::equal_check(correct_intervals, test_intervals);
   std::cout << "[ESAXX OK!]" << std::endl;
 
-  //vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_preorder_lcp_intervals<CHAR, INDEX>(text, sa, lcpArray);
 
   //SDSL
   using SA_SDSL = sdsl::csa_sada<>;
   using LCP_SDSL = sdsl::lcp_dac<>;
   SA_SDSL csa;
-  construct(csa, filename, 1);
+  //construct_im(csa, filename, 1);
+  std::string text2 = stool::load_string_from_file(filename, false); // input text
+  construct_im(csa, text2, 1);
+  super_equal_check(sa, csa);
+  std::cout << "[Compressed SA OK!]" << std::endl;
+
   LCP_SDSL dac;
-  construct(dac, filename, 1);
+  //construct_im(dac, filename, 1);
+  construct_im(dac, text2, 1);
+  super_equal_check(lcpArray, dac);
+  std::cout << "[Compressed LCP Array OK!]" << std::endl;
+
+  
+
+
+
   //super_equal_check(sa, csa);
   //super_equal_check(lcpArray, dac);
 
@@ -199,9 +209,9 @@ void minimal_substring_test(std::string filename)
     using SA_SDSL = sdsl::csa_sada<>;
     using LCP_SDSL = sdsl::lcp_dac<>;
     SA_SDSL csa;
-    construct(csa, filename, 1);
+    construct_im(csa, filename, 1);
     LCP_SDSL dac;
-    construct(dac, filename, 1);
+    construct_im(dac, filename, 1);
     vector<stool::LCPInterval<INDEX>> sdsl_test_intervals = stool::esaxx::compute_minimal_substrings<char, INDEX, SA_SDSL, LCP_SDSL>(text, csa, dac);
     stool::sort_in_preorder(sdsl_test_intervals);
     stool::equal_check(correct_intervals, sdsl_test_intervals);
@@ -256,9 +266,9 @@ void maximal_substring_test(std::string filename)
   using SA_SDSL = sdsl::csa_sada<>;
   using LCP_SDSL = sdsl::lcp_dac<>;
   SA_SDSL csa;
-  construct(csa, filename, 1);
+  construct_im(csa, filename, 1);
   LCP_SDSL dac;
-  construct(dac, filename, 1);
+  construct_im(dac, filename, 1);
   using BWT_SDSL = decltype(csa.bwt);
 
   vector<stool::LCPInterval<INDEX>> sdsl_test_intervals = stool::esaxx::PostorderMaximalSubstringIntervals<char, INDEX, SA_SDSL, LCP_SDSL, BWT_SDSL>::compute_maximal_substrings(csa, dac, csa.bwt);

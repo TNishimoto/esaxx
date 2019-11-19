@@ -78,11 +78,21 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   
   return intervals;
 }
-std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename){
+std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename, bool usingMemory){
 
+
+  std::string text;
+  if(usingMemory){
+    std::string tmp = stool::load_string_from_file(filename, false);
+    text.swap(tmp);
+  }
   auto start_sa = std::chrono::system_clock::now();
   sdsl::csa_sada<> sa;
-  construct(sa, filename, 1);
+  if(usingMemory){
+    construct_im(sa, text, 1);
+  }else{
+    construct(sa, filename, 1);
+  }
   auto end_sa = std::chrono::system_clock::now();
   auto sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
   execution_time_messages.push_back(std::pair<std::string, double>("SA Construction time\t\t", sa_construction_time));
@@ -92,7 +102,15 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename){
 
   auto start_lcp = std::chrono::system_clock::now();
   sdsl::lcp_dac<> lcpArray;
-  construct(lcpArray, filename, 1);
+  if(usingMemory){
+    construct_im(lcpArray, text, 1);
+  }else{
+    construct(lcpArray, filename, 1);
+  }
+  text.resize(0);
+  text.shrink_to_fit();
+
+  //construct_im(lcpArray, filename, 1);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
   execution_time_messages.push_back(std::pair<std::string, double>("LCP array construction time\t", lcp_array_construction_time));
@@ -182,12 +200,14 @@ int main(int argc, char *argv[])
   p.add<bool>("print", 'p', "print info", false, true);
   p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
   p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
+  p.add<bool>("memory", 'u', "using only main memory (0 or 1)", false, 1);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
   string format = p.get<string>("format");
   string mode = p.get<string>("mode");
+  bool usingMemory = p.get<bool>("memory");
 
   if (format != "binary")
   {
@@ -216,7 +236,7 @@ int main(int argc, char *argv[])
     std::vector<stool::LCPInterval<INDEX>> tmp = iterateMSwithOldESAXX(inputFile);
     intervals.swap(tmp);
   }else if(mode == "sdsl"){
-    std::vector<stool::LCPInterval<INDEX>> tmp = iterateMSWithSDSL(inputFile);
+    std::vector<stool::LCPInterval<INDEX>> tmp = iterateMSWithSDSL(inputFile, usingMemory);
     intervals.swap(tmp);
   } else if(mode == "rlbwt"){
 
@@ -258,6 +278,9 @@ int main(int argc, char *argv[])
   std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
   std::cout << "Output format \t\t\t\t : " << format << std::endl;  
   std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
+  if(mode == "sdsl"){
+    std::cout << "Using only main memory \t\t\t : " << (usingMemory ? "true" : "false") << std::endl;
+  }
   //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
   std::cout << "The number of maximum substrings \t : " << intervals.size() << std::endl;
   std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
