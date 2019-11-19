@@ -35,11 +35,9 @@ double lcp_array_construction_time = 0;
 double bwt_construction_time = 0;
 double ms_construction_time = 0;
 */
-std::vector<std::pair<std::string, double>> execution_time_messages;
+std::vector<std::pair<std::string, uint64_t>> execution_time_messages;
 
-std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
-
-  std::vector<stool::LCPInterval<INDEX>> intervals;
+uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
 
   using LCP = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
   using SA = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
@@ -48,7 +46,7 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   stool::rlbwt::Constructor::construct_from_file<CHAR, INDEX>(rlestr, filename);
   auto end_prep = std::chrono::system_clock::now();
   double prep_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_prep - start_prep).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("RLBWT construction time\t\t", prep_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("RLBWT construction time\t\t", prep_time));
 
   input_text_size = rlestr.str_size();
 
@@ -57,7 +55,7 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   lcpArray.construct_from_rlbwt(&rlestr, false);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("Sampling LCP & SA construction time\t", lcp_array_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("Sampling LCP & SA construction time\t", lcp_array_construction_time));
   
   
   const SA* sa_pointer = lcpArray.get_ForwardSA();
@@ -68,17 +66,18 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithRLBWT(string filename){
   auto start_ms = std::chrono::system_clock::now();
   stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, BWT_RLBWT > pmsi;
   pmsi.construct(sa_pointer, &lcpArray, &bwt_rlbwt);
+  uint64_t count = 0;
   for (auto it : pmsi)
   {
-    intervals.push_back(it);
+	  out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
+    ++count;
   }
   auto end_ms = std::chrono::system_clock::now();
   double ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("MS Construction time\t\t\t", ms_construction_time));
-  
-  return intervals;
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t\t", ms_construction_time));
+  return count;  
 }
-std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename, bool usingMemory){
+uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory){
 
 
   std::string text;
@@ -95,7 +94,7 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename, bool u
   }
   auto end_sa = std::chrono::system_clock::now();
   auto sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("SA Construction time\t\t", sa_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("SA Construction time\t\t", sa_construction_time));
 
   input_text_size = sa.size();
   using BWT = decltype(sa.bwt);
@@ -113,26 +112,27 @@ std::vector<stool::LCPInterval<INDEX>> iterateMSWithSDSL(string filename, bool u
   //construct_im(lcpArray, filename, 1);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("LCP array construction time\t", lcp_array_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
 
   auto start_ms = std::chrono::system_clock::now();
   stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, sdsl::csa_sada<>, sdsl::lcp_dac<>, BWT> pmsi;
   pmsi.construct(&sa, &lcpArray, &sa.bwt);
-
-  std::vector<stool::LCPInterval<INDEX>> intervals;
+  uint64_t count = 0;
   for (auto it : pmsi)
   {
-    intervals.push_back(it);
+	  out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
+    ++count;
   }
   auto end_ms = std::chrono::system_clock::now();
   double ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("MS Construction time\t\t", ms_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t", ms_construction_time));
+  return count;
 
-  return intervals;
 }
 
 
-std::vector<stool::LCPInterval<INDEX>> iterateMS(string filename){
+
+uint64_t iterateMS(string filename, std::ofstream &out){
   vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
   input_text_size = T.size();
 
@@ -140,7 +140,7 @@ std::vector<stool::LCPInterval<INDEX>> iterateMS(string filename){
   std::vector<INDEX> sa = stool::construct_suffix_array(T);
   auto end_sa = std::chrono::system_clock::now();
   double sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("SA construction time\t\t", sa_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("SA construction time\t\t", sa_construction_time));
 
 
   using BWT = stool::esaxx::ForwardBWT<CHAR, std::vector<CHAR>, std::vector<INDEX>>;
@@ -157,39 +157,41 @@ std::vector<stool::LCPInterval<INDEX>> iterateMS(string filename){
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("LCP array construction time\t", lcp_array_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
 
   auto start_ms = std::chrono::system_clock::now();
   stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, std::vector<INDEX>, std::vector<INDEX>, BWT > pmsi;
   pmsi.construct(&sa, &lcpArray, &bwt);
 
-  std::vector<stool::LCPInterval<INDEX>> intervals;
+    uint64_t count = 0;
   for (auto it : pmsi)
   {
-    intervals.push_back(it);
+	  out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
+    ++count;
   }
   auto end_ms = std::chrono::system_clock::now();
   double ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
-  execution_time_messages.push_back(std::pair<std::string, double>("MS Construction time\t\t", ms_construction_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t", ms_construction_time));
+  return count;
 
-  return intervals;
 }
 
 
-std::vector<stool::LCPInterval<INDEX>> iterateMSwithOldESAXX(string filename)
+uint64_t iterateMSwithOldESAXX(string filename, std::ofstream &out)
 {
   vector<char> T = stool::load_text(filename);
   input_text_size = T.size();
 
   std::vector<int64_t> sa;
   stool::PostorderMaximalSubstrings<int64_t> pmsi = stool::PostorderMaximalSubstrings<int64_t>::construct(T, sa);
-  std::vector<stool::LCPInterval<INDEX>> intervals;
+  uint64_t count = 0;
   for (auto it : pmsi)
   {
-    intervals.push_back(stool::LCPInterval<INDEX>(it.i, it.j, it.lcp) );
-
+    auto tmp = stool::LCPInterval<INDEX>(it.i, it.j, it.lcp);
+	  out.write(reinterpret_cast<const char *>(&tmp), sizeof(stool::LCPInterval<INDEX>));
+        ++count;
   }
-  return intervals;
+  return count;
 }
 int main(int argc, char *argv[])
 {
@@ -229,29 +231,29 @@ int main(int argc, char *argv[])
   }
 
   auto start = std::chrono::system_clock::now();
-  
 
+
+	std::ofstream out(outputFile, std::ios::out | std::ios::binary);
+	if (!out){
+    throw std::runtime_error("Cannot open the output file!");
+  }
+  uint64_t ms_count = 0;
   std::vector<stool::LCPInterval<INDEX>> intervals;
   if(mode == "old"){
-    std::vector<stool::LCPInterval<INDEX>> tmp = iterateMSwithOldESAXX(inputFile);
-    intervals.swap(tmp);
+    ms_count = iterateMSwithOldESAXX(inputFile, out);
   }else if(mode == "sdsl"){
-    std::vector<stool::LCPInterval<INDEX>> tmp = iterateMSWithSDSL(inputFile, usingMemory);
-    intervals.swap(tmp);
+    ms_count = iterateMSWithSDSL(inputFile, out, usingMemory);
   } else if(mode == "rlbwt"){
-
-    std::vector<stool::LCPInterval<INDEX>> tmp = iterateMSWithRLBWT(inputFile);
-    intervals.swap(tmp);
+    ms_count = iterateMSWithRLBWT(inputFile, out);
   }
   else{
     mode = "non-compressed";
-    std::vector<stool::LCPInterval<INDEX>> tmp = iterateMS(inputFile);
-    intervals.swap(tmp);
+    ms_count = iterateMS(inputFile, out);
   }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-
+  /*
   if (isPrint)
   {
     vector<CHAR> T = stool::load_char_vec_from_file(inputFile, true);
@@ -270,6 +272,7 @@ int main(int argc, char *argv[])
   {
     stool::write_vector(outputFile, intervals, false);
   }
+  */
 
   std::cout << "\033[31m";
   std::cout << "______________________RESULT______________________" << std::endl;
@@ -282,7 +285,7 @@ int main(int argc, char *argv[])
     std::cout << "Using only main memory \t\t\t : " << (usingMemory ? "true" : "false") << std::endl;
   }
   //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
-  std::cout << "The number of maximum substrings \t : " << intervals.size() << std::endl;
+  std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
   std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
   for(auto it : execution_time_messages){
   std::cout << "|\t " << it.first << " : " << it.second << "[ms]" << std::endl;
