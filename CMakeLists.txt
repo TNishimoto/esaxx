@@ -8,9 +8,9 @@ cmake_minimum_required(VERSION 2.8)
 #endif(APPLE)
 
 if(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++14 -m64 -Wall -Wextra -static")
+set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -Wextra -static")
 else(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++14 -m64 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -Wextra")
 endif(CPP_STATIC)
 
 #set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG -DDEBUG_PRINT")
@@ -76,5 +76,5 @@ add_executable(test2.out ${STOOL_SOURCES} src/main/test2_main.cpp )
 target_link_libraries(test2.out sdsl divsufsort divsufsort64 online_rlbwt Basics BTree)
 
 
-
-
+add_executable(online_rlbwt.out ${STOOL_SOURCES} ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
+target_link_libraries(online_rlbwt.out online_rlbwt Basics BTree)

@@ -42,11 +42,10 @@ uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
   using LCP = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
   using SA = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
   auto start_prep = std::chrono::system_clock::now();
-  stool::rlbwt::RLBWT<CHAR, INDEX> rlestr;
-  stool::rlbwt::Constructor::construct_from_file<CHAR, INDEX>(rlestr, filename);
+  stool::rlbwt::RLBWT<CHAR, INDEX> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(filename);
   auto end_prep = std::chrono::system_clock::now();
   double prep_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_prep - start_prep).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("RLBWT construction time\t\t", prep_time));
+  execution_time_messages.push_back(std::pair<std::string, uint64_t>("RLBWT loading time\t\t", prep_time));
 
   input_text_size = rlestr.str_size();
 
