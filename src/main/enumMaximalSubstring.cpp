@@ -39,10 +39,10 @@ std::vector<std::pair<std::string, uint64_t>> execution_time_messages;
 
 uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
 
-  using LCP = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
-  using SA = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
+  using LCP = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
+  using SA = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
   auto start_prep = std::chrono::system_clock::now();
-  stool::rlbwt::RLBWT<CHAR, INDEX> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(filename);
+  stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX> > rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(filename);
   auto end_prep = std::chrono::system_clock::now();
   double prep_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_prep - start_prep).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("RLBWT loading time\t\t", prep_time));
@@ -59,7 +59,7 @@ uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
   
   const SA* sa_pointer = lcpArray.get_ForwardSA();
 
-  using BWT_RLBWT = stool::rlbwt::ForwardBWT<CHAR, INDEX>;
+  using BWT_RLBWT = stool::rlbwt::ForwardBWT<std::vector<CHAR>, std::vector<INDEX>>;
   BWT_RLBWT bwt_rlbwt(&rlestr);
   
   auto start_ms = std::chrono::system_clock::now();

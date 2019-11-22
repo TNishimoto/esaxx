@@ -77,4 +77,4 @@ target_link_libraries(test2.out sdsl divsufsort divsufsort64 online_rlbwt Basics
 
 
 add_executable(online_rlbwt.out ${STOOL_SOURCES} ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
-target_link_libraries(online_rlbwt.out online_rlbwt Basics BTree)
+target_link_libraries(online_rlbwt.out online_rlbwt Basics BTree sdsl)

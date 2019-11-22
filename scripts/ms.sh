@@ -14,7 +14,7 @@ for file in ${filearr[@]}; do
 	echo "esaxx ms(esaxx) ${file}"
     nohup /usr/bin/time -f "#esaxx ms(esaxx) ${file}, %e sec, %M KB" ~/esaxx/build/enumMaximalSubstring.out -i ${folderpath}/${file} -o ${outputpath}/${file}.msi2 -p 0 -m esaxx >> /mnt/server/nishimoto/result/esaxx_ms_output.log
 	echo "esaxx ms(rlbwt) ${file}"
-    nohup /usr/bin/time -f "#esaxx ms(rlbwt) ${file}, %e sec, %M KB" ~/esaxx/build/enumMaximalSubstring.out -i ${folderpath}/${file}.rlbwt -o ${outputpath}/${file}.rlbwt.msi2 -p 0 -m rlbwt >> /mnt/server/nishimoto/result/esaxx_ms_rlbwt_output.log
+    nohup /usr/bin/time -f "#esaxx ms(rlbwt) ${file}, %e sec, %M KB" ~/esaxx/build/enumMaximalSubstring.out -i ${outputpath}/${file}.rlbwt -o ${outputpath}/${file}.rlbwt.msi2 -p 0 -m rlbwt >> /mnt/server/nishimoto/result/esaxx_ms_rlbwt_output.log
  done
  echo "Finished."
 

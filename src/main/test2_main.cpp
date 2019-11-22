@@ -185,10 +185,10 @@ void minimal_substring_test(std::string filename)
   }
 
   // Postorder suffix interval tree with RLBWT
-  using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
-  using SA_RLBWT = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
-  stool::rlbwt::RLBWT<char, INDEX> rlestr;
-  stool::rlbwt::Constructor::construct_from_file<char, INDEX>(rlestr, filename);
+  using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
+  using SA_RLBWT = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
+  stool::rlbwt::RLBWT<std::vector<char>, std::vector<INDEX>> rlestr;
+  stool::rlbwt::Constructor::construct_from_file<>(rlestr, filename);
   LCP_RLBWT lcpArrayOnRLBWT;
   lcpArrayOnRLBWT.construct_from_rlbwt(&rlestr, false);
   SA_RLBWT *sa_pointer = const_cast<SA_RLBWT *>(lcpArrayOnRLBWT.get_ForwardSA());
@@ -224,12 +224,12 @@ int main(int argc, char *argv[])
   using LCP_PLAIN = std::vector<INDEX>;
   using LCPINTERVALS = vector<stool::LCPInterval<INDEX>>;
   using LCP_SDSL = sdsl::lcp_dac<>;
-  using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<INDEX, std::vector<INDEX>>;
-  using SA_RLBWT = stool::rlbwt::ForwardSA<INDEX, std::vector<INDEX>>;
-  using BWT_RLBWT = stool::rlbwt::ForwardBWT<char, INDEX>;
+  using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
+  using SA_RLBWT = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
+  using BWT_RLBWT = stool::rlbwt::ForwardBWT<std::vector<char>, std::vector<INDEX>>;
 
-  stool::rlbwt::RLBWT<char, INDEX> rlestr;
-  stool::rlbwt::Constructor::construct_from_file<char, INDEX>(rlestr, filename);
+  stool::rlbwt::RLBWT<std::vector<char>, std::vector<INDEX>> rlestr;
+  stool::rlbwt::Constructor::construct_from_file<>(rlestr, filename);
   LCP_RLBWT lcp_rlbwt;
   lcp_rlbwt.construct_from_rlbwt(&rlestr, false);
   
