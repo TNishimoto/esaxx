@@ -49,32 +49,36 @@ FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp)
 INCLUDE_DIRECTORIES(module)
 
 
-add_executable(enumSubstring.out ${STOOL_SOURCES} src/main/enumSubstring.cpp)
-target_link_libraries(enumSubstring.out divsufsort divsufsort64)
-
-add_executable(enumMaximalSubstring.out ${STOOL_SOURCES} src/main/enumMaximalSubstring.cpp)
-target_link_libraries(enumMaximalSubstring.out sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
-
-add_executable(enumKaiMaximalSubstring.out ${STOOL_SOURCES} src/main/enumKaiMaximalSubstring.cpp)
-target_link_libraries(enumKaiMaximalSubstring.out divsufsort divsufsort64)
-
-add_executable(enumMinimalSubstring.out ${STOOL_SOURCES} src/main/enumMinimalSubstring.cpp )
-target_link_libraries(enumMinimalSubstring.out divsufsort divsufsort64)
-
-add_executable(test.out ${STOOL_SOURCES} src/main/test_main.cpp )
-target_link_libraries(test.out divsufsort divsufsort64)
+add_library(fn STATIC ${STOOL_SOURCES})
+target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
 
 
+add_executable(enumSubstring.out src/main/enumSubstring.cpp)
+target_link_libraries(enumSubstring.out fn)
 
-add_executable(print.out ${STOOL_SOURCES} src/main/print.cpp)
-target_link_libraries(print.out divsufsort divsufsort64)
+add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
+target_link_libraries(enumMaximalSubstring.out fn)
 
-add_executable(sdsl.out ${STOOL_SOURCES} src/main/sdsl_main.cpp)
-target_link_libraries(sdsl.out sdsl divsufsort divsufsort64)
+add_executable(enumKaiMaximalSubstring.out src/main/enumKaiMaximalSubstring.cpp)
+target_link_libraries(enumKaiMaximalSubstring.out fn)
 
-add_executable(test2.out ${STOOL_SOURCES} src/main/test2_main.cpp )
-target_link_libraries(test2.out sdsl divsufsort divsufsort64 online_rlbwt Basics BTree)
+add_executable(enumMinimalSubstring.out src/main/enumMinimalSubstring.cpp )
+target_link_libraries(enumMinimalSubstring.out fn)
+
+add_executable(test.out src/main/test_main.cpp )
+target_link_libraries(test.out fn)
 
 
-add_executable(online_rlbwt.out ${STOOL_SOURCES} ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
-target_link_libraries(online_rlbwt.out online_rlbwt Basics BTree sdsl)
+
+add_executable(print.out src/main/print.cpp)
+target_link_libraries(print.out fn)
+
+add_executable(sdsl.out src/main/sdsl_main.cpp)
+target_link_libraries(sdsl.out fn)
+
+add_executable(test2.out src/main/test2_main.cpp )
+target_link_libraries(test2.out fn)
+
+
+add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
+target_link_libraries(online_rlbwt.out fn)
