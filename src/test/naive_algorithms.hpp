@@ -55,6 +55,23 @@ std::vector<stool::LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::ve
 }
 
 template <typename CHAR, typename INDEX = uint64_t>
+std::vector<stool::LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(const std::vector<CHAR> &text, const std::vector<INDEX> &sa)
+{
+  std::vector<stool::LCPInterval<INDEX>> r = naive_compute_lcp_intervals(text, sa);
+  
+
+  std::vector<stool::LCPInterval<INDEX>> correct_lcp_intervals;
+  for(auto it : r){
+    if(it.j - it.i != 0){
+      correct_lcp_intervals.push_back(it);
+    }
+  }
+
+  return correct_lcp_intervals;
+}
+
+
+template <typename CHAR, typename INDEX = uint64_t>
 std::vector<stool::LCPInterval<INDEX>> naive_compute_minimal_substrings(const std::vector<CHAR> &text, const std::vector<INDEX> &sa)
 {
   std::vector<stool::LCPInterval<INDEX>> r;

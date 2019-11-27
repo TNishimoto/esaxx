@@ -15,7 +15,7 @@ using namespace std;
 using CHAR = uint8_t;
 using INDEX = uint64_t;
 #include "../test/old_postorder_maximal_substrings.hpp"
-#include "common.hpp"
+#include "../main/common.hpp"
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
@@ -28,63 +28,6 @@ using INDEX = uint64_t;
 #include <sdsl/lcp_support_sada.hpp>
 #include "../forward_bwt.hpp"
 
-template <typename CHAR = uint8_t>
-bool compare_suffixes_with_uint64(const std::vector<CHAR> &text, const uint64_t x, const uint64_t y)
-{
-  uint64_t max = x < y ? text.size() - y : text.size() - x;
-  for (uint64_t i = 0; i < max; i++)
-  {
-    uint64_t c1 = text[x + i];
-    uint64_t c2 = text[y + i];
-    if (c1 != c2)
-    {
-      return c1 < c2;
-    }
-  }
-  return x > y;
-}
-template <typename CHAR = uint8_t, typename INDEX = uint64_t>
-std::vector<INDEX> construct_naive_SA_with_uint64(const std::vector<CHAR> &text)
-{
-  std::vector<INDEX> r;
-  for (uint64_t i = 0; i < text.size(); i++)
-  {
-    r.push_back(i);
-  }
-
-  std::sort(
-      r.begin(),
-      r.end(),
-      [&](const uint64_t &x, const uint64_t &y) {
-        return compare_suffixes_with_uint64(text, x, y);
-      });
-  return r;
-}
-
-bool check_test(vector<uint8_t> &text)
-{
-  for (auto &it : text)
-  {
-    if (it >= 128)
-    {
-      //throw std::logic_error("This text contains minus character!");
-      return true;
-    }
-  }
-  return false;
-}
-bool check_test(vector<char> &text)
-{
-  for (auto &it : text)
-  {
-    if (it < 0)
-    {
-      //throw std::logic_error("This text contains minus character!");
-      return true;
-    }
-  }
-  return false;
-}
 template <typename T, typename U>
 bool super_equal_check(const T &vec1, const U &vec2)
 {
@@ -111,7 +54,7 @@ void lcp_interval_test(vector<char> &text, vector<INDEX> &correct_sa, T &test_sa
 {
   std::cout << "LCP interval test: " << test_name << std::flush;
   vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<char, INDEX>(text, correct_sa);
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, T, U >::compute_lcp_intervals(test_sa, test_lcp);
+  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, T, U>::compute_lcp_intervals(test_sa, test_lcp);
   stool::sort_in_preorder(test_intervals);
   stool::equal_check(correct_intervals, test_intervals);
   std::cout << "[OK!]" << std::endl;
@@ -133,21 +76,19 @@ void maximal_interval_test(vector<char> &text, vector<INDEX> &correct_sa, T &tes
   std::cout << "[OK!]" << std::endl;
 }
 
-
-
 void minimal_substring_test(std::string filename)
 {
   std::cout << "minimal substring intervals test";
 
   //vector<uint8_t> text = stool::load_text_from_file(filename, true); // input text
   vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
-  bool is_contained_minus_character = check_test(text);
+  bool is_contained_minus_character = stool::esaxx::check_test(text);
   if (is_contained_minus_character)
   {
     std::cout << "This text contains minus character!" << std::endl;
   }
   //std::vector<INDEX> sa = stool::construct_naive_SA<char, INDEX>(text);
-  std::vector<INDEX> sa = construct_naive_SA_with_uint64<char, INDEX>(text);
+  std::vector<INDEX> sa = stool::esaxx::construct_naive_SA_with_uint64<char, INDEX>(text);
   std::vector<INDEX> lcpArray = stool::constructLCP<char, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings_with_uint64<char, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_minimal_substrings<char, INDEX>(text, sa, lcpArray);
@@ -208,12 +149,8 @@ int main(int argc, char *argv[])
   p.parse_check(argc, argv);
   string filename = p.get<string>("input_file");
 
-  //lcp_interval_test(inputFile);
-  //minimal_substring_test(inputFile);
-  //maximal_substring_test(inputFile);
-
   vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
-  bool is_contained_minus_character = check_test(text);
+  bool is_contained_minus_character = stool::esaxx::check_test(text);
   if (is_contained_minus_character)
   {
     std::cout << "This text contains minus character!" << std::endl;
@@ -232,39 +169,19 @@ int main(int argc, char *argv[])
   stool::rlbwt::Constructor::construct_from_file<>(rlestr, filename);
   LCP_RLBWT lcp_rlbwt;
   lcp_rlbwt.construct_from_rlbwt(&rlestr, false);
-  
 
-  std::cout << "Suffix Array Test" << std::endl;
+  SA_PLAIN sa_naive = stool::esaxx::construct_naive_SA_with_uint64<char, INDEX>(text);
+  LCP_PLAIN lcp_naive = stool::constructLCP<char, INDEX>(text, sa_naive);
 
-  SA_PLAIN sa_naive = construct_naive_SA_with_uint64<char, INDEX>(text);
-  std::cout << "SDSL Test" << std::flush;
   SA_SDSL sa_sdsl;
   construct(sa_sdsl, filename, 1);
-  super_equal_check(sa_naive, sa_sdsl);
-  std::cout << "[OK!]" << std::endl;
-  std::cout << "RLBWT Test" << std::flush;
-  SA_RLBWT *sa_pointer = const_cast<SA_RLBWT *>(lcp_rlbwt.get_ForwardSA());
-  std::vector<uint64_t> _sa_rlbwt;
-  for(auto it : *sa_pointer) _sa_rlbwt.push_back(it);
-  super_equal_check(sa_naive, _sa_rlbwt);
-  std::cout << "[OK!]" << std::endl;
-
-  std::cout << "LCP Array Test" << std::endl;
-  std::cout << "SDSL Test" << std::flush;
-  LCP_PLAIN lcp_naive = stool::constructLCP<char, INDEX>(text, sa_naive);
   LCP_SDSL lcp_sdsl;
   construct(lcp_sdsl, filename, 1);
-  super_equal_check(lcp_naive, lcp_sdsl);
-  std::cout << "[OK!]" << std::endl;
-  std::cout << "RLBWT Test" << std::flush;
-  std::vector<uint64_t> _lcp_rlbwt;
-  for(auto it : lcp_rlbwt) _lcp_rlbwt.push_back(it);
-  super_equal_check(lcp_naive, _lcp_rlbwt);
-  std::cout << "[OK!]" << std::endl;
+
+  SA_RLBWT *sa_pointer = const_cast<SA_RLBWT *>(lcp_rlbwt.get_ForwardSA());
 
   BWT_RLBWT bwt_rlbwt(&rlestr);
   using BWT_SDSL = decltype(sa_sdsl.bwt);
-
 
   lcp_interval_test(text, sa_naive, sa_naive, lcp_naive, "ESAXX");
   lcp_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, "SDSL");
@@ -272,15 +189,5 @@ int main(int argc, char *argv[])
 
   maximal_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, sa_sdsl.bwt, "SDSL");
   maximal_interval_test(text, sa_naive, *sa_pointer, lcp_sdsl, bwt_rlbwt, "RLBWT");
-
-
-  /*
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, std::vector<INDEX>, std::vector<INDEX>>::compute_lcp_intervals(sa, lcpArray);
-  stool::sort_in_preorder(test_intervals);
-  stool::equal_check(correct_intervals, test_intervals);
-  std::cout << "[ESAXX OK!]" << std::endl;
-
-  LCPINTERVALS correct_intervals = stool::esaxx::naive_compute_lcp_intervals<char, INDEX>(text, sa_naive);
-  */
 
 }

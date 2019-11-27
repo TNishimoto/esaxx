@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "stool/src/cmdline.h"
 //#include "../postorder_maximal_substrings.hpp"
-#include "common.hpp"
+#include "../main/common.hpp"
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>

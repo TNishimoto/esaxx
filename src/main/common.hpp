@@ -219,5 +219,50 @@ void printColor(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<C
     //return wholeFstOcc;
 }
 
+template <typename CHAR = uint8_t>
+bool compare_suffixes_with_uint64(const std::vector<CHAR> &text, const uint64_t x, const uint64_t y)
+{
+    uint64_t max = x < y ? text.size() - y : text.size() - x;
+    for (uint64_t i = 0; i < max; i++)
+    {
+        uint64_t c1 = text[x + i];
+        uint64_t c2 = text[y + i];
+        if (c1 != c2)
+        {
+            return c1 < c2;
+        }
+    }
+    return x > y;
+}
+template <typename CHAR = uint8_t, typename INDEX = uint64_t>
+std::vector<INDEX> construct_naive_SA_with_uint64(const std::vector<CHAR> &text)
+{
+    std::vector<INDEX> r;
+    for (uint64_t i = 0; i < text.size(); i++)
+    {
+        r.push_back(i);
+    }
+
+    std::sort(
+        r.begin(),
+        r.end(),
+        [&](const uint64_t &x, const uint64_t &y) {
+            return compare_suffixes_with_uint64(text, x, y);
+        });
+    return r;
+}
+bool check_test(std::vector<char> &text)
+{
+  for (auto &it : text)
+  {
+    if (it < 0)
+    {
+      //throw std::logic_error("This text contains minus character!");
+      return true;
+    }
+  }
+  return false;
+}
+
 } // namespace esaxx
 } // namespace stool

@@ -65,22 +65,27 @@ target_link_libraries(enumKaiMaximalSubstring.out fn)
 add_executable(enumMinimalSubstring.out src/main/enumMinimalSubstring.cpp )
 target_link_libraries(enumMinimalSubstring.out fn)
 
-add_executable(test.out src/main/test_main.cpp )
-target_link_libraries(test.out fn)
-
-
-
 add_executable(print.out src/main/print.cpp)
 target_link_libraries(print.out fn)
 
-add_executable(sdsl.out src/main/sdsl_main.cpp)
+
+add_executable(test.out src/debug/test_main.cpp )
+target_link_libraries(test.out fn)
+
+add_executable(sdsl.out src/debug/sdsl_main.cpp)
 target_link_libraries(sdsl.out fn)
 
-add_executable(test2.out src/main/test2_main.cpp )
-target_link_libraries(test2.out fn)
+add_executable(interval_test.out src/debug/interval_test_main.cpp )
+target_link_libraries(interval_test.out fn)
 
-add_executable(depth.out src/main/depth_main.cpp )
+add_executable(depth.out src/debug/depth_main.cpp )
 target_link_libraries(depth.out fn)
+
+add_executable(array_test.out src/debug/array_test_main.cpp )
+target_link_libraries(array_test.out fn)
+
+add_executable(lcp_interval_test.out src/debug/lcp_interval_test_main.cpp )
+target_link_libraries(lcp_interval_test.out fn)
 
 
 add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
