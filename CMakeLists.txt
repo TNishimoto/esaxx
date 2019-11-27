@@ -79,6 +79,9 @@ target_link_libraries(sdsl.out fn)
 add_executable(test2.out src/main/test2_main.cpp )
 target_link_libraries(test2.out fn)
 
+add_executable(depth.out src/main/depth_main.cpp )
+target_link_libraries(depth.out fn)
+
 
 add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
 target_link_libraries(online_rlbwt.out fn)

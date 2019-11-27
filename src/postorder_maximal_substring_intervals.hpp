@@ -245,59 +245,5 @@ public:
     }
 };
 
-/*
-template <typename INDEX, typename POSTORDER_ST, typename DISTINCT_CHARACTER_CHECKER>
-class PostorderMaximalSubstringIntervals
-{
-  const POSTORDER_ST *_ST;
-  const DISTINCT_CHARACTER_CHECKER *_BWTChecker;
-  bool deleteFlag = false;
-
-
-public:
-    PostorderMaximalSubstringIntervals()
-    {
-    }
-
-  void set(POSTORDER_ST &&__st, DISTINCT_CHARACTER_CHECKER &&__bwt_checker)
-  {
-    this->_ST = new POSTORDER_ST(std::move(__st));
-    this->_BWTChecker = new DISTINCT_CHARACTER_CHECKER(std::move(__bwt_checker));
-
-    deleteFlag = true;
-  }
-  void set(POSTORDER_ST &__st, DISTINCT_CHARACTER_CHECKER &__bwt_checker)
-  {
-    this->_ST = &__st;
-    this->_BWTChecker = &__bwt_checker;
-
-    deleteFlag = false;
-  }
-
-
-    auto begin() -> PostorderMaximalSubstringIntervalIterator<INDEX,decltype(this->_ST->begin()), DISTINCT_CHARACTER_CHECKER> const
-    {
-        auto beg = _ST->begin();
-        return PostorderMaximalSubstringIntervalIterator<INDEX, decltype(this->_ST->begin()), DISTINCT_CHARACTER_CHECKER>(beg, *this->_BWTChecker);
-    }
-    auto end() -> PostorderMaximalSubstringIntervalIterator<INDEX,decltype(this->_ST->begin()), DISTINCT_CHARACTER_CHECKER> const
-    {
-        auto end = _ST->end();
-        return PostorderMaximalSubstringIntervalIterator<INDEX, decltype(this->_ST->end()), DISTINCT_CHARACTER_CHECKER>(end, *this->_BWTChecker);
-    }
-
-    
-    PostorderMSIterator<INDEXTYPE> end() const
-    {
-        auto it = PostorderMSIterator<INDEXTYPE>(this->L, this->R, this->D, std::numeric_limits<INDEXTYPE>::max());
-        return it;
-    }
-    
-    INDEX size() const
-    {
-        return 0;
-    }
-};
-*/
     }
 } // namespace stool

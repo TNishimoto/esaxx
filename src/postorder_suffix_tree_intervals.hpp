@@ -17,13 +17,14 @@ public:
   INDEX i;
   INDEX j;
   INDEX lcp;
-  INDEX i_lcp;
+  INDEX lcp_at_i;
 
   IncompleteLCPInterval();
-  IncompleteLCPInterval(INDEX _i, INDEX _j, INDEX _lcp, INDEX _i_lcp) : i(_i), j(_j), lcp(_lcp), i_lcp(_i_lcp)
+  IncompleteLCPInterval(INDEX _i, INDEX _j, INDEX _lcp, INDEX _lcp_at_i) : i(_i), j(_j), lcp(_lcp), lcp_at_i(_lcp_at_i)
   {
   }
 };
+
 template <typename INDEX = uint64_t, typename SA = std::vector<uint64_t>, typename LCP = std::vector<uint64_t>>
 class PostorderSuffixTreeIntervals
 {
@@ -45,12 +46,10 @@ class PostorderSuffixTreeIntervals
     INDEX current_i = 0;
     INDEX _text_size = 0;
 
-    //LCPIterator<INDEX, VEC> _lcp_forward_iterator;
     std::stack<IncompleteLCPInterval<INDEX>> incompleteStack;
     std::queue<IncompleteLCPInterval<INDEX>> outputQueue;
     LCPInterval<INDEX> _currenct_lcp_interval;
 
-    //int64_t n = 0;
     bool report_next_interval_at_previous_i(IncompleteLCPInterval<INDEX> &fst)
     {
 
@@ -59,41 +58,38 @@ class PostorderSuffixTreeIntervals
       IncompleteLCPInterval<INDEX> second = incompleteStack.top();
       incompleteStack.pop();
 
-      if (second.i == second.j && second.i_lcp != second.lcp && second.lcp > fst.i_lcp)
+      if (second.i == second.j && second.lcp_at_i != second.lcp && second.lcp > fst.lcp_at_i)
       {
         this->outputQueue.push(second);
-        second.lcp = second.i_lcp;
+        second.lcp = second.lcp_at_i;
         this->incompleteStack.push(second);
-        //std::cout << "#1" << std::endl;
 
         return true;
       }
 
-      if (second.i_lcp > fst.i_lcp)
+      if (second.lcp_at_i > fst.lcp_at_i)
       {
         assert(incompleteStack.size() > 0);
         IncompleteLCPInterval<INDEX> &newInterval = second;
-        newInterval.lcp = second.i_lcp;
+        newInterval.lcp = second.lcp_at_i;
 
         while (incompleteStack.size() > 0)
         {
           IncompleteLCPInterval<INDEX> third = incompleteStack.top();
           newInterval.i = third.i;
-          newInterval.i_lcp = third.i_lcp;
+          newInterval.lcp_at_i = third.lcp_at_i;
           incompleteStack.pop();
-          if (newInterval.lcp != third.i_lcp)
+          if (newInterval.lcp != third.lcp_at_i)
           {
             break;
           }
         }
-        //assert(newi != newj);
         this->outputQueue.push(newInterval);
         incompleteStack.push(newInterval);
         return true;
       }
       else
       {
-        //std::cout << "#3" << std::endl;
         incompleteStack.push(second);
         return false;
       }
@@ -183,6 +179,9 @@ class PostorderSuffixTreeIntervals
       {
         this->_currenct_lcp_interval = LCPInterval<INDEX>(std::numeric_limits<INDEX>::max(), std::numeric_limits<INDEX>::max(), std::numeric_limits<INDEX>::max());
       }
+    }
+    INDEX get_incomplete_stack_size(){
+      return this->incompleteStack.size();
     }
     INDEX get_text_size()
     {
