@@ -64,6 +64,9 @@ std::vector<stool::LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(cons
   for(auto it : r){
     if(it.j - it.i != 0){
       correct_lcp_intervals.push_back(it);
+    }else{
+        it.lcp = std::numeric_limits<INDEX>::max() - 1;      
+      correct_lcp_intervals.push_back(it);
     }
   }
 
