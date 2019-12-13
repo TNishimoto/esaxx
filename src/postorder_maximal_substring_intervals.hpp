@@ -11,8 +11,8 @@
 
 #include "stool/src/sa_bwt_lcp.hpp"
 
-#include "minimal_substrings/postorder_special_suffix_tree.hpp"
-
+//#include "minimal_substrings/postorder_special_suffix_tree.hpp"
+#include "postorder_lcp_intervals.hpp"
 namespace stool
 {
     namespace esaxx{
@@ -32,17 +32,19 @@ struct MaximalSubstringChildInfo
     }
 };
 
-template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<uint64_t>, typename LCP = std::vector<uint64_t>, typename BWT = std::vector<CHAR>>
+template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename LCP = std::vector<uint64_t>, typename BWT = std::vector<CHAR>>
 class PostorderMaximalSubstringIntervals
 {
 
-    using STI = esaxx::PostorderSuffixTreeIntervals<INDEX, SA, LCP>;
+    using STI = esaxx::PostorderLCPIntervals<INDEX, LCP>;
+    using LCP_ITERATOR = typename LCP::const_iterator;
+    using BWT_ITERATOR = typename BWT::const_iterator;
     //using PSSTI = esaxx::PostorderSpecialSuffixTreeIntervals<CHAR, INDEX, SA, LCP, BWT>;
+        using STI_ITERATOR = typename STI::iterator;
 
-    template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator>
+    //template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator>
     class iterator
     {
-        using STI_ITERATOR = typename STI::template iterator<SA_ITERATOR, LCP_ITERATOR>;
         BWT_ITERATOR _bwt_iterator;
         STI_ITERATOR _st_iterator;
         INDEX bwt_index = 0;
@@ -53,6 +55,7 @@ class PostorderMaximalSubstringIntervals
         bool compute_next_special_interval()
         {
             stool::LCPInterval<INDEX> x = *_st_iterator;
+            //std::cout << x.to_string() << std::endl;
             MaximalSubstringChildInfo<CHAR, INDEX> x_info(x.i, 0, true);
 
             INDEX childCount = 0;
@@ -109,8 +112,12 @@ class PostorderMaximalSubstringIntervals
                 x_info.bwtChar = *_bwt_iterator;
             }
             childStack.push(x_info);
+            if(x.i == x.j && x_info.bwtChar == 0){
+                x.lcp = _st_iterator.get_text_size();
+            }
 
             return !x_info.hasSingleBWTCharacter || x.lcp == _st_iterator.get_text_size();
+            //;
         }
 
     public:
@@ -165,7 +172,11 @@ class PostorderMaximalSubstringIntervals
         }
         stool::LCPInterval<INDEX> operator*()
         {
-            return *_st_iterator;
+            auto p = *_st_iterator;
+            if(p.i == p.j && p.lcp == std::numeric_limits<INDEX>::max()-1){
+                p.lcp = _st_iterator.get_text_size();
+            }
+            return p;
         }
         bool operator!=(const iterator &rhs) const
         {
@@ -183,10 +194,10 @@ private:
     bool deleteFlag = false;
 
 public:
-    void construct(const SA *__sa, const LCP *__lcp, const BWT *__bwt)
+    void construct(const LCP *__lcp, const BWT *__bwt)
     {
         this->_sti = new STI();
-        this->_sti->construct(__sa, __lcp);
+        this->_sti->construct(__lcp);
         this->_bwt = __bwt;
     }
     const STI *get_sti_pointer() const
@@ -197,46 +208,42 @@ public:
     {
         return this->_bwt;
     }
-    const SA *get_sa_pointer() const
-    {
-        return this->_sti->get_sa_pointer();
-    }
     const LCP *get_lcp_pointer() const
     {
         return this->_sti->get_lcp_pointer();
     }
-    auto begin() const -> iterator<decltype(this->get_sa_pointer()->begin()), decltype(this->get_lcp_pointer()->begin()), decltype(this->get_bwt_pointer()->begin())>
+    iterator begin() const
     {
-        using BWT_IT = decltype(this->get_bwt_pointer()->begin());
-        using SA_IT = decltype(this->get_sa_pointer()->begin());
-        using LCP_IT = decltype(this->get_lcp_pointer()->begin());
+        //using BWT_IT = decltype(this->get_bwt_pointer()->begin());
+        //using SA_IT = decltype(this->get_sa_pointer()->begin());
+        //using LCP_IT = decltype(this->get_lcp_pointer()->begin());
 
-        auto sti_beg = this->get_sti_pointer()->begin();
-        auto bwt_beg = this->get_bwt_pointer()->begin();
+        STI_ITERATOR sti_beg = this->get_sti_pointer()->begin();
+        BWT_ITERATOR bwt_beg = this->get_bwt_pointer()->begin();
 
-        auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg, sti_beg);
+        auto it = iterator(bwt_beg, sti_beg);
         return it;
     }
 
-    auto end() const -> iterator<decltype(this->get_sa_pointer()->begin()), decltype(this->get_lcp_pointer()->begin()), decltype(this->get_bwt_pointer()->begin())>
+    iterator end() const
     {
-        using BWT_IT = decltype(this->get_bwt_pointer()->begin());
-        using SA_IT = decltype(this->get_sa_pointer()->begin());
-        using LCP_IT = decltype(this->get_lcp_pointer()->begin());
+        //using BWT_IT = decltype(this->get_bwt_pointer()->begin());
+        //using SA_IT = decltype(this->get_sa_pointer()->begin());
+        //using LCP_IT = decltype(this->get_lcp_pointer()->begin());
 
-        auto sti_end = this->get_sti_pointer()->end();
-        auto bwt_beg = this->get_bwt_pointer()->begin();
+        STI_ITERATOR sti_end = this->get_sti_pointer()->end();
+        BWT_ITERATOR bwt_beg = this->get_bwt_pointer()->begin();
 
-        auto it = iterator<SA_IT, LCP_IT, BWT_IT>(bwt_beg, sti_end);
+        auto it = iterator(bwt_beg, sti_end);
         return it;
     }
 
     //template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
-    static std::vector<stool::LCPInterval<INDEX>> compute_maximal_substrings(const SA &sa, const LCP &lcpArray, const BWT &bwt)
+    static std::vector<stool::LCPInterval<INDEX>> compute_maximal_substrings(const LCP &lcpArray, const BWT &bwt)
     {
         std::vector<stool::LCPInterval<INDEX>> r;
-        PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, BWT > pmsi;
-        pmsi.construct(&sa, &lcpArray, &bwt);
+        PostorderMaximalSubstringIntervals<CHAR, INDEX, LCP, BWT > pmsi;
+        pmsi.construct(&lcpArray, &bwt);
         for (auto it : pmsi)
         {
             r.push_back(it);

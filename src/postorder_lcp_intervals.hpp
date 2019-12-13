@@ -44,7 +44,7 @@ public:
         INDEX _found_interval_count = 0;
         INDEX _text_size = 0;
         INDEX _next_lcp_interval_i_candidate = 0;
-        bool is_reported_leaf_at_i = false;
+        bool is_reported_internal_nodes_i = false;
 
         std::stack<TmpLCPInterval<INDEX>> incompleteStack;
         LCPInterval<INDEX> _currenct_lcp_interval;
@@ -54,7 +54,7 @@ public:
             ++_lcp_iterator_index;
             ++_lcp_iterator;
             _next_lcp_interval_i_candidate = _lcp_iterator_index - 1;
-            is_reported_leaf_at_i = false;
+                            is_reported_internal_nodes_i = false;
         }
 
     public:
@@ -64,7 +64,8 @@ public:
             if (isBegin)
             {
                 this->_currenct_lcp_interval = LCPInterval<INDEX>(this->_lcp_iterator_index, this->_lcp_iterator_index, std::numeric_limits<INDEX>::max() - 1);
-                is_reported_leaf_at_i = true;
+                this->increment_iterators();
+                //is_reported_leaf_at_i = true;
                 /*
                 while (true)
                 {
@@ -100,7 +101,7 @@ public:
             INDEX n = this->get_text_size();
             while (_lcp_iterator_index < n)
             {
-                if (is_reported_leaf_at_i)
+                if (!is_reported_internal_nodes_i)
                 {
                     auto current_lcp = *_lcp_iterator;
                     if (incompleteStack.size() > 0)
@@ -116,25 +117,25 @@ public:
                         }
                         else if (top.lcp == current_lcp)
                         {
-                            this->increment_iterators();
+                            is_reported_internal_nodes_i = true;
                         }
                         else
                         {
                             incompleteStack.push(TmpLCPInterval<INDEX>(_next_lcp_interval_i_candidate, current_lcp));
-                            this->increment_iterators();
+                            is_reported_internal_nodes_i = true;
                         }
                     }
                     else
                     {
                         if (current_lcp > 0)
                             incompleteStack.push(TmpLCPInterval<INDEX>(_next_lcp_interval_i_candidate, current_lcp));
-                        this->increment_iterators();
+                        is_reported_internal_nodes_i = true;
                     }
                 }
                 else
                 {
                     this->_currenct_lcp_interval = LCPInterval<INDEX>(this->_lcp_iterator_index, this->_lcp_iterator_index, std::numeric_limits<INDEX>::max() - 1);
-                    is_reported_leaf_at_i = true;
+                        this->increment_iterators();
                     return true;
                 }
             }

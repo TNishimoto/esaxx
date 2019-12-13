@@ -68,7 +68,7 @@ void maximal_interval_test(vector<char> &text, vector<INDEX> &correct_sa, T &tes
   BWT bwt(&text, &correct_sa);
   vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, INDEX>(text, correct_sa);
 
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderMaximalSubstringIntervals<char, INDEX, T, U, BWT_TEST>::compute_maximal_substrings(test_sa, test_lcp, test_bwt);
+  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderMaximalSubstringIntervals<char, INDEX, U, BWT_TEST>::compute_maximal_substrings(test_lcp, test_bwt);
   stool::sort_in_preorder(test_intervals);
 
   stool::equal_check(correct_intervals, test_intervals);

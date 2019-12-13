@@ -40,7 +40,7 @@ std::vector<std::pair<std::string, uint64_t>> execution_time_messages;
 uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
 
   using LCP = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
-  using SA = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
+  //using SA = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
   auto start_prep = std::chrono::system_clock::now();
   stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX> > rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(filename);
   auto end_prep = std::chrono::system_clock::now();
@@ -57,14 +57,14 @@ uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("Sampling LCP & SA construction time\t", lcp_array_construction_time));
   
   
-  const SA* sa_pointer = lcpArray.get_ForwardSA();
+  //const SA* sa_pointer = lcpArray.get_ForwardSA();
 
   using BWT_RLBWT = stool::rlbwt::ForwardBWT<std::vector<CHAR>, std::vector<INDEX>>;
   BWT_RLBWT bwt_rlbwt(&rlestr);
   
   auto start_ms = std::chrono::system_clock::now();
-  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, SA, LCP, BWT_RLBWT > pmsi;
-  pmsi.construct(sa_pointer, &lcpArray, &bwt_rlbwt);
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, LCP, BWT_RLBWT > pmsi;
+  pmsi.construct(&lcpArray, &bwt_rlbwt);
   uint64_t count = 0;
   for (auto it : pmsi)
   {
@@ -76,6 +76,22 @@ uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t\t", ms_construction_time));
   return count;  
 }
+std::vector<char> construct_bwt_using_sdsl(string filename, string text, bool usingMemory){
+  sdsl::csa_sada<> sa;
+  if(usingMemory){
+    construct_im(sa, text, 1);
+  }else{
+    construct(sa, filename, 1);
+  }
+
+  std::vector<char> p;
+  p.resize(sa.size(), 0);
+  for(uint64_t i=0;i<sa.bwt.size();i++){
+    p[i] = sa.bwt[i];
+  }
+  return p;
+
+}
 uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory){
 
 
@@ -84,19 +100,23 @@ uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory
     std::string tmp = stool::load_string_from_file(filename, false);
     text.swap(tmp);
   }
+  using BWT = std::vector<char>;
   auto start_sa = std::chrono::system_clock::now();
+  BWT bwt = construct_bwt_using_sdsl(filename, text, usingMemory);
+  /*
   sdsl::csa_sada<> sa;
+  
   if(usingMemory){
     construct_im(sa, text, 1);
   }else{
     construct(sa, filename, 1);
   }
+  */
   auto end_sa = std::chrono::system_clock::now();
   auto sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("SA Construction time\t\t", sa_construction_time));
 
-  input_text_size = sa.size();
-  using BWT = decltype(sa.bwt);
+  input_text_size = bwt.size();
 
   auto start_lcp = std::chrono::system_clock::now();
   sdsl::lcp_dac<> lcpArray;
@@ -114,8 +134,8 @@ uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
 
   auto start_ms = std::chrono::system_clock::now();
-  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, sdsl::csa_sada<>, sdsl::lcp_dac<>, BWT> pmsi;
-  pmsi.construct(&sa, &lcpArray, &sa.bwt);
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, sdsl::lcp_dac<>, BWT> pmsi;
+  pmsi.construct(&lcpArray, &bwt);
   uint64_t count = 0;
   for (auto it : pmsi)
   {
@@ -159,8 +179,8 @@ uint64_t iterateMS(string filename, std::ofstream &out){
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
 
   auto start_ms = std::chrono::system_clock::now();
-  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, std::vector<INDEX>, std::vector<INDEX>, BWT > pmsi;
-  pmsi.construct(&sa, &lcpArray, &bwt);
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, std::vector<INDEX>, BWT > pmsi;
+  pmsi.construct(&lcpArray, &bwt);
 
     uint64_t count = 0;
   for (auto it : pmsi)
