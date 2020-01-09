@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
   p.add<string>("output_file", 'o', "output file name", false, "");
   p.add<bool>("print", 'p', "print info", false, true);
   p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
-  p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
+  p.add<string>("mode", 'm', "mode(esaxx, rlbwt or succinct)", false, "esaxx");
   p.add<bool>("memory", 'u', "using only main memory (0 or 1)", false, 1);
 
   p.parse_check(argc, argv);
