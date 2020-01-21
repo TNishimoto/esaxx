@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <stack>
 #include <unordered_map>
 #include "stool/src/cmdline.h"
 #include <exception>

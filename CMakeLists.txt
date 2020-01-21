@@ -75,8 +75,8 @@ target_link_libraries(enumMaximalSubstring.out fn)
 #add_executable(sdsl.out src/debug/sdsl_main.cpp)
 #target_link_libraries(sdsl.out fn)
 
-add_executable(interval_test.out src/debug/interval_test_main.cpp )
-target_link_libraries(interval_test.out fn)
+#add_executable(interval_test.out src/debug/interval_test_main.cpp )
+#target_link_libraries(interval_test.out fn)
 
 #add_executable(depth.out src/debug/depth_main.cpp )
 #target_link_libraries(depth.out fn)
@@ -84,8 +84,11 @@ target_link_libraries(interval_test.out fn)
 #add_executable(array_test.out src/debug/array_test_main.cpp )
 #target_link_libraries(array_test.out fn)
 
-add_executable(lcp_interval_test.out src/debug/lcp_interval_test_main.cpp )
-target_link_libraries(lcp_interval_test.out fn)
+#add_executable(lcp_interval_test.out src/debug/lcp_interval_test_main.cpp )
+#target_link_libraries(lcp_interval_test.out fn)
+
+add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
+target_link_libraries(enumLineMaximalSubstring.out fn)
 
 
 add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
