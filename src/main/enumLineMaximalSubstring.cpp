@@ -168,8 +168,7 @@ uint64_t iterateMS(std::vector<CHAR> &T, std::ofstream &out)
             std::vector<pair<uint64_t,uint64_t>> occList = getOccurrences(it,sa,lineOccList, sampledLineOccList);
             std::string listStr="";
             std::sort(occList.begin(), occList.end(), [](const pair<uint64_t,uint64_t>& lhs, const pair<uint64_t,uint64_t>& rhs) {
-                return lhs.first < rhs.first;
-        　  });
+                return lhs.first < rhs.first;});
             for(auto p : occList){
                 std::string p1 = std::to_string(p.first+1);
                 //std::string p2 = std::to_string(p.second);

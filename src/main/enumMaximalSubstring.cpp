@@ -28,6 +28,8 @@ void iterateMSwithSDSL(){
 }
 */
 
+
+
 uint64_t input_text_size = 0;
 /*
 double sa_construction_time = 0;
@@ -175,6 +177,11 @@ uint64_t iterateMS(string filename, std::ofstream &out){
   auto start_lcp = std::chrono::system_clock::now();
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
   auto end_lcp = std::chrono::system_clock::now();
+
+  ///** LIS **/
+  //uint64_t lis = longest_increasing_subsequence(lcpArray, true);
+  //std::cout << "LIS: " << lis << std::endl;
+
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
 
@@ -188,7 +195,10 @@ uint64_t iterateMS(string filename, std::ofstream &out){
 	  out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
     ++count;
   }
+  std::cout << "Peek stack size: " << pmsi.compute_peek_stack_size() << std::endl;
+
   auto end_ms = std::chrono::system_clock::now();
+
   double ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t", ms_construction_time));
   return count;

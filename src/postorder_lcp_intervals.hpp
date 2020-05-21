@@ -44,6 +44,8 @@ public:
         INDEX _found_interval_count = 0;
         INDEX _text_size = 0;
         INDEX _next_lcp_interval_i_candidate = 0;
+        INDEX _peek_stack_size = 0;
+
         bool is_reported_internal_nodes_i = false;
 
         std::stack<TmpLCPInterval<INDEX>> incompleteStack;
@@ -65,32 +67,14 @@ public:
             {
                 this->_currenct_lcp_interval = LCPInterval<INDEX>(this->_lcp_iterator_index, this->_lcp_iterator_index, std::numeric_limits<INDEX>::max() - 1);
                 this->increment_iterators();
-                //is_reported_leaf_at_i = true;
-                /*
-                while (true)
-                {
-                    auto current_lcp = *_lcp_iterator;
-                    if (current_lcp > 0)
-                    {
-                        _next_lcp_interval_i_candidate = _lcp_iterator_index - 1;
-                        incompleteStack.push(TmpLCPInterval<INDEX>(_next_lcp_interval_i_candidate, current_lcp));
-                        this->increment_iterators();
-                        this->succ();
-                        break;
-                    }
-                    else
-                    {
-                        this->increment_iterators();
-                    }
-                    
-                }
-                */
-                //this->succ();
             }
             else
             {
                 this->_currenct_lcp_interval = LCPInterval<INDEX>(std::numeric_limits<INDEX>::max(), std::numeric_limits<INDEX>::max(), std::numeric_limits<INDEX>::max());
             }
+        }
+        INDEX get_current_peek_stack_size(){
+            return this->_peek_stack_size;
         }
         INDEX get_text_size()
         {
@@ -122,6 +106,7 @@ public:
                         else
                         {
                             incompleteStack.push(TmpLCPInterval<INDEX>(_next_lcp_interval_i_candidate, current_lcp));
+
                             is_reported_internal_nodes_i = true;
                         }
                     }
@@ -134,6 +119,7 @@ public:
                 }
                 else
                 {
+                    if(incompleteStack.size() > this->_peek_stack_size) this->_peek_stack_size = incompleteStack.size();
                     this->_currenct_lcp_interval = LCPInterval<INDEX>(this->_lcp_iterator_index, this->_lcp_iterator_index, std::numeric_limits<INDEX>::max() - 1);
                         this->increment_iterators();
                     return true;

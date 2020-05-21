@@ -41,8 +41,8 @@ class PostorderMaximalSubstringIntervals
     using LCP_ITERATOR = typename LCP::const_iterator;
     using BWT_ITERATOR = typename BWT::const_iterator;
     //using PSSTI = esaxx::PostorderSpecialSuffixTreeIntervals<CHAR, INDEX, SA, LCP, BWT>;
-        using STI_ITERATOR = typename STI::iterator;
-
+    using STI_ITERATOR = typename STI::iterator;
+     
     //template <typename SA_ITERATOR = std::vector<uint64_t>, typename LCP_ITERATOR = std::vector<uint64_t>, typename BWT_ITERATOR = typename std::vector<CHAR>::const_iterator>
     class iterator
     {
@@ -187,6 +187,9 @@ class PostorderMaximalSubstringIntervals
         {
             return _st_iterator.isEnded();
         }
+        INDEX get_current_peek_stack_size(){
+            return _st_iterator.get_current_peek_stack_size();
+        }
     };
 
 private:
@@ -213,6 +216,16 @@ public:
     {
         return this->_sti->get_lcp_pointer();
     }
+    const INDEX compute_peek_stack_size(){
+        INDEX p = 0;
+        for(auto it = this->begin(); it != this->end(); ++it){
+            if(it.get_current_peek_stack_size() > p){
+                p = it.get_current_peek_stack_size();
+            }
+        }
+        return p;
+    }
+ 
     iterator begin() const
     {
         //using BWT_IT = decltype(this->get_bwt_pointer()->begin());
