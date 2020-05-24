@@ -25,7 +25,7 @@ set(MYMOD_DIR 1)
 add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
 include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 
-#if(COMPILE_LIBDIVSUFSORT)
+if(COMPILE_LIBDIVSUFSORT)
 add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
 include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 else()
