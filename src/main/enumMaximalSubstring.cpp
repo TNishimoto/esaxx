@@ -39,45 +39,6 @@ double ms_construction_time = 0;
 */
 std::vector<std::pair<std::string, uint64_t>> execution_time_messages;
 
-uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
-
-  using LCP = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
-  //using SA = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
-  auto start_prep = std::chrono::system_clock::now();
-  stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX> > rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(filename);
-  auto end_prep = std::chrono::system_clock::now();
-  double prep_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_prep - start_prep).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("RLBWT loading time\t\t", prep_time));
-
-  input_text_size = rlestr.str_size();
-
-  auto start_lcp = std::chrono::system_clock::now();
-  LCP lcpArray;
-  lcpArray.construct_from_rlbwt(&rlestr, false);
-  auto end_lcp = std::chrono::system_clock::now();
-  double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("Sampling LCP & SA construction time\t", lcp_array_construction_time));
-  
-  
-  //const SA* sa_pointer = lcpArray.get_ForwardSA();
-
-  using BWT_RLBWT = stool::rlbwt::ForwardBWT<std::vector<CHAR>, std::vector<INDEX>>;
-  BWT_RLBWT bwt_rlbwt(&rlestr);
-  
-  auto start_ms = std::chrono::system_clock::now();
-  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, LCP, BWT_RLBWT > pmsi;
-  pmsi.construct(&lcpArray, &bwt_rlbwt);
-  uint64_t count = 0;
-  for (auto it : pmsi)
-  {
-	  out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
-    ++count;
-  }
-  auto end_ms = std::chrono::system_clock::now();
-  double ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t\t", ms_construction_time));
-  return count;  
-}
 std::vector<char> construct_bwt_using_sdsl(string filename, string text, bool usingMemory){
   sdsl::csa_sada<> sa;
   if(usingMemory){
@@ -228,9 +189,9 @@ int main(int argc, char *argv[])
   cmdline::parser p;
   p.add<string>("input_file", 'i', "input file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
-  p.add<bool>("print", 'p', "print info", false, true);
+  //p.add<bool>("print", 'p', "print info", false, true);
   p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
-  p.add<string>("mode", 'm', "mode(esaxx, rlbwt or succinct)", false, "esaxx");
+  p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
   p.add<bool>("memory", 'u', "using only main memory (0 or 1)", false, 1);
 
   p.parse_check(argc, argv);
@@ -245,7 +206,7 @@ int main(int argc, char *argv[])
     format = "csv";
   }
 
-  bool isPrint = p.get<bool>("print");
+  //bool isPrint = p.get<bool>("print");
 
   if (outputFile.size() == 0)
   {
@@ -272,10 +233,7 @@ int main(int argc, char *argv[])
     ms_count = iterateMSwithOldESAXX(inputFile, out);
   }else if(mode == "sdsl"){
     ms_count = iterateMSWithSDSL(inputFile, out, usingMemory);
-  } else if(mode == "rlbwt"){
-    ms_count = iterateMSWithRLBWT(inputFile, out);
-  }
-  else{
+  }else{
     mode = "non-compressed";
     ms_count = iterateMS(inputFile, out);
   }

@@ -89,6 +89,9 @@ target_link_libraries(enumMaximalSubstring.out fn)
 
 add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
 target_link_libraries(enumLineMaximalSubstring.out fn)
+add_executable(enumMaximalSubstringWithRLBWT.out src/main/enumMaximalSubstringWithRLBWT.cpp )
+target_link_libraries(enumMaximalSubstringWithRLBWT.out fn)
+
 
 add_executable(lisInLcpArray.out src/main/lis_in_lcp_array.cpp )
 target_link_libraries(lisInLcpArray.out fn)
