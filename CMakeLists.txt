@@ -22,7 +22,10 @@ set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
 set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
 set(MYMOD_DIR 1)
 
-if(COMPILE_LIBDIVSUFSORT)
+add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
+include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
+
+#if(COMPILE_LIBDIVSUFSORT)
 add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
 include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 else()
@@ -45,7 +48,7 @@ include_directories(~/include)
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
-FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp)
+FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
 
 
