@@ -53,7 +53,7 @@ uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
 
   auto start_lcp = std::chrono::system_clock::now();
   LCP lcpArray;
-  auto stime = lcpArray.construct_from_rlbwt(&rlestr, true);
+  auto stime = lcpArray.construct_from_rlbwt(&rlestr, false);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("Sampling SA construction time\t", stime.second));
