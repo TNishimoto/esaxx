@@ -135,6 +135,7 @@ public:
             if (this->_currenct_lcp_interval.lcp != 0)
             {
                 this->_currenct_lcp_interval = LCPInterval<INDEX>(0, this->_lcp_iterator_index - 1, 0);
+                return true;
             }
             else
             {

@@ -10,12 +10,8 @@
 #include <unordered_map>
 #include "stool/src/cmdline.h"
 #include "../test/old_postorder_maximal_substrings.hpp"
-#include "common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
-#include <sdsl/suffix_arrays.hpp>
-#include <sdsl/lcp_dac.hpp>
-#include <sdsl/lcp_support_sada.hpp>
 #include "../../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
 #include "../forward_bwt.hpp"
 using namespace std;

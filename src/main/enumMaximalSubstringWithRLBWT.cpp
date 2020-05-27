@@ -53,7 +53,7 @@ uint64_t iterateMSWithRLBWT(string filename, std::ofstream &out){
 
   auto start_lcp = std::chrono::system_clock::now();
   LCP lcpArray;
-  auto stime = lcpArray.construct_from_rlbwt(&rlestr, false);
+  auto stime = lcpArray.construct_from_rlbwt(&rlestr, true);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("Sampling SA construction time\t", stime.second));
@@ -88,24 +88,18 @@ int main(int argc, char *argv[])
   cmdline::parser p;
   p.add<string>("input_file", 'i', "input file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
-  p.add<bool>("print", 'p', "print info", false, true);
   p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
-  //p.add<string>("mode", 'm', "mode(esaxx, rlbwt or succinct)", false, "esaxx");
-  p.add<bool>("memory", 'u', "using only main memory (0 or 1)", false, 1);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
   string format = p.get<string>("format");
-  //string mode = p.get<string>("mode");
-  bool usingMemory = p.get<bool>("memory");
 
   if (format != "binary")
   {
     format = "csv";
   }
 
-  bool isPrint = p.get<bool>("print");
 
   if (outputFile.size() == 0)
   {
@@ -130,18 +124,7 @@ int main(int argc, char *argv[])
   std::vector<stool::LCPInterval<INDEX>> intervals;
 
   ms_count = iterateMSWithRLBWT(inputFile, out);
-    /*
-  if(mode == "old"){
-    ms_count = iterateMSwithOldESAXX(inputFile, out);
-  }else if(mode == "sdsl"){
-    ms_count = iterateMSWithSDSL(inputFile, out, usingMemory);
-  } else if(mode == "rlbwt"){
-  }
-  else{
-    mode = "non-compressed";
-    ms_count = iterateMS(inputFile, out);
-  }
-  */
+
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 

@@ -96,8 +96,10 @@ add_executable(enumMaximalSubstringWithRLBWT.out src/main/enumMaximalSubstringWi
 target_link_libraries(enumMaximalSubstringWithRLBWT.out fn)
 
 
-add_executable(lisInLcpArray.out src/main/lis_in_lcp_array.cpp )
+add_executable(lisInLcpArray.out src/debug/lis_in_lcp_array.cpp )
 target_link_libraries(lisInLcpArray.out fn)
+add_executable(rlesa.out src/debug/rlesa_main.cpp )
+target_link_libraries(rlesa.out fn)
 
 
 add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
