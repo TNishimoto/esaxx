@@ -6,11 +6,11 @@ filearr=( "fib41" "rs.13" "tm29" "dblp.xml.00001.1" "dblp.xml.00001.2" "dblp.xml
 
 for file in ${filearr[@]}; do
 	echo "Construction of RLESA Standard algorithm: ${file}"
-    nohup /usr/bin/time -f "#Construction of RLESA Standard algorithm, ${file}, %e sec, %M KB" ~/esaxx/build/rlesa.out -i ${folderpath}/${file}.rlbwt -m 0 >> /mnt/server/nishimoto/result/esaxx_rlesa.log
+    nohup /usr/bin/time -f "#Construction of RLESA Standard algorithm, ${file}, %e sec, %M KB" ~/esaxx/build/rlesa.out -i ${outputpath}/${file}.rlbwt -m 0 >> /mnt/server/nishimoto/result/esaxx_rlesa.log
  done
 for file in ${filearr[@]}; do
 	echo "Construction of RLESA Faster algorithm: ${file}"
-    nohup /usr/bin/time -f "#Construction of RLESA Faster algorithm, ${file}, %e sec, %M KB" ~/esaxx/build/rlesa.out -i ${folderpath}/${file}.rlbwt -m 1 >> /mnt/server/nishimoto/result/esaxx_rlesa.log
+    nohup /usr/bin/time -f "#Construction of RLESA Faster algorithm, ${file}, %e sec, %M KB" ~/esaxx/build/rlesa.out -i ${outputpath}/${file}.rlbwt -m 1 >> /mnt/server/nishimoto/result/esaxx_rlesa.log
  done
 
 
