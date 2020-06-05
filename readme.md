@@ -31,7 +31,7 @@ So, to download all the necessary source codes, do the following:
 ## Compile
 > mkdir build  
 > cd build  
-> cmake -DCMAKE_BUILD_TYPE=Release ..  
+> cmake -DCMAKE_BUILD_TYPE=Release -DCOMPILE_LIBDIVSUFSORT=TRUE ..  
 > make  
 
 ## Executions && Examples
