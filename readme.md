@@ -100,7 +100,7 @@ $ ./print.out -i sample.txt -l sample.interval
 
 ### enumMaximalSubstring.out  
 
-This program computes all maximal substrings of the input file.  
+This program computes all maximal substrings of the input file using ESAXX ilbrary (https://github.com/hillbig/esaxx).  
 usage: ./enumSubstring.out --input_file=string [options] ...  
 options:  
   -i, --input_file     input file name (string)  
@@ -185,7 +185,7 @@ $ ./online_rlbwt.out -i sample.txt -o sample.rlbwt
 
 ### enumMaximalSubstringWithRLBWT.out
 
-This program computes all maximal substrings of the string recovered from the input RLBWT.  
+This program computes all maximal substrings of the string recovered from the input RLBWT in compressed space.  
 
 usage: ./enumMaximalSubstringWithRLBWT.out --input_file=string [options] ...   
 options:  
