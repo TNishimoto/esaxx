@@ -86,14 +86,15 @@ int main(int argc, char *argv[])
 {
 
   cmdline::parser p;
-  p.add<string>("input_file", 'i', "input file name", true);
+  p.add<string>("input_file", 'i', "input RLBWT file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
-  p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
+  //p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
-  string format = p.get<string>("format");
+  //string format = p.get<string>("format");
+  string format = "binary";
 
   if (format != "binary")
   {
@@ -134,7 +135,7 @@ int main(int argc, char *argv[])
   //std::cout << "mode \t\t\t\t\t : " << mode << std::endl; 
   std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;
   std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
-  std::cout << "Output format \t\t\t\t : " << format << std::endl;  
+  //std::cout << "Output format \t\t\t\t : " << format << std::endl;  
   std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
   //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
   std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;

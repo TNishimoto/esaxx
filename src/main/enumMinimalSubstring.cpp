@@ -56,10 +56,11 @@ int main(int argc, char *argv[])
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
   std::cout << "Constructing BWT" << std::endl;
   std::vector<CHAR> bwt = stool::constructBWT<CHAR, INDEX>(T, sa);
+  //vector<stool::LCPInterval<INDEX>> minimalSubstrings = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, vector<INDEX>>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
+  //stool::write_vector(outputFile, minimalSubstrings, false);
 
+  
   /*
-  vector<stool::LCPInterval<INDEX>> minimalSubstrings = stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, vector<INDEX>>::constructSortedMinimalSubstrings(bwt, sa, lcpArray);
-
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 

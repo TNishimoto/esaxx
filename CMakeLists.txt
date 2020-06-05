@@ -56,20 +56,38 @@ add_library(fn STATIC ${STOOL_SOURCES})
 target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
 
 
-#add_executable(enumSubstring.out src/main/enumSubstring.cpp)
-#target_link_libraries(enumSubstring.out fn)
+add_executable(enumSubstring.out src/main/enumSubstring.cpp)
+target_link_libraries(enumSubstring.out fn)
 
 add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out fn)
+add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
+target_link_libraries(enumLineMaximalSubstring.out fn)
+add_executable(enumMaximalSubstringWithRLBWT.out src/main/enumMaximalSubstringWithRLBWT.cpp )
+target_link_libraries(enumMaximalSubstringWithRLBWT.out fn)
 
-#add_executable(enumKaiMaximalSubstring.out src/main/enumKaiMaximalSubstring.cpp)
-#target_link_libraries(enumKaiMaximalSubstring.out fn)
+add_executable(print.out src/main/print.cpp)
+target_link_libraries(print.out fn)
+
+
+add_executable(lisInLcpArray.out src/debug/lis_in_lcp_array.cpp )
+target_link_libraries(lisInLcpArray.out fn)
+add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
+target_link_libraries(online_rlbwt.out fn)
+
+
+
+
+#add_executable(rlesa.out src/debug/rlesa_main.cpp )
+#target_link_libraries(rlesa.out fn)
 
 #add_executable(enumMinimalSubstring.out src/main/enumMinimalSubstring.cpp )
 #target_link_libraries(enumMinimalSubstring.out fn)
 
-#add_executable(print.out src/main/print.cpp)
-#target_link_libraries(print.out fn)
+#add_executable(enumKaiMaximalSubstring.out src/main/enumKaiMaximalSubstring.cpp)
+#target_link_libraries(enumKaiMaximalSubstring.out fn)
+
+
 
 
 #add_executable(test.out src/debug/test_main.cpp )
@@ -90,17 +108,5 @@ target_link_libraries(enumMaximalSubstring.out fn)
 #add_executable(lcp_interval_test.out src/debug/lcp_interval_test_main.cpp )
 #target_link_libraries(lcp_interval_test.out fn)
 
-add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
-target_link_libraries(enumLineMaximalSubstring.out fn)
-add_executable(enumMaximalSubstringWithRLBWT.out src/main/enumMaximalSubstringWithRLBWT.cpp )
-target_link_libraries(enumMaximalSubstringWithRLBWT.out fn)
 
 
-add_executable(lisInLcpArray.out src/debug/lis_in_lcp_array.cpp )
-target_link_libraries(lisInLcpArray.out fn)
-add_executable(rlesa.out src/debug/rlesa_main.cpp )
-target_link_libraries(rlesa.out fn)
-
-
-add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
-target_link_libraries(online_rlbwt.out fn)

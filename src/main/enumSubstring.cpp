@@ -25,12 +25,12 @@ int main(int argc, char *argv[])
   p.add<string>("input_file", 'i', "input file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
 
-  p.add<bool>("print", 'p', "print info", false, true);
+  //p.add<bool>("print", 'p', "print info", false, true);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
-  bool isPrint = p.get<bool>("print");
+  //bool isPrint = p.get<bool>("print");
 
   if (outputFile.size() == 0)
   {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
   }
 
   //INDEXTYPE size = T.size();
-
+  /*
   if (isPrint)
   {
     std::cout << "The internal nodes of the suffix tree of the file" << std::endl;
@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
               << "\t"
               << "string" << std::endl;
   }
+  */
 
   vector<stool::LCPInterval<INDEXTYPE>> buffer;
   ofstream os(outputFile, ios::out | ios::binary);
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
   INDEXTYPE nodeCount = 0;
 
   // Writing and Printing internal nodes.
+  
   for (INDEXTYPE i = 0; i < nodeNum; ++i)
   {
     stool::LCPInterval<INDEXTYPE> interval(L[i], R[i], D[i]);
@@ -90,7 +92,7 @@ int main(int argc, char *argv[])
       os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
       buffer.clear();
     }
-
+    /*
     if (isPrint)
     {
       if (nodeCount < 1000)
@@ -102,7 +104,9 @@ int main(int argc, char *argv[])
         std::cout << "etc.." << std::endl;
       }
     }
+    */
   }
+  
   os.write((const char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEXTYPE>) * buffer.size());
   buffer.clear();
   os.close();

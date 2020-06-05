@@ -21,6 +21,8 @@ using namespace stool;
 using INDEXTYPE = int64_t;
 using CHAR = char;
 
+
+
 int main(int argc, char *argv[])
 {
 
@@ -36,14 +38,14 @@ int main(int argc, char *argv[])
 
     std::vector<char> T = stool::load_text(inputFile); // input text
     std::vector<LCPInterval<uint64_t>> intervals;
-    stool::load_vector<LCPInterval<uint64_t>>(intervalFile, intervals, true);
+    stool::load_vector<LCPInterval<uint64_t>>(intervalFile, intervals, false, true);
 
     std::vector<uint64_t> sa = stool::construct_suffix_array(T);
     stool::esaxx::print<char, uint64_t>(intervals, T, sa);
     stool::esaxx::printText<char>(T);
     stool::esaxx::printColor<char, uint64_t>(intervals, T, sa, true);
 
-    /*
+        /*
         std::cout << "id"
                   << "\t"
                   << "occurrence"
@@ -55,9 +57,10 @@ int main(int argc, char *argv[])
                   << "string" << std::endl;
         for (uint64_t i = 0; i < intervals.size(); i++)
         {
-            intervals[i].print(i, T, SA);
+            intervals[i].print(i, T, sa);
         }
         */
+        
 
     return 0;
 }

@@ -51,7 +51,6 @@ std::vector<CHAR> constructBWT(const std::vector<CHAR> &text, const SA &sa)
 template <typename CHAR, typename INDEX>
 void print(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> &text, std::vector<INDEX> &sa)
 {
-
     std::cout << "id"
               << "\t"
               << "occurrence"
@@ -61,7 +60,7 @@ void print(std::vector<stool::LCPInterval<INDEX>> &intervals, std::vector<CHAR> 
               << "string length"
               << "\t"
               << "string" << std::endl;
-
+    
     for (uint64_t i = 0; i < intervals.size(); i++)
     {
         std::string line = intervals[i].getCSVLine(i, text, sa);
@@ -139,9 +138,10 @@ void writeText(std::string filename, std::vector<stool::LCPInterval<INDEX>> &int
     otext += "\t";
     otext += "string";
     otext += "\r\n";
-
+    std::cout << "csv"<< intervals.size() << std::endl;
     for (size_t i = 0; i < intervals.size(); i++)
     {
+        std::cout << intervals[i].getCSVLine(i, text, sa) << std::endl;
         otext.append(intervals[i].getCSVLine(i, text, sa));
 
         //otext.append(stool::esaxx::toLogLine<char,INDEX>(i, text, sa, intervals[i]));

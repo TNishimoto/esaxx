@@ -31,12 +31,6 @@ void iterateMSwithSDSL(){
 
 
 uint64_t input_text_size = 0;
-/*
-double sa_construction_time = 0;
-double lcp_array_construction_time = 0;
-double bwt_construction_time = 0;
-double ms_construction_time = 0;
-*/
 std::vector<std::pair<std::string, uint64_t>> execution_time_messages;
 
 std::vector<char> construct_bwt_using_sdsl(string filename, string text, bool usingMemory){
@@ -128,20 +122,9 @@ uint64_t iterateMS(string filename, std::ofstream &out){
   using BWT = stool::esaxx::ForwardBWT<CHAR, std::vector<CHAR>, std::vector<INDEX>>;
   BWT bwt(&T,&sa);
 
-  /*
-  auto start_bwt = std::chrono::system_clock::now();
-  std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, std::vector<INDEX>>(T, sa);
-  auto end_bwt = std::chrono::system_clock::now();
-  bwt_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_bwt - start_bwt).count();
-  */
-
   auto start_lcp = std::chrono::system_clock::now();
   std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
   auto end_lcp = std::chrono::system_clock::now();
-
-  ///** LIS **/
-  //uint64_t lis = longest_increasing_subsequence(lcpArray, true);
-  //std::cout << "LIS: " << lis << std::endl;
 
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
@@ -166,23 +149,6 @@ uint64_t iterateMS(string filename, std::ofstream &out){
 
 }
 
-
-uint64_t iterateMSwithOldESAXX(string filename, std::ofstream &out)
-{
-  vector<char> T = stool::load_text(filename);
-  input_text_size = T.size();
-
-  std::vector<int64_t> sa;
-  stool::PostorderMaximalSubstrings<int64_t> pmsi = stool::PostorderMaximalSubstrings<int64_t>::construct(T, sa);
-  uint64_t count = 0;
-  for (auto it : pmsi)
-  {
-    auto tmp = stool::LCPInterval<INDEX>(it.i, it.j, it.lcp);
-	  out.write(reinterpret_cast<const char *>(&tmp), sizeof(stool::LCPInterval<INDEX>));
-        ++count;
-  }
-  return count;
-}
 int main(int argc, char *argv[])
 {
 
@@ -190,16 +156,18 @@ int main(int argc, char *argv[])
   p.add<string>("input_file", 'i', "input file name", true);
   p.add<string>("output_file", 'o', "output file name", false, "");
   //p.add<bool>("print", 'p', "print info", false, true);
-  p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
-  p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
-  p.add<bool>("memory", 'u', "using only main memory (0 or 1)", false, 1);
+  //p.add<string>("format", 'f', "output format (binary or csv)", false, "binary");
+  //p.add<string>("mode", 'm', "mode(esaxx or succinct)", false, "esaxx");
+  //p.add<bool>("memory", 'u', "using only main memory (0 or 1)", false, 1);
 
   p.parse_check(argc, argv);
   string inputFile = p.get<string>("input_file");
   string outputFile = p.get<string>("output_file");
-  string format = p.get<string>("format");
-  string mode = p.get<string>("mode");
-  bool usingMemory = p.get<bool>("memory");
+  //string format = p.get<string>("format");
+  string format = "binary";
+  
+  //string mode = p.get<string>("mode");
+  //bool usingMemory = p.get<bool>("memory");
 
   if (format != "binary")
   {
@@ -229,14 +197,17 @@ int main(int argc, char *argv[])
   }
   uint64_t ms_count = 0;
   std::vector<stool::LCPInterval<INDEX>> intervals;
+
+    //mode = "non-compressed";
+    ms_count = iterateMS(inputFile, out);
+  /*
   if(mode == "old"){
     ms_count = iterateMSwithOldESAXX(inputFile, out);
   }else if(mode == "sdsl"){
     ms_count = iterateMSWithSDSL(inputFile, out, usingMemory);
   }else{
-    mode = "non-compressed";
-    ms_count = iterateMS(inputFile, out);
   }
+  */
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
@@ -248,9 +219,12 @@ int main(int argc, char *argv[])
     std::cout << "Maximal substrings in the file" << std::endl;
     stool::esaxx::print<CHAR, INDEX>(intervals, T, sa);
   }
-
+  */
+ /*
   if (format != "binary")
   {
+    std::cout << "csv" << std::endl;
+
     vector<CHAR> T = stool::load_char_vec_from_file(inputFile, true);
     std::vector<INDEX> sa = stool::construct_suffix_array(T);
     stool::esaxx::writeText<CHAR, INDEX>(outputFile, intervals, T, sa);
@@ -260,17 +234,18 @@ int main(int argc, char *argv[])
     stool::write_vector(outputFile, intervals, false);
   }
   */
+  
 
   std::cout << "\033[31m";
   std::cout << "______________________RESULT______________________" << std::endl;
-  std::cout << "mode \t\t\t\t\t : " << mode << std::endl; 
+  //std::cout << "mode \t\t\t\t\t : " << mode << std::endl; 
   std::cout << "File \t\t\t\t\t : " << inputFile << std::endl;
   std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
   std::cout << "Output format \t\t\t\t : " << format << std::endl;  
   std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
-  if(mode == "sdsl"){
-    std::cout << "Using only main memory \t\t\t : " << (usingMemory ? "true" : "false") << std::endl;
-  }
+  //if(mode == "sdsl"){
+  //  std::cout << "Using only main memory \t\t\t : " << (usingMemory ? "true" : "false") << std::endl;
+  //}
   //std::cout << "The number of maximum substrings: " << maximumSubstringCount << std::endl;
   std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
   std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
