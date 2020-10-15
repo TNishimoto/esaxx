@@ -28,6 +28,8 @@ So, to download all the necessary source codes, do the following:
 > git submodule init  
 > git submodule update  
 
+You need sdsl-lite(https://github.com/simongog/sdsl-lite) to excecute this program. Please edit CMakeLists.txt to set SDSL library and include directory paths.
+
 ## Compile
 > mkdir build  
 > cd build  
