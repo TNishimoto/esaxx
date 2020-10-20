@@ -37,12 +37,12 @@ namespace stool
             }
         };
         template <typename INDEX = uint64_t>
-        std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::wt_huff<> &wt, BellerComponent<INDEX> &comp, bool &isEnd)
+        std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(int_vector<> &bwt, IntervalSearchDataStructure &range, BellerComponent<INDEX> &comp, bool &isEnd)
         {
 
             using INTERVAL = stool::LCPInterval<INDEX>;
             uint64_t n = bwt.size();
-            uint8_t lastChar = bwt[bwt.size() - 1];
+            //uint8_t lastChar = bwt[bwt.size() - 1];
             uint64_t max_interval_count = 0;
 
             std::vector<INTERVAL> r;
@@ -51,7 +51,7 @@ namespace stool
             if (comp.lcp == 0)
             {
                 INTERVAL fst(0, n - 1, 0);
-                auto tmp1 = CharInterval::getIntervals(fst.i, fst.j, C, wt, lastChar);
+                auto tmp1 = range.getIntervals(fst.i, fst.j);
                 std::set<uint8_t> nextOccurrenceSet;
 
                 for (auto intv : tmp1)
@@ -110,7 +110,7 @@ namespace stool
                         last_idx = top.j + 1;
                         //auto tmp = getIntervals(top.i, top.j, bwt, C, wt);
 
-                        auto tmpx = CharInterval::getIntervals(top.i, top.j, C, wt, lastChar);
+                        auto tmpx = range.getIntervals(top.i, top.j);
                         //check(tmp, tmpx);
 
                         for (auto intv : tmpx)
@@ -130,7 +130,7 @@ namespace stool
                             last_idx = UINT64_MAX;
 
                             //auto tmp = getIntervals(top.i, top.j, bwt, C, wt);
-                            auto tmpx = CharInterval::getIntervals(top.i, top.j, C, wt, lastChar);
+                            auto tmpx = range.getIntervals(top.i, top.j);
 
                             //check(tmp, tmpx);
 
@@ -158,8 +158,10 @@ namespace stool
 
         } // namespace beller
         template <typename INDEX = uint64_t>
-        std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::wt_huff<> &wt)
+        std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(int_vector<> &bwt)
         {
+            IntervalSearchDataStructure range;
+            range.initialize(bwt);
             stool::beller::BellerComponent<uint64_t> comp;
             comp.initialize(bwt);
             bool isEnd = false;
@@ -167,7 +169,7 @@ namespace stool
 
             while (!isEnd)
             {
-                auto r2 = computeLCPIntervals(bwt, C, wt, comp, isEnd);
+                auto r2 = computeLCPIntervals(bwt, range, comp, isEnd);
                 for (auto it : r2)
                 {
                     r.push_back(it);
@@ -176,8 +178,10 @@ namespace stool
             return r;
         }
         template <typename INDEX = uint64_t>
-        std::vector<stool::LCPInterval<INDEX>> computeMaximalSubstrings(int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::wt_huff<> &wt)
+        std::vector<stool::LCPInterval<INDEX>> computeMaximalSubstrings(int_vector<> &bwt)
         {
+            IntervalSearchDataStructure range;
+            range.initialize(bwt);
             stool::beller::BellerComponent<uint64_t> comp;
             comp.initialize(bwt);
             bool isEnd = false;
@@ -185,14 +189,14 @@ namespace stool
 
             while (!isEnd)
             {
-                auto r2 = computeLCPIntervals(bwt, C, wt, comp, isEnd);
+                auto r2 = computeLCPIntervals(bwt, range, comp, isEnd);
                 for (auto it : r2)
                 {
                     uint8_t fstChar = bwt[it.i];
                     uint8_t lstChar = bwt[it.j];
                     if(fstChar == lstChar){
-                        uint64_t p1 = wt.rank(it.i+1, fstChar);
-                        uint64_t p2 = wt.rank(it.j+1,fstChar);
+                        uint64_t p1 = range.wt.rank(it.i+1, fstChar);
+                        uint64_t p2 = range.wt.rank(it.j+1,fstChar);
                         //std::cout << it.to_string() << std::endl;
                         //std::cout << p1 << "/" << p2 << std::endl;
 
@@ -206,13 +210,16 @@ namespace stool
 
                 }
             }
-            uint64_t dx = wt.select(1, 0) - 1;
+            uint64_t dx = range.wt.select(1, 0) - 1;
             r.push_back(stool::LCPInterval<INDEX>(dx, dx, bwt.size()));
             return r;
         }
         template <typename INDEX = uint64_t>
-        uint64_t outputMaximalSubstrings(int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::wt_huff<> &wt, std::ofstream &out)
+        uint64_t outputMaximalSubstrings(int_vector<> &bwt, std::ofstream &out)
         {
+            IntervalSearchDataStructure range;
+            range.initialize(bwt);
+            
             stool::beller::BellerComponent<uint64_t> comp;
             comp.initialize(bwt);
             bool isEnd = false;
@@ -221,14 +228,14 @@ namespace stool
             {
                 std::vector<stool::LCPInterval<INDEX>> r;
 
-                auto r2 = computeLCPIntervals(bwt, C, wt, comp, isEnd);
+                auto r2 = computeLCPIntervals(bwt, range, comp, isEnd);
                 for (auto it : r2)
                 {
                     uint8_t fstChar = bwt[it.i];
                     uint8_t lstChar = bwt[it.j];
                     if(fstChar == lstChar){
-                        uint64_t p1 = wt.rank(it.i+1, fstChar);
-                        uint64_t p2 = wt.rank(it.j+1,fstChar);
+                        uint64_t p1 = range.wt.rank(it.i+1, fstChar);
+                        uint64_t p2 = range.wt.rank(it.j+1,fstChar);
                         if(p2 - p1 != it.j - it.i){
                             r.push_back(it);
                         }
@@ -243,7 +250,7 @@ namespace stool
                 }
                 count += r.size();
             }
-            uint64_t dx = wt.select(1, 0) - 1;
+            uint64_t dx = range.wt.select(1, 0) - 1;
             auto last = stool::LCPInterval<INDEX>(dx, dx, bwt.size());
             out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX>));
             count += 1;

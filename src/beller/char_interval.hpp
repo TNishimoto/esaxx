@@ -39,51 +39,7 @@ namespace stool
             s[0] = c;
             return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + s + "]";
         }
-        static std::vector<CharInterval> getIntervals(uint64_t i, uint64_t j, std::vector<uint64_t> &C, sdsl::wt_huff<> &wt, uint8_t lastChar)
-        {
-            std::vector<CharInterval> r;
-            uint64_t k;
-            std::vector<uint8_t> cs;
-            std::vector<uint64_t> cs1;
-            std::vector<uint64_t> cs2;
-            uint64_t newJ = j + 1 == wt.size() ? wt.size() : j + 2;
 
-            cs.resize(256, 0);
-            cs1.resize(256, 0);
-            cs2.resize(256, 0);
-
-            //std::cout << "@[" << i << "/" << j << ", " << wt.size() << "]" << std::endl;
-
-            sdsl::interval_symbols(wt, i + 1, newJ, k, cs, cs1, cs2);
-
-            bool b = j + 1 < wt.size();
-            for (uint64_t x = 0; x < k; x++)
-            {
-                uint64_t left = C[cs[x]] + cs1[x];
-                uint64_t right = left + (cs2[x] - cs1[x] - 1);
-
-                //uint64_t right = C[cs[x]] + cs2[x]+1;
-
-                if (j + 1 == wt.size() && cs[x] == lastChar)
-                {
-                    right++;
-                    b = true;
-                }
-
-                //std::cout << ((int)cs[x]) << "/" << left << "/" << right << std::endl;
-                r.push_back(CharInterval(left, right, cs[x]));
-            }
-            if (!b)
-            {
-                uint64_t num = wt.rank(wt.size(), lastChar) + 1;
-                uint64_t left = C[lastChar] + num - 1;
-                uint64_t right = left;
-
-                r.push_back(CharInterval(left, right, lastChar));
-            }
-
-            return r;
-        }
         static uint64_t LF(uint64_t i, int_vector<> &bwt, std::vector<uint64_t> &C, wt_gmr<> &wt)
         {
             uint8_t c = bwt[i];
@@ -126,6 +82,65 @@ namespace stool
             return r;
         }
     };
+    class IntervalSearchDataStructure
+    {
+        public:
+        std::vector<uint64_t> C;
+        sdsl::wt_huff<> wt;
+        uint8_t lastChar;
+        std::vector<uint8_t> cs;
+        std::vector<uint64_t> cs1;
+        std::vector<uint64_t> cs2;
 
+        void initialize(int_vector<> &bwt)
+        {
+            this->lastChar = bwt[bwt.size() - 1];
+            stool::FMIndex::constructC(bwt, C);
+            construct_im(wt, bwt);
+
+            cs.resize(256, 0);
+            cs1.resize(256, 0);
+            cs2.resize(256, 0);
+        }
+        std::vector<CharInterval> getIntervals(uint64_t i, uint64_t j)
+        {
+            std::vector<CharInterval> r;
+            uint64_t k;
+            uint64_t newJ = j + 1 == wt.size() ? wt.size() : j + 2;
+
+
+            //std::cout << "@[" << i << "/" << j << ", " << wt.size() << "]" << std::endl;
+
+            sdsl::interval_symbols(wt, i + 1, newJ, k, cs, cs1, cs2);
+
+            bool b = j + 1 < wt.size();
+            for (uint64_t x = 0; x < k; x++)
+            {
+                uint64_t left = C[cs[x]] + cs1[x];
+                uint64_t right = left + (cs2[x] - cs1[x] - 1);
+
+                //uint64_t right = C[cs[x]] + cs2[x]+1;
+
+                if (j + 1 == wt.size() && cs[x] == lastChar)
+                {
+                    right++;
+                    b = true;
+                }
+
+                //std::cout << ((int)cs[x]) << "/" << left << "/" << right << std::endl;
+                r.push_back(CharInterval(left, right, cs[x]));
+            }
+            if (!b)
+            {
+                uint64_t num = wt.rank(wt.size(), lastChar) + 1;
+                uint64_t left = C[lastChar] + num - 1;
+                uint64_t right = left;
+
+                r.push_back(CharInterval(left, right, lastChar));
+            }
+
+            return r;
+        }
+    };
 
 } // namespace stool

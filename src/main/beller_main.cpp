@@ -36,18 +36,18 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   sdsl::int_vector<> bwt;
   stool::FMIndex::constructBWT(text, sa, bwt);
 
-  std::vector<uint64_t> C;
-  stool::FMIndex::constructC(text, C);
+  //std::vector<uint64_t> C;
+  //stool::FMIndex::constructC(text, C);
 
-  wt_huff<> wt;
+  //wt_huff<> wt;
 
-  construct_im(wt, bwt);
+  //construct_im(wt, bwt);
   /*
   stool::beller::BellerComponent<uint64_t> comp;
   comp.initialize(bwt);
   */
 
-  auto test_Intervals = stool::beller::computeLCPIntervals(bwt, C, wt);
+  auto test_Intervals = stool::beller::computeLCPIntervals(bwt);
   test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
 
   if (correctCheck)
@@ -80,7 +80,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   }
 
   construct_im(wt, bwt);
-  uint64_t msCount = stool::beller::outputMaximalSubstrings(bwt, C, wt, out);
+  uint64_t msCount = stool::beller::outputMaximalSubstrings(bwt, out);
   std::cout << "MSCOUNT = "<< msCount << std::endl;
   /*
   auto test_Intervals = stool::beller::computeMaximalSubstrings(bwt, C, wt);
@@ -130,4 +130,5 @@ int main(int argc, char *argv[])
     }
   }
   computeMaximalSubstrings(inputFile, outputFile, true);
+  //computeLCPIntervals(inputFile, true);
 }
