@@ -15,7 +15,6 @@ namespace stool
 {
     namespace beller
     {
-        using LCPINTV = stool::LCPInterval<uint64_t>;
 
         bool check(std::vector<CharInterval> &vec1, std::vector<CharInterval> &vec2)
         {
@@ -52,9 +51,9 @@ namespace stool
         }
 
         template <typename INDEX = uint64_t>
-        std::vector<stool::LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
+        std::vector<LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
         {
-            std::vector<stool::LCPInterval<INDEX>> r;
+            std::vector<LCPInterval<INDEX>> r;
             for (uint64_t i = 0; i < sa.size(); i++)
             {
                 uint64_t limit_lcp = i == 0 ? 0 : lcpArray[i];
@@ -66,7 +65,7 @@ namespace stool
 
                     if (current_lcp > lcp)
                     {
-                        r.push_back(stool::LCPInterval<INDEX>(i, x - 1, current_lcp));
+                        r.push_back(LCPInterval<INDEX>(i, x - 1, current_lcp));
                         current_lcp = lcp;
                     }
 
@@ -76,21 +75,21 @@ namespace stool
                     }
                 }
             }
-            r.push_back(stool::LCPInterval<INDEX>(0, sa.size() - 1, 0));
+            r.push_back(LCPInterval<INDEX>(0, sa.size() - 1, 0));
             std::sort(
                 r.begin(),
                 r.end(),
-                stool::LCPIntervalPreorderComp<INDEX>());
+                LCPIntervalPreorderComp<INDEX>());
 
             return r;
         }
 
         template <typename INDEX = uint64_t>
-        std::vector<stool::LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
+        std::vector<LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
         {
-            std::vector<stool::LCPInterval<INDEX>> r = naive_compute_lcp_intervals(sa, lcpArray);
+            std::vector<LCPInterval<INDEX>> r = naive_compute_lcp_intervals(sa, lcpArray);
 
-            std::vector<stool::LCPInterval<INDEX>> correct_lcp_intervals;
+            std::vector<LCPInterval<INDEX>> correct_lcp_intervals;
             for (auto it : r)
             {
                 if (it.j - it.i != 0)
@@ -108,8 +107,9 @@ namespace stool
         }
 
         template <typename INDEX = uint64_t>
-        bool equal_check_lcp_intervals(std::vector<LCPINTV> &item1, std::vector<LCPINTV> &item2)
+        bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2)
         {
+            using LCPINTV = LCPInterval<INDEX>;
 
             sort(item1.begin(), item1.end(), [](const LCPINTV &lhs, const LCPINTV &rhs) {
                 if (lhs.lcp != rhs.lcp)
