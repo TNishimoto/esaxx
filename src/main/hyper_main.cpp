@@ -22,6 +22,10 @@ using namespace stool::rlbwt;
 //#include "hpp/fmindex.hpp"
 #include "../beller/beller_debug.hpp"
 #include "../hyper/hyper_weiner.hpp"
+#include "../main/common.hpp"
+#include "../test/naive_algorithms.hpp"
+#include "../postorder_maximal_substring_intervals.hpp"
+#include "../forward_bwt.hpp"
 
 using namespace std;
 using namespace stool;
@@ -59,6 +63,34 @@ void testLCPIntervals(std::string inputFile, bool correctCheck)
         std::cout << "OK!" << std::endl;
     }
     std::cout << "rlbwt = " << rlestr.rle_size() << std::endl;
+}
+
+void testMaximalSubstrings(std::string inputFile)
+{
+    stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
+    uint64_t input_text_size = rlestr.str_size();
+    std::vector<stool::LCPInterval<uint64_t>> test_Intervals = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::computeMaximalSubstrings(rlestr);
+
+    
+    BackwardText<> backer;
+    backer.construct_from_rlbwt(&rlestr, false);
+    std::vector<char> text;
+    text.resize(input_text_size);
+    int64_t i = input_text_size-1;
+    for(auto c : backer){
+        text[i] = c;
+        i--;
+    }
+
+    //std::vector<char> text = backer.to_vector();
+    vector<INDEX> sa = stool::construct_suffix_array(text);
+    
+    using BWT = stool::esaxx::ForwardBWT<char, std::vector<char>, std::vector<INDEX>>;
+    BWT bwt(&text, &sa);
+    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, INDEX>(text, sa);
+    stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
+    std::cout << "OK!" << std::endl;
+    
 }
 
 void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool correctCheck)
@@ -120,5 +152,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    computeMaximalSubstrings(inputFile, outputFile, true);
+    //computeMaximalSubstrings(inputFile, outputFile, true);
+    testMaximalSubstrings(inputFile);
+
 }

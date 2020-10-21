@@ -247,14 +247,19 @@ namespace stool
             bool checkMaximalRepeat(WEINER &lcpIntv)
             {
                 WEINER it = this->getIntervalOnL(lcpIntv);
-                uint8_t fstChar = srdds.bwt[it.beginIndex];
-                uint8_t lstChar = srdds.bwt[it.endIndex];
+                uint8_t fstChar = this->_rlbwt.get_char_by_run_index(it.beginIndex);
+                uint8_t lstChar = this->_rlbwt.get_char_by_run_index(it.endIndex);
                 if (fstChar == lstChar)
                 {
+                    /*
                     uint64_t p1 = srdds.wt.rank(it.beginIndex + 1, fstChar);
                     uint64_t p2 = srdds.wt.rank(it.endIndex + 1, fstChar);
 
-                    if (p2 - p1 != it.endIndex - it.beginIndex)
+                    uint64_t p1 = srdds.wt.rank(it.beginIndex + 1, fstChar);
+                    uint64_t p2 = srdds.wt.rank(it.endIndex + 1, fstChar);
+                    */
+
+                    if (it.beginIndex != it.endIndex)
                     {
                         return true;
                     }
@@ -313,7 +318,6 @@ namespace stool
             static uint64_t outputMaximalSubstrings(const RLBWT_STR &__rlbwt, std::ofstream &out)
             {
                 HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
-                std::vector<stool::LCPInterval<uint64_t>> r;
                 uint64_t count = 0;
 
                 while (!hsc.isStop())
@@ -342,6 +346,37 @@ namespace stool
                 out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX_SIZE>));
                 count += 1;
                 return count;
+            }
+            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(const RLBWT_STR &__rlbwt)
+            {
+                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
+                std::vector<stool::LCPInterval<uint64_t>> r;
+                uint64_t count = 0;
+
+                while (!hsc.isStop())
+                {
+                    hsc.process();
+                    if(hsc.current_lcp % 100 == 0){
+                    std::cout << "LCP = " << (hsc.current_lcp -1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
+
+                    }
+                    for (auto it : hsc.hyperSet.lcpIntvVec)
+                    {
+                        if (hsc.checkMaximalRepeat(it))
+                        {
+                            uint64_t beg = hsc.fposArray[it.beginIndex] + it.beginDiff;
+                            uint64_t end = hsc.fposArray[it.endIndex] + it.endDiff;
+                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.current_lcp - 1);
+                            r.push_back(newLCPIntv);
+                        }
+                    }
+
+                }
+                uint64_t dx = hsc.srdds.wt.select(1, 0) - 1;
+                uint64_t dollerPos = __rlbwt.get_lpos(dx);
+                auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, __rlbwt.str_size());
+                r.push_back(last);
+                return r;
             }
         };
 
