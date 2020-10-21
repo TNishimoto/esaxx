@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    //computeMaximalSubstrings(inputFile, outputFile, true);
-    testMaximalSubstrings(inputFile);
+    computeMaximalSubstrings(inputFile, outputFile, true);
+    //testMaximalSubstrings(inputFile);
 
 }

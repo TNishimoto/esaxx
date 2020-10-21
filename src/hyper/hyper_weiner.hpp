@@ -37,6 +37,8 @@ namespace stool
         {
         public:
             using CHAR = typename RLBWT_STR::char_type;
+            using CHARVEC = typename RLBWT_STR::char_vec_type;
+
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using WEINER = WeinerInterval<INDEX_SIZE>;
 
@@ -46,17 +48,65 @@ namespace stool
             std::vector<bool> tmpBitArray;
             std::vector<bool> checkerArray;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
+            RangeDistinctDataStructure<CHARVEC> srdds2;
             std::vector<INDEX_SIZE> fposArray;
 
             uint64_t current_lcp = 0;
             uint64_t strSize = 0;
             uint64_t total_counter = 0;
             HyperSet<INDEX_SIZE> hyperSet;
+            /*
+            static stool::EliasFanoVector construct_sorted_fpos_array(const RLBWT_STR &rlbwt)
+            {
+                uint64_t CHARMAX = UINT8_MAX + 1;
+                std::vector<uint64_t> X;
+                std::vector<uint64_t> CK;
+                std::vector<uint64_t> numVec;
+                std::vector<uint64_t> numC;
+
+                std::vector<uint64_t> C;
+                std::vector<uint64_t> CK3;
+                std::vector<uint64_t> rankVec;
+                std::vector<uint64_t> countVec;
+
+                CK.resize(CHARMAX, 0);
+                numVec.resize(CHARMAX, 0);
+                numC.resize(CHARMAX, 0);
+                C.resize(CHARMAX, 0);
+                CK3.resize(CHARMAX, 0);
+
+                uint64_t rle = rlbwt.rle_size();
+                for (uint64_t i = 0; i < rle; i++)
+                {
+                    uint8_t c = rlbwt.get_char_by_run_index(i);
+                    uint64_t l = rlbwt.get_run(i);
+                    CK[c] += l;
+                    numVec[c]++;
+                }
+                for (uint64_t i = 1; i < CHARMAX; i++)
+                {
+                    C[i] = C[i - 1] + CK[i - 1];
+                    numC[i] = numC[i - 1] + numVec[i - 1];
+                }
+                X.resize(rle);
+                for (uint64_t i = 0; i < rle; i++)
+                {
+                    uint8_t c = rlbwt.get_char_by_run_index(i);
+                    uint64_t l = rlbwt.get_run(i);
+                    X[numC[c]] = C[c] + l;
+                    numC[c]++;
+                    C[c] += l;
+                }
+                stool::EliasFanoVector EFVec;
+                EFVec.construct(&X);
+                return EFVec;
+            }
+            */
 
             HyperSetConstructor(const RLBWT_STR &__rlbwt) : _rlbwt(__rlbwt)
             {
-                    uint64_t CHARMAX = UINT8_MAX+1;
-            
+                uint64_t CHARMAX = UINT8_MAX + 1;
+
                 uint64_t runSize = _rlbwt.rle_size();
                 tmpIntervalVec.resize(CHARMAX);
                 tmpIndexVec.resize(0);
@@ -67,6 +117,7 @@ namespace stool
                 this->fposArray.swap(v1);
 
                 this->strSize = this->_rlbwt.str_size();
+                srdds2.preprocess(this->_rlbwt.get_char_vec());
             }
             void clearWeinerTmpVec()
             {
@@ -105,14 +156,22 @@ namespace stool
                     return false;
                 }
             }
+            vector<WEINER> range_distinct(WEINER &w, std::vector<CHAR> &charOutputVec)
+            {
+                //vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt,srdds, w.beginIndex, w.beginDiff, w.endIndex, w.endDiff, charOutputVec);
+                vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, RangeDistinctDataStructure<CHARVEC>>::range_distinct(_rlbwt,srdds2, w.beginIndex, w.beginDiff, w.endIndex, w.endDiff, charOutputVec);
+
+                return results;
+            }
             void computeNextIntervals(WEINER &w, bool isWeiner)
             {
                 WEINER frontL = this->getIntervalOnL(w);
                 std::vector<CHAR> charOutputVec;
-                vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR,
-                                                                           INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt,
-                                                                                                                                           srdds, frontL.beginIndex, frontL.beginDiff,
-                                                                                                                                           frontL.endIndex, frontL.endDiff, charOutputVec);
+                vector<WEINER> results = range_distinct(frontL, charOutputVec);
+                //vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR,
+                //                                                           INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt,
+                //                                                                                                                                       srdds, frontL.beginIndex, frontL.beginDiff,
+                //                                                                                                                                       frontL.endIndex, frontL.endDiff, charOutputVec);
                 for (uint64_t i = 0; i < results.size(); i++)
                 {
                     UCHAR c = charOutputVec[i];
@@ -199,9 +258,16 @@ namespace stool
                 uint64_t end_lindex = _rlbwt.rle_size() - 1;
                 uint64_t end_diff = _rlbwt.get_run(end_lindex) - 1;
 
+                //vector<WEINER> results = range_distinct(frontL, charOutputVec);
+                WEINER tmpArg;
+                tmpArg.beginIndex = begin_lindex;
+                tmpArg.beginDiff = begin_diff;
+                tmpArg.endIndex = end_lindex;
+                tmpArg.endDiff = end_diff;
                 std::vector<CHAR> charOutputVec;
-                auto weinerIntervals = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt, srdds, begin_lindex, begin_diff, end_lindex, end_diff, charOutputVec);
-                for (auto &it : weinerIntervals)
+                vector<WEINER> results = range_distinct(tmpArg, charOutputVec);
+                //auto weinerIntervals = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt, srdds, begin_lindex, begin_diff, end_lindex, end_diff, charOutputVec);
+                for (auto &it : results)
                 {
                     if (checkWeinerInterval(it))
                     {
@@ -323,9 +389,9 @@ namespace stool
                 while (!hsc.isStop())
                 {
                     hsc.process();
-                    if(hsc.current_lcp % 100 == 0){
-                    std::cout << "LCP = " << (hsc.current_lcp -1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
-
+                    if (hsc.current_lcp % 100 == 0)
+                    {
+                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
                     }
                     for (auto it : hsc.hyperSet.lcpIntvVec)
                     {
@@ -338,7 +404,6 @@ namespace stool
                             out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
                         }
                     }
-
                 }
                 uint64_t dx = hsc.srdds.wt.select(1, 0) - 1;
                 uint64_t dollerPos = __rlbwt.get_lpos(dx);
@@ -351,14 +416,13 @@ namespace stool
             {
                 HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
                 std::vector<stool::LCPInterval<uint64_t>> r;
-                uint64_t count = 0;
 
                 while (!hsc.isStop())
                 {
                     hsc.process();
-                    if(hsc.current_lcp % 100 == 0){
-                    std::cout << "LCP = " << (hsc.current_lcp -1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
-
+                    if (hsc.current_lcp % 100 == 0)
+                    {
+                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
                     }
                     for (auto it : hsc.hyperSet.lcpIntvVec)
                     {
@@ -370,7 +434,6 @@ namespace stool
                             r.push_back(newLCPIntv);
                         }
                     }
-
                 }
                 uint64_t dx = hsc.srdds.wt.select(1, 0) - 1;
                 uint64_t dollerPos = __rlbwt.get_lpos(dx);
