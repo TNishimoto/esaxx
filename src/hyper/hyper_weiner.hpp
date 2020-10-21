@@ -45,7 +45,7 @@ namespace stool
             std::vector<uint64_t> tmpIndexVec;
             std::vector<bool> tmpBitArray;
             std::vector<bool> checkerArray;
-            SuccinctRangeDistinctDataStructure srdds;
+            SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
             std::vector<INDEX_SIZE> fposArray;
 
             uint64_t current_lcp = 0;
@@ -108,7 +108,7 @@ namespace stool
                 WEINER frontL = this->getIntervalOnL(w);
                 std::vector<CHAR> charOutputVec;
                 vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR,
-                                                                           INDEX_SIZE, SuccinctRangeDistinctDataStructure>::range_distinct(_rlbwt,
+                                                                           INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt,
                                                                                                                                            srdds, frontL.beginIndex, frontL.beginDiff,
                                                                                                                                            frontL.endIndex, frontL.endDiff, charOutputVec);
                 for (uint64_t i = 0; i < results.size(); i++)
@@ -198,7 +198,7 @@ namespace stool
                 uint64_t end_diff = _rlbwt.get_run(end_lindex) - 1;
 
                 std::vector<CHAR> charOutputVec;
-                auto weinerIntervals = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure>::range_distinct(_rlbwt, srdds, begin_lindex, begin_diff, end_lindex, end_diff, charOutputVec);
+                auto weinerIntervals = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt, srdds, begin_lindex, begin_diff, end_lindex, end_diff, charOutputVec);
                 for (auto &it : weinerIntervals)
                 {
                     if (checkWeinerInterval(it))

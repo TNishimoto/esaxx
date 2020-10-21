@@ -36,7 +36,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   sdsl::int_vector<> bwt;
   stool::FMIndex::constructBWT(text, sa, bwt);
 
-  auto test_Intervals = stool::beller::computeLCPIntervals(bwt);
+  auto test_Intervals = stool::beller::computeLCPIntervals<uint64_t>(bwt);
   test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
 
   if (correctCheck)
@@ -73,7 +73,12 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   uint64_t input_text_size = text.size();
 
   construct_im(wt, bwt);
-  uint64_t ms_count = stool::beller::outputMaximalSubstrings(bwt, out);
+  uint64_t ms_count = 0;
+  if(bwt.size() < UINT32_MAX){
+   ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(bwt, out);
+  }else{
+   ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(bwt, out);
+  }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 

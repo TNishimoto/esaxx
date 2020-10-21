@@ -16,12 +16,13 @@ namespace stool
     namespace beller
     {
 
-        bool check(std::vector<CharInterval> &vec1, std::vector<CharInterval> &vec2)
+        template <typename INDEX_SIZE>
+        bool check(std::vector<CharInterval<INDEX_SIZE>> &vec1, std::vector<CharInterval<INDEX_SIZE>> &vec2)
         {
-            std::sort(vec1.begin(), vec1.end(), [](const CharInterval &lhs, const CharInterval &rhs) {
+            std::sort(vec1.begin(), vec1.end(), [](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
                 return lhs.c < rhs.c;
             });
-            std::sort(vec2.begin(), vec2.end(), [](const CharInterval &lhs, const CharInterval &rhs) {
+            std::sort(vec2.begin(), vec2.end(), [](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
                 return lhs.c < rhs.c;
             });
 

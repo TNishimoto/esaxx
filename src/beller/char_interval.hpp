@@ -20,16 +20,17 @@ using namespace sdsl;
 
 namespace stool
 {
+    template <typename index_type>
     class CharInterval
     {
     public:
-        uint64_t i;
-        uint64_t j;
+        index_type i;
+        index_type j;
         uint8_t c;
         CharInterval()
         {
         }
-        CharInterval(uint64_t _i, uint64_t _j, uint8_t _c) : i(_i), j(_j), c(_c)
+        CharInterval(index_type _i, index_type _j, uint8_t _c) : i(_i), j(_j), c(_c)
         {
         }
 
@@ -39,7 +40,7 @@ namespace stool
             s[0] = c;
             return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + s + "]";
         }
-
+        /*
         static uint64_t LF(uint64_t i, int_vector<> &bwt, std::vector<uint64_t> &C, wt_gmr<> &wt)
         {
             uint8_t c = bwt[i];
@@ -81,6 +82,7 @@ namespace stool
             }
             return r;
         }
+        */
     };
     class IntervalSearchDataStructure
     {
@@ -102,9 +104,11 @@ namespace stool
             cs1.resize(256, 0);
             cs2.resize(256, 0);
         }
-        std::vector<CharInterval> getIntervals(uint64_t i, uint64_t j)
+        template <typename INDEX_SIZE>
+        std::vector<CharInterval<INDEX_SIZE>> getIntervals(INDEX_SIZE i, INDEX_SIZE j)
         {
-            std::vector<CharInterval> r;
+            using CHARINTV = CharInterval<INDEX_SIZE>;
+            std::vector<CHARINTV> r;
             uint64_t k;
             uint64_t newJ = j + 1 == wt.size() ? wt.size() : j + 2;
 
@@ -114,10 +118,10 @@ namespace stool
             sdsl::interval_symbols(wt, i + 1, newJ, k, cs, cs1, cs2);
 
             bool b = j + 1 < wt.size();
-            for (uint64_t x = 0; x < k; x++)
+            for (INDEX_SIZE x = 0; x < k; x++)
             {
-                uint64_t left = C[cs[x]] + cs1[x];
-                uint64_t right = left + (cs2[x] - cs1[x] - 1);
+                INDEX_SIZE left = C[cs[x]] + cs1[x];
+                INDEX_SIZE right = left + (cs2[x] - cs1[x] - 1);
 
                 //uint64_t right = C[cs[x]] + cs2[x]+1;
 
@@ -128,15 +132,15 @@ namespace stool
                 }
 
                 //std::cout << ((int)cs[x]) << "/" << left << "/" << right << std::endl;
-                r.push_back(CharInterval(left, right, cs[x]));
+                r.push_back(CHARINTV(left, right, cs[x]));
             }
             if (!b)
             {
-                uint64_t num = wt.rank(wt.size(), lastChar) + 1;
-                uint64_t left = C[lastChar] + num - 1;
-                uint64_t right = left;
+                INDEX_SIZE num = wt.rank(wt.size(), lastChar) + 1;
+                INDEX_SIZE left = C[lastChar] + num - 1;
+                INDEX_SIZE right = left;
 
-                r.push_back(CharInterval(left, right, lastChar));
+                r.push_back(CHARINTV(left, right, lastChar));
             }
 
             return r;

@@ -69,7 +69,7 @@ namespace stool
 
                 vector<WeinerInterval<INDEX_SIZE>> r;
 
-                vector<stool::CharInterval> rangeVec = rd.range_distinct(begin_lindex, end_lindex);
+                vector<stool::CharInterval<INDEX_SIZE>> rangeVec = rd.range_distinct(begin_lindex, end_lindex);
 
                 for (auto &it : rangeVec)
                 {
@@ -92,10 +92,10 @@ namespace stool
                 return r;
             }
 
-            static bool equal_check(std::vector<stool::CharInterval> &item1, std::vector<stool::CharInterval> &item2)
+            static bool equal_check(std::vector<stool::CharInterval<INDEX_SIZE>> &item1, std::vector<stool::CharInterval<INDEX_SIZE>> &item2)
             {
 
-                sort(item1.begin(), item1.end(), [](const stool::CharInterval &lhs, const stool::CharInterval &rhs) {
+                sort(item1.begin(), item1.end(), [](const stool::CharInterval<INDEX_SIZE> &lhs, const stool::CharInterval<INDEX_SIZE> &rhs) {
                     if (lhs.c != rhs.c)
                     {
                         return lhs.c < rhs.c;
@@ -106,7 +106,7 @@ namespace stool
                     }
                 });
 
-                sort(item2.begin(), item2.end(), [](const stool::CharInterval &lhs, const stool::CharInterval &rhs) {
+                sort(item2.begin(), item2.end(), [](const stool::CharInterval<INDEX_SIZE> &lhs, const stool::CharInterval<INDEX_SIZE> &rhs) {
                     if (lhs.c != rhs.c)
                     {
                         return lhs.c < rhs.c;
@@ -155,15 +155,15 @@ namespace stool
                 }
                 return true;
             }
-
+            /*
             static std::vector<WeinerInterval<INDEX_SIZE>> range_distinct2(const RLBWT_STR &_rlbwt,
                                                                            SuccinctRangeDistinctDataStructure &rd1, RangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> &rd2, INDEX_SIZE &begin_lindex, INDEX_SIZE &begin_diff, INDEX_SIZE &end_lindex, INDEX_SIZE &end_diff, std::vector<CHAR> &charOutputVec)
             {
 
                 vector<WeinerInterval<INDEX_SIZE>> r;
 
-                vector<stool::CharInterval> rangeVec = rd1.range_distinct(begin_lindex, end_lindex);
-                vector<stool::CharInterval> rangeVec2 = rd2.range_distinct(begin_lindex, end_lindex);
+                vector<stool::CharInterval<INDEX_SIZE>> rangeVec = rd1.range_distinct(begin_lindex, end_lindex);
+                vector<stool::CharInterval<INDEX_SIZE>> rangeVec2 = rd2.range_distinct(begin_lindex, end_lindex);
                 equal_check(rangeVec, rangeVec2);
 
                 for (auto &it : rangeVec)
@@ -186,6 +186,7 @@ namespace stool
                 }
                 return r;
             }
+            */
         };
 
     } // namespace lcp_on_rlbwt

@@ -14,6 +14,8 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
+
+        template <typename INDEX_SIZE>
         class SuccinctRangeDistinctDataStructure
         {
         public:
@@ -25,7 +27,7 @@ namespace stool
             std::vector<uint64_t> cs1;
             std::vector<uint64_t> cs2;
 
-            template <typename RLBWT_STR, typename INDEX_SIZE = uint64_t>
+            template <typename RLBWT_STR>
             void initialize(const RLBWT_STR &_rlbwt)
             {
                 using CHAR_VEC = typename RLBWT_STR::char_vec_type;
@@ -48,9 +50,9 @@ namespace stool
 
             }
 
-            std::vector<CharInterval> range_distinct(uint64_t i, uint64_t j)
+            std::vector<CharInterval<INDEX_SIZE>> range_distinct(INDEX_SIZE i, INDEX_SIZE j)
             {
-                std::vector<CharInterval> r;
+                std::vector<CharInterval<INDEX_SIZE>> r;
                 uint64_t k;
                 uint64_t newJ = j + 1 == wt.size() ? wt.size() : j + 2;
 
@@ -82,7 +84,7 @@ namespace stool
                         b = true;
                     }
 
-                    r.push_back(CharInterval(left, right, cs[x]));
+                    r.push_back(CharInterval<INDEX_SIZE>(left, right, cs[x]));
                 }
                 if (!b)
                 {
@@ -90,7 +92,7 @@ namespace stool
                     uint64_t left = wt.size() - 1;
                     uint64_t right = left;
 
-                    r.push_back(CharInterval(left, right, lastChar));
+                    r.push_back(CharInterval<INDEX_SIZE>(left, right, lastChar));
                 }
                 //std::cout << "END" << std::endl;
 
