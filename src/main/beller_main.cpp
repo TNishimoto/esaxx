@@ -36,17 +36,6 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   sdsl::int_vector<> bwt;
   stool::FMIndex::constructBWT(text, sa, bwt);
 
-  //std::vector<uint64_t> C;
-  //stool::FMIndex::constructC(text, C);
-
-  //wt_huff<> wt;
-
-  //construct_im(wt, bwt);
-  /*
-  stool::beller::BellerComponent<uint64_t> comp;
-  comp.initialize(bwt);
-  */
-
   auto test_Intervals = stool::beller::computeLCPIntervals(bwt);
   test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
 
@@ -64,6 +53,8 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 {
 
   //string text = "";
+  auto start = std::chrono::system_clock::now();
+
   std::cout << "Loading : " << inputFile << std::endl;
   std::vector<char> text = stool::load_char_vec_from_file(inputFile, true);
   vector<INDEX> sa = stool::construct_suffix_array(text);
@@ -74,14 +65,18 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   stool::FMIndex::constructC(text, C);
 
   wt_huff<> wt;
-	std::ofstream out(outputFile, std::ios::out | std::ios::binary);
-	if (!out){
+  std::ofstream out(outputFile, std::ios::out | std::ios::binary);
+  if (!out)
+  {
     throw std::runtime_error("Cannot open the output file!");
   }
+  uint64_t input_text_size = text.size();
 
   construct_im(wt, bwt);
-  uint64_t msCount = stool::beller::outputMaximalSubstrings(bwt, out);
-  std::cout << "MSCOUNT = "<< msCount << std::endl;
+  uint64_t ms_count = stool::beller::outputMaximalSubstrings(bwt, out);
+  auto end = std::chrono::system_clock::now();
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
   /*
   auto test_Intervals = stool::beller::computeMaximalSubstrings(bwt, C, wt);
   test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
@@ -95,6 +90,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     std::cout << "OK!" << std::endl;
   }
   */
+  std::cout << "\033[31m";
+  std::cout << "______________________RESULT______________________" << std::endl;
+  std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;
+  std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
+  std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
+  std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
+  std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
+  std::cout << "_______________________________________________________" << std::endl;
+  std::cout << "\033[39m" << std::endl;
 }
 
 int main(int argc, char *argv[])
