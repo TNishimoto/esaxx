@@ -55,10 +55,12 @@ namespace stool
 
             HyperSetConstructor(const RLBWT_STR &__rlbwt) : _rlbwt(__rlbwt)
             {
+                    uint64_t CHARMAX = UINT8_MAX+1;
+            
                 uint64_t runSize = _rlbwt.rle_size();
-                tmpIntervalVec.resize(UINT8_MAX);
+                tmpIntervalVec.resize(CHARMAX);
                 tmpIndexVec.resize(0);
-                tmpBitArray.resize(UINT8_MAX, false);
+                tmpBitArray.resize(CHARMAX, false);
                 this->checkerArray.resize(runSize, false);
                 srdds.initialize(__rlbwt);
                 std::vector<INDEX_SIZE> v1 = RLBWTFunctions::construct_fpos_array<RLBWT_STR, INDEX_SIZE>(_rlbwt);

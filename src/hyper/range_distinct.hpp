@@ -155,6 +155,7 @@ namespace stool
             }
             void preprocess(const CHAR_VEC *__char_vec)
             {
+                
                 int32_t charMaxSize = ((int32_t)UINT8_MAX) + 1;
                 this->_char_vec = __char_vec;
                 this->positionVec.resize(charMaxSize);

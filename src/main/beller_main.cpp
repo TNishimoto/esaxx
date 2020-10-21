@@ -31,7 +31,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
 
   //string text = "";
   std::cout << "Loading : " << inputFile << std::endl;
-  std::vector<char> text = stool::load_char_vec_from_file(inputFile, true);
+  std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
   vector<INDEX> sa = stool::construct_suffix_array(text);
   sdsl::int_vector<> bwt;
   stool::FMIndex::constructBWT(text, sa, bwt);
@@ -56,13 +56,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   auto start = std::chrono::system_clock::now();
 
   std::cout << "Loading : " << inputFile << std::endl;
-  std::vector<char> text = stool::load_char_vec_from_file(inputFile, true);
+  std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
   vector<INDEX> sa = stool::construct_suffix_array(text);
   sdsl::int_vector<> bwt;
+
   stool::FMIndex::constructBWT(text, sa, bwt);
 
   std::vector<uint64_t> C;
-  stool::FMIndex::constructC(text, C);
+
+  stool::FMIndex::constructC(bwt, C);
 
   wt_huff<> wt;
   std::ofstream out(outputFile, std::ios::out | std::ios::binary);
@@ -74,6 +76,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
   construct_im(wt, bwt);
   uint64_t ms_count = 0;
+
   if(bwt.size() < UINT32_MAX){
    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(bwt, out);
   }else{

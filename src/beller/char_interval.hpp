@@ -105,12 +105,13 @@ namespace stool
             cs2.resize(256, 0);
         }
         template <typename INDEX_SIZE>
-        std::vector<CharInterval<INDEX_SIZE>> getIntervals(INDEX_SIZE i, INDEX_SIZE j)
+        uint64_t getIntervals(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
         {
             using CHARINTV = CharInterval<INDEX_SIZE>;
             std::vector<CHARINTV> r;
             uint64_t k;
             uint64_t newJ = j + 1 == wt.size() ? wt.size() : j + 2;
+            uint64_t p =0;
 
 
             //std::cout << "@[" << i << "/" << j << ", " << wt.size() << "]" << std::endl;
@@ -132,18 +133,19 @@ namespace stool
                 }
 
                 //std::cout << ((int)cs[x]) << "/" << left << "/" << right << std::endl;
-                r.push_back(CHARINTV(left, right, cs[x]));
+                output[p++] = CHARINTV(left, right, cs[x]);
+                //r.push_back(CHARINTV(left, right, cs[x]));
             }
             if (!b)
             {
                 INDEX_SIZE num = wt.rank(wt.size(), lastChar) + 1;
                 INDEX_SIZE left = C[lastChar] + num - 1;
                 INDEX_SIZE right = left;
-
-                r.push_back(CHARINTV(left, right, lastChar));
+                output[p++] = CHARINTV(left, right, lastChar);
+                //r.push_back(CHARINTV(left, right, lastChar));
             }
 
-            return r;
+            return p;
         }
     };
 
