@@ -67,25 +67,49 @@ namespace stool
             const RLBWT_STR *rlbwt;
             //RANGE_DISTINCT *rd
             RangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> srdds2;
-            
+
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
-            void initialize(const RLBWT_STR *_rlbwt, const sdsl::wt_huff<> *_wt){
+
+            uint64_t total_cover1 = 0;
+            uint64_t num1 = 0;
+
+            uint64_t total_cover2 = 0;
+            uint64_t num2 = 0;
+
+            void initialize(const RLBWT_STR *_rlbwt, const sdsl::wt_huff<> *_wt)
+            {
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 this->rlbwt = _rlbwt;
                 //this->rd = _rd;
                 charIntervalTmpVec.resize(CHARMAX);
                 srdds2.preprocess(rlbwt->get_char_vec(), _wt);
-
             }
 
-
-            uint64_t range_distinct(WeinerInterval<INDEX_SIZE> range, std::vector<WeinerInterval<INDEX_SIZE>> &output,std::vector<CHAR> &charOutputVec)
+            uint64_t range_distinct(WeinerInterval<INDEX_SIZE> range, std::vector<WeinerInterval<INDEX_SIZE>> &output, std::vector<CHAR> &charOutputVec)
             {
 
-                vector<WeinerInterval<INDEX_SIZE>> r;
+                uint64_t count = 0;
 
-                uint64_t count = srdds2.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
-                for(uint64_t x=0;x<count;x++){
+                if (range.endIndex - range.beginIndex > 16)
+                {
+                    count = srdds2.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
+
+                    total_cover1 += range.endIndex - range.beginIndex;
+                    num1++;
+                }
+                else
+                {
+                    count = srdds2.light_range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
+                    //std::cout << "+" << count << std::endl;
+
+                    total_cover2 += range.endIndex - range.beginIndex;
+                    num2++;
+                }
+
+                assert(count > 0);
+
+                for (uint64_t x = 0; x < count; x++)
+                {
                     auto &it = charIntervalTmpVec[x];
                     INDEX_SIZE cBeginIndex = it.i;
                     INDEX_SIZE cEndIndex = it.j;
@@ -101,7 +125,6 @@ namespace stool
                     charOutputVec[x] = it.c;
 
                     output[x] = cInterval;
-
                 }
 
                 return count;

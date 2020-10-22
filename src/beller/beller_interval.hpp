@@ -28,6 +28,7 @@ namespace stool
             std::vector<CharInterval<INDEX>> charIntervalTmpVec;
 
             uint64_t lcp = 0;
+            uint64_t debugCounter = 0;
 
             void initialize(int_vector<> &bwt)
             {
@@ -56,6 +57,8 @@ namespace stool
             {
                 INTERVAL fst(0, n - 1, 0);
                 uint64_t charIntvCount = range.getIntervals(fst.i, fst.j, comp.charIntervalTmpVec);
+                            comp.debugCounter++;
+
                 std::set<uint8_t> nextOccurrenceSet;
 
                 for (uint64_t i = 0; i < charIntvCount; i++)
@@ -117,6 +120,8 @@ namespace stool
                         //auto tmp = getIntervals(top.i, top.j, bwt, C, wt);
 
                         uint64_t charIntvCount = range.getIntervals(top.i, top.j, comp.charIntervalTmpVec);
+                                    comp.debugCounter++;
+
                         //check(tmp, tmpx);
                         for (uint64_t i = 0; i < charIntvCount; i++)
                         {
@@ -137,6 +142,8 @@ namespace stool
 
                             //auto tmp = getIntervals(top.i, top.j, bwt, C, wt);
                             uint64_t charIntvCount = range.getIntervals(top.i, top.j, comp.charIntervalTmpVec);
+                                        comp.debugCounter++;
+
 
                             //check(tmp, tmpx);
 
@@ -233,6 +240,8 @@ namespace stool
 
                 count += r2.size();
             }
+
+                std::cout << "Range Distinct Count = " << comp.debugCounter << "/" << bwt.size() << std::endl;
             uint64_t dx = range.wt.select(1, 0) - 1;
             auto last = stool::LCPInterval<INDEX>(dx, dx, bwt.size());
             out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX>));

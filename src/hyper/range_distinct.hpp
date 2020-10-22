@@ -33,6 +33,10 @@ namespace stool
             std::vector<INDEX_SIZE> tmpRangeDistinctResult;
             std::stack<INDEX_SIZE> tmpSearchStack;
 
+            std::vector<int64_t> checker;
+            std::vector<uint64_t> beginIndexes;
+            std::vector<uint64_t> endIndexes;
+            std::vector<uint64_t> charIndexes;
 
 
             //std::unordered_map<CHAR, uint64_t> tmpRangeDistinctResult;
@@ -41,6 +45,7 @@ namespace stool
             {
                 CHAR c = (*_char_vec)[i];
                 //INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = wt->rank(i, c);
                 INDEX_SIZE rank = wt->rank(i+1, c);
                 
                 if (positionVec[(uint8_t)c].size() == rank + 1)
@@ -56,7 +61,9 @@ namespace stool
             {
                 CHAR c = (*_char_vec)[i];
                 //INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = wt->rank(i, c);
                 INDEX_SIZE rank = wt->rank(i+1, c);
+
                 //assert(rank == result);
 
                 if (rank == 0)
@@ -169,6 +176,10 @@ namespace stool
                 this->positionVec.resize(charMaxSize);
                 size = _char_vec->size();
 
+                checker.resize(charMaxSize, -1);
+                beginIndexes.resize(charMaxSize, 0);
+                endIndexes.resize(charMaxSize, 0);
+                charIndexes.resize(charMaxSize, 0);
 
 
 
@@ -230,6 +241,29 @@ namespace stool
                 }
                 return count;
             }
+            uint64_t light_range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            {
+                uint64_t count = 0;
+                for(uint64_t x=i;x<=j;x++){
+                    uint8_t c = (*this->_char_vec)[x];
+                    if(checker[c] == -1){
+                        checker[c] = count;
+                        beginIndexes[count] = x;
+                        endIndexes[count] = x;
+                        charIndexes[count] = c; 
+                        count++;
+                    }else{
+                        endIndexes[checker[c]] = x;
+                    }
+                }
+                for(uint64_t x=0;x<count;x++){
+                    output[x] = CharInterval<INDEX_SIZE>(beginIndexes[x], endIndexes[x], charIndexes[x]);
+                    checker[charIndexes[x]] = -1;
+                }
+                return count;
+
+            }
+
         };
 
     } // namespace rlbwt

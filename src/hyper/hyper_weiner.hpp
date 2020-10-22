@@ -46,6 +46,7 @@ namespace stool
             uint64_t total_counter = 0;
             HyperSet<INDEX_SIZE> hyperSet;
             HyperSet<INDEX_SIZE> hyperTmpSet;
+            uint64_t debugCounter = 0;
 
             static void construct_C(const RLBWT_STR &rlbwt, std::vector<uint64_t> &C)
             {
@@ -193,6 +194,7 @@ namespace stool
             }
             void computeNextIntervals(WEINER &w, bool isWeiner)
             {
+                debugCounter++;
                 WEINER frontL = this->getIntervalOnL(w);
                 uint64_t resultCount = rangeOnRLBWT.range_distinct(frontL, weinerTmpVec, charTmpVec);
 
@@ -438,6 +440,13 @@ namespace stool
                         }
                     }
                 }
+                //double px = hsc.rangeOnRLBWT.total_cover / hsc.rangeOnRLBWT.num;
+
+                std::cout << "@" << hsc.rangeOnRLBWT.total_cover1 << "/" << hsc.rangeOnRLBWT.num1 << std::endl;
+                std::cout << "@" << hsc.rangeOnRLBWT.total_cover2 << "/" << hsc.rangeOnRLBWT.num2 << std::endl;
+
+                std::cout << "Range Distinct Count = " << hsc.debugCounter << "/" << __rlbwt.str_size()  << std::endl;
+
                 uint64_t dx = __rlbwt.get_end_rle_lposition();
                 uint64_t dollerPos = __rlbwt.get_lpos(dx);
                 auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, __rlbwt.str_size());
