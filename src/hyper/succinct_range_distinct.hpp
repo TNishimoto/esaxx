@@ -35,7 +35,6 @@ namespace stool
                 uint64_t CHARMAX = UINT8_MAX + 1;
 
                 bwt.width(8);
-
                 uint64_t size = _rlbwt.rle_size();
                 bwt.resize(size);
                 const CHAR_VEC *_char_vec = _rlbwt.get_char_vec();

@@ -69,12 +69,12 @@ namespace stool
             RangeDistinctDataStructure<CHAR_VEC> srdds2;
             
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
-            void initialize(const RLBWT_STR *_rlbwt){
+            void initialize(const RLBWT_STR *_rlbwt, const sdsl::wt_huff<> *_wt){
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 this->rlbwt = _rlbwt;
                 //this->rd = _rd;
                 charIntervalTmpVec.resize(CHARMAX);
-                srdds2.preprocess(rlbwt->get_char_vec());
+                srdds2.preprocess(rlbwt->get_char_vec(), _wt);
 
             }
 

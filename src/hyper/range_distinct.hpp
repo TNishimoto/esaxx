@@ -24,20 +24,25 @@ namespace stool
             using CHAR = typename CHAR_VEC::value_type;
 
             const CHAR_VEC *_char_vec;
+            const sdsl::wt_huff<> *wt;
             std::vector<stool::EliasFanoVector> positionVec;
-            std::vector<INDEX_SIZE> rankVec;
+            //std::vector<INDEX_SIZE> rankVec;
             INDEX_SIZE size;
             sdsl::rmq_succinct_sada<> RMQ;
             sdsl::rmq_succinct_sada<> RmQ;
             std::vector<INDEX_SIZE> tmpRangeDistinctResult;
             std::stack<INDEX_SIZE> tmpSearchStack;
 
+
+
             //std::unordered_map<CHAR, uint64_t> tmpRangeDistinctResult;
 
             INDEX_SIZE get_next(INDEX_SIZE i)
             {
                 CHAR c = (*_char_vec)[i];
-                INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = rankVec[i];
+                INDEX_SIZE rank = wt->rank(i+1, c);
+                
                 if (positionVec[(uint8_t)c].size() == rank + 1)
                 {
                     return std::numeric_limits<INDEX_SIZE>::max();
@@ -50,7 +55,10 @@ namespace stool
             int64_t get_prev(INDEX_SIZE i)
             {
                 CHAR c = (*_char_vec)[i];
-                INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = rankVec[i];
+                INDEX_SIZE rank = wt->rank(i+1, c);
+                //assert(rank == result);
+
                 if (rank == 0)
                 {
                     return -1;
@@ -153,25 +161,27 @@ namespace stool
             RangeDistinctDataStructure()
             {
             }
-            void preprocess(const CHAR_VEC *__char_vec)
+            void preprocess(const CHAR_VEC *__char_vec, const sdsl::wt_huff<> *_wt)
             {
-                
+                wt = _wt;
                 int32_t charMaxSize = ((int32_t)UINT8_MAX) + 1;
                 this->_char_vec = __char_vec;
                 this->positionVec.resize(charMaxSize);
+                size = _char_vec->size();
+
+
+
 
                 std::vector<std::vector<INDEX_SIZE>> positionSeqVec;
                 positionSeqVec.resize(charMaxSize, std::vector<INDEX_SIZE>());
                 tmpRangeDistinctResult.resize(charMaxSize, 0);
 
-                //std::unordered_map<CHAR, std::vector<uint64_t>> positionSeqMap;
-                size = _char_vec->size();
-                this->rankVec.resize(size, 0);
+                //this->rankVec.resize(size, 0);
 
                 for (INDEX_SIZE i = 0; i < size; i++)
                 {
                     uint8_t c = (uint8_t)(*_char_vec)[i];
-                    this->rankVec[i] = positionSeqVec[c].size();
+                    //this->rankVec[i] = positionSeqVec[c].size();
 
                     positionSeqVec[c].push_back(i);
                 }
