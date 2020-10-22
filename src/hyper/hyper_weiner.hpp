@@ -163,15 +163,17 @@ namespace stool
             //SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
             RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE> rangeOnRLBWT;
             IntervalTemporary<INDEX_SIZE> intervalTemporary;
+            bool lightWeight = false;
 
-            //std::vector<INDEX_SIZE> fposArray;
             std::vector<CHAR> charTmpVec;
             vector<WEINER> weinerTmpVec;
 
             sdsl::wt_huff<> wt;
             sdsl::int_vector<> bwt;
+
             std::vector<uint64_t> C;
             stool::EliasFanoVector fposSortedArray;
+            std::vector<INDEX_SIZE> fposArray;
 
             uint64_t current_lcp = 0;
             uint64_t strSize = 0;
@@ -179,7 +181,6 @@ namespace stool
             HyperSet<INDEX_SIZE> hyperSet;
             HyperSet<INDEX_SIZE> hyperTmpSet;
 
-            
             static void construct_C(const RLBWT_STR &rlbwt, std::vector<uint64_t> &C)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -198,10 +199,7 @@ namespace stool
                     C[i] = C[i - 1] + CK[i - 1];
                 }
             }
-            
 
-
-            
             static void construct_sorted_fpos_array(const RLBWT_STR &rlbwt, stool::EliasFanoVector &output)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -243,21 +241,27 @@ namespace stool
                 }
                 output.construct(&X);
             }
-            
 
-            HyperSetConstructor(const RLBWT_STR &__rlbwt) : _rlbwt(__rlbwt)
+            HyperSetConstructor(const RLBWT_STR &__rlbwt, bool _lightWeight) : _rlbwt(__rlbwt)
             {
+                lightWeight = _lightWeight;
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 intervalTemporary.initialize();
 
-                HyperSetConstructor::construct_C(__rlbwt, this->C);
-                HyperSetConstructor::construct_sorted_fpos_array(__rlbwt, this->fposSortedArray);
+                if (lightWeight)
+                {
+                    HyperSetConstructor::construct_C(__rlbwt, this->C);
+                    HyperSetConstructor::construct_sorted_fpos_array(__rlbwt, this->fposSortedArray);
+                }
+                else
+                {
+                    std::vector<INDEX_SIZE> v1 = RLBWTFunctions::construct_fpos_array<RLBWT_STR, INDEX_SIZE>(_rlbwt);
+                    this->fposArray.swap(v1);
+                }
 
                 uint64_t runSize = _rlbwt.rle_size();
                 this->checkerArray.resize(runSize, false);
                 //srdds.initialize(__rlbwt);
-                //std::vector<INDEX_SIZE> v1 = RLBWTFunctions::construct_fpos_array<RLBWT_STR, INDEX_SIZE>(_rlbwt);
-                //this->fposArray.swap(v1);
 
                 this->strSize = this->_rlbwt.str_size();
 
@@ -275,16 +279,22 @@ namespace stool
                 construct_im(wt, bwt);
                 rangeOnRLBWT.initialize(&_rlbwt, &wt);
             }
-            INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff){
-                INDEX_SIZE rank1 = wt.rank(index+1, this->bwt[index]);
-                uint64_t xx = C[this->bwt[index]] + rank1;
-                INDEX_SIZE begin_pos2 = this->fposSortedArray[xx] + diff;
+            INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff)
+            {
+                if (this->lightWeight)
+                {
+                    INDEX_SIZE rank1 = wt.rank(index + 1, this->bwt[index]);
+                    uint64_t xx = C[this->bwt[index]] + rank1;
+                    INDEX_SIZE begin_pos2 = this->fposSortedArray[xx] + diff;
+                    return begin_pos2;
+                }
+                else
+                {
+                    uint64_t z = this->fposArray[index] + diff;
+                    return z;
+                }
 
-                //uint64_t z = this->fposArray[index] + diff;
                 //assert(z == begin_pos2);
-
-                return begin_pos2;
-
             }
             WEINER getIntervalOnL(WEINER &interval)
             {
@@ -307,7 +317,6 @@ namespace stool
                 //std::cout << "@" << begin_pos << "/" << begin_pos2 << "/" << rank1 << std::endl;
                 //assert(begin_pos == begin_pos2);
                 //INDEX_SIZE end_pos = this->fposArray[interval.endIndex] + interval.endDiff;
-
 
                 INDEX_SIZE end_pos = this->get_fpos(interval.endIndex, interval.endDiff);
 
@@ -387,15 +396,19 @@ namespace stool
                 output.clear();
                 WEINER lcpIntv;
                 size_t minIndex = this->_rlbwt.get_end_rle_lposition();
-                
+
                 uint64_t maxIndex = 0;
                 UCHAR c = 0;
-                for(uint64_t i=0;i<this->_rlbwt.rle_size();i++){
+                for (uint64_t i = 0; i < this->_rlbwt.rle_size(); i++)
+                {
                     UCHAR c2 = this->_rlbwt.get_char_by_run_index(i);
-                    if(c < c2){
+                    if (c < c2)
+                    {
                         c = c2;
                         maxIndex = i;
-                    }else if(c == c2){
+                    }
+                    else if (c == c2)
+                    {
                         maxIndex = i;
                     }
                 }
@@ -503,9 +516,9 @@ namespace stool
                 }
             }
 
-            static std::vector<uint64_t> constructLCPArray(const RLBWT_STR &__rlbwt)
+            static std::vector<uint64_t> constructLCPArray(const RLBWT_STR &__rlbwt, bool lightWeight)
             {
-                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
+                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt, lightWeight);
                 std::vector<uint64_t> r;
                 r.resize(hsc.strSize, 0);
 
@@ -525,9 +538,9 @@ namespace stool
                 }
                 return r;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(const RLBWT_STR &__rlbwt)
+            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(const RLBWT_STR &__rlbwt, bool lightWeight)
             {
-                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
+                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt, lightWeight);
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
                 while (!hsc.isStop())
@@ -546,9 +559,9 @@ namespace stool
                 //return weiner.enumerateLCPInterval();
             }
 
-            static uint64_t outputMaximalSubstrings(const RLBWT_STR &__rlbwt, std::ofstream &out)
+            static uint64_t outputMaximalSubstrings(const RLBWT_STR &__rlbwt, std::ofstream &out, bool lightWeight)
             {
-                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
+                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt, lightWeight);
                 uint64_t count = 0;
 
                 while (!hsc.isStop())
@@ -563,8 +576,8 @@ namespace stool
                         auto &it = hsc.hyperSet.lcpIntvVec[i];
                         if (hsc.checkMaximalRepeat(it))
                         {
-                        uint64_t beg = hsc.get_fpos(it.beginIndex, it.beginDiff);
-                        uint64_t end = hsc.get_fpos(it.endIndex, it.endDiff);
+                            uint64_t beg = hsc.get_fpos(it.beginIndex, it.beginDiff);
+                            uint64_t end = hsc.get_fpos(it.endIndex, it.endDiff);
                             stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.current_lcp - 1);
                             count++;
                             out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
@@ -578,9 +591,9 @@ namespace stool
                 count += 1;
                 return count;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(const RLBWT_STR &__rlbwt)
+            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(const RLBWT_STR &__rlbwt, bool lightWeight)
             {
-                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt);
+                HyperSetConstructor<RLBWT_STR, uint64_t> hsc(__rlbwt, lightWeight);
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
                 while (!hsc.isStop())
@@ -595,8 +608,8 @@ namespace stool
                         auto &it = hsc.hyperSet.lcpIntvVec[i];
                         if (hsc.checkMaximalRepeat(it))
                         {
-                        uint64_t beg = hsc.get_fpos(it.beginIndex, it.beginDiff);
-                        uint64_t end = hsc.get_fpos(it.endIndex, it.endDiff);
+                            uint64_t beg = hsc.get_fpos(it.beginIndex, it.beginDiff);
+                            uint64_t end = hsc.get_fpos(it.endIndex, it.endDiff);
                             stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.current_lcp - 1);
                             r.push_back(newLCPIntv);
                         }

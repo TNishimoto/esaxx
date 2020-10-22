@@ -35,12 +35,12 @@ using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
-void testLCPIntervals(std::string inputFile, bool correctCheck)
+void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck)
 {
 
     stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
 
-    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::constructLCPIntervals(rlestr);
+    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::constructLCPIntervals(rlestr, lightWeight);
 
     if (correctCheck)
     {
@@ -65,11 +65,11 @@ void testLCPIntervals(std::string inputFile, bool correctCheck)
     std::cout << "rlbwt = " << rlestr.rle_size() << std::endl;
 }
 
-void testMaximalSubstrings(std::string inputFile)
+void testMaximalSubstrings(std::string inputFile,bool lightWeight)
 {
     stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
     uint64_t input_text_size = rlestr.str_size();
-    std::vector<stool::LCPInterval<uint64_t>> test_Intervals = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::computeMaximalSubstrings(rlestr);
+    std::vector<stool::LCPInterval<uint64_t>> test_Intervals = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::computeMaximalSubstrings(rlestr, lightWeight);
 
     
     BackwardText<> backer;
@@ -93,7 +93,7 @@ void testMaximalSubstrings(std::string inputFile)
     
 }
 
-void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool correctCheck)
+void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool lightWeight,bool correctCheck)
 {
     auto start = std::chrono::system_clock::now();
 
@@ -105,7 +105,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
         throw std::runtime_error("Cannot open the output file!");
     }
     std::cout << "Enumerate Maximal Substrings..." << std::endl;
-    auto ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::outputMaximalSubstrings(rlestr, out);
+    auto ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::outputMaximalSubstrings(rlestr, out, lightWeight);
     auto end = std::chrono::system_clock::now();
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
@@ -123,12 +123,12 @@ int main(int argc, char *argv[])
 {
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("mode", 'm', "mode", false, "xx");
+    p.add<bool>("mode", 'm', "mode", false, false);
     p.add<string>("output_file", 'o', "output file name", false, "");
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
-    string mode = p.get<string>("mode");
+    bool mode = p.get<bool>("mode");
     string outputFile = p.get<string>("output_file");
     string format = "binary";
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    computeMaximalSubstrings(inputFile, outputFile, true);
+    computeMaximalSubstrings(inputFile, outputFile, mode, true);
     //testMaximalSubstrings(inputFile);
 
 }
