@@ -57,27 +57,40 @@ namespace stool
             }
         };
 
-        template <typename RLBWT_STR, typename INDEX_SIZE, typename RANGE_DISTINCT>
+        template <typename RLBWT_STR, typename INDEX_SIZE>
         class RangeDistinctDataStructureOnRLBWT
         {
         public:
             using CHAR = typename RLBWT_STR::char_type;
             using CHAR_VEC = typename RLBWT_STR::char_vec_type;
-            static std::vector<WeinerInterval<INDEX_SIZE>> range_distinct(const RLBWT_STR &_rlbwt,
-                                                                          RANGE_DISTINCT &rd, INDEX_SIZE &begin_lindex, INDEX_SIZE &begin_diff, INDEX_SIZE &end_lindex, INDEX_SIZE &end_diff, std::vector<CHAR> &charOutputVec)
+
+            const RLBWT_STR *rlbwt;
+            //RANGE_DISTINCT *rd
+            RangeDistinctDataStructure<CHAR_VEC> srdds2;
+            
+            std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
+            void initialize(const RLBWT_STR *_rlbwt){
+                uint64_t CHARMAX = UINT8_MAX + 1;
+                this->rlbwt = _rlbwt;
+                //this->rd = _rd;
+                charIntervalTmpVec.resize(CHARMAX);
+                srdds2.preprocess(rlbwt->get_char_vec());
+
+            }
+
+
+            uint64_t range_distinct(WeinerInterval<INDEX_SIZE> range, std::vector<WeinerInterval<INDEX_SIZE>> &output,std::vector<CHAR> &charOutputVec)
             {
 
                 vector<WeinerInterval<INDEX_SIZE>> r;
 
-                vector<stool::CharInterval<INDEX_SIZE>> rangeVec = rd.range_distinct(begin_lindex, end_lindex);
-
-                for (auto &it : rangeVec)
-                {
-                    //CHAR c = _rlbwt.get_char_by_run_index(it.first);
+                uint64_t count = srdds2.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
+                for(uint64_t x=0;x<count;x++){
+                    auto &it = charIntervalTmpVec[x];
                     INDEX_SIZE cBeginIndex = it.i;
                     INDEX_SIZE cEndIndex = it.j;
-                    INDEX_SIZE cBeginDiff = cBeginIndex == begin_lindex ? begin_diff : 0;
-                    INDEX_SIZE cEndDiff = cEndIndex == end_lindex ? end_diff : _rlbwt.get_run(cEndIndex) - 1;
+                    INDEX_SIZE cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
+                    INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : rlbwt->get_run(cEndIndex) - 1;
 
                     WeinerInterval<INDEX_SIZE> cInterval;
                     cInterval.beginIndex = cBeginIndex;
@@ -85,11 +98,13 @@ namespace stool
                     cInterval.endIndex = cEndIndex;
                     cInterval.endDiff = cEndDiff;
 
-                    charOutputVec.push_back(it.c);
+                    charOutputVec[x] = it.c;
 
-                    r.push_back(cInterval);
+                    output[x] = cInterval;
+
                 }
-                return r;
+
+                return count;
             }
 
             static bool equal_check(std::vector<stool::CharInterval<INDEX_SIZE>> &item1, std::vector<stool::CharInterval<INDEX_SIZE>> &item2)

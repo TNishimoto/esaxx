@@ -25,13 +25,128 @@ namespace stool
             std::vector<WEINER> weinerVec;
             std::vector<uint8_t> widthVec;
 
+            uint64_t lcpIntvCount = 0;
+            uint64_t weinerCount = 0;
+
+            HyperSet()
+            {
+                this->lcpIntvVec.resize(8);
+                this->weinerVec.resize(8);
+                this->widthVec.resize(8);
+            }
+
             void swap(HyperSet &copy)
             {
                 this->lcpIntvVec.swap(copy.lcpIntvVec);
                 this->weinerVec.swap(copy.weinerVec);
                 this->widthVec.swap(copy.widthVec);
+
+                uint64_t tmp1 = this->lcpIntvCount;
+                this->lcpIntvCount = copy.lcpIntvCount;
+                copy.lcpIntvCount = tmp1;
+
+                uint64_t tmp2 = this->weinerCount;
+                this->weinerCount = copy.weinerCount;
+                copy.weinerCount = tmp2;
+            }
+            void push(WEINER &w, uint64_t width)
+            {
+
+                if (this->lcpIntvCount == this->lcpIntvVec.size())
+                {
+                    this->lcpIntvVec.resize(this->lcpIntvCount * 2);
+                    this->widthVec.resize(this->lcpIntvCount * 2);
+                }
+                this->lcpIntvVec[this->lcpIntvCount] = w;
+                this->widthVec[this->lcpIntvCount] = width;
+                this->lcpIntvCount++;
+            }
+            void push_weiner(WEINER &w)
+            {
+
+                if (this->weinerCount == this->weinerVec.size())
+                {
+                    this->weinerVec.resize(this->weinerCount * 2);
+                }
+                this->weinerVec[this->weinerCount] = w;
+                this->weinerCount++;
+            }
+            void clear()
+            {
+                this->lcpIntvCount = 0;
+                this->weinerCount = 0;
             }
         };
+
+        template <typename INDEX_SIZE>
+        class IntervalTemporary
+        {
+            using WEINER = WeinerInterval<INDEX_SIZE>;
+
+            std::vector<std::vector<WEINER>> intervalVec;
+            std::vector<uint64_t> indexVec;
+            std::vector<bool> bitArray;
+            std::vector<uint64_t> countVec;
+            uint64_t indexCount = 0;
+
+        public:
+
+            void initialize()
+            {
+                uint64_t CHARMAX = UINT8_MAX + 1;
+                intervalVec.resize(CHARMAX);
+                for(uint64_t i=0;i<CHARMAX;i++){
+                    intervalVec[i].resize(2);
+                }
+                indexVec.resize(CHARMAX);
+                bitArray.resize(CHARMAX, false);
+                countVec.resize(CHARMAX, 0);
+            }
+
+            void clearWeinerTmpVec()
+            {
+                for(uint64_t i=0;i<this->indexCount;i++){
+                    auto &it = this->indexVec[i];
+                    bitArray[it] = false;
+                    countVec[it] = 0;
+
+                }
+                indexCount = 0;
+            }
+
+            void move(HyperSet<INDEX_SIZE> &item)
+            {
+                for(uint64_t i=0;i<this->indexCount;i++){
+                    auto &it = this->indexVec[i];                     
+                    auto &currentVec = this->intervalVec[it];
+                    uint64_t count = this->countVec[it];
+                    if (count > 1)
+                    {
+                        item.push(currentVec[0], count - 1);
+                        for (uint64_t j = 1; j < count; j++)
+                        {
+                            item.push_weiner(currentVec[j]);
+                        }
+                    }
+
+                }
+            }
+            void push(WeinerInterval<INDEX_SIZE> &w, uint8_t c)
+            {
+                if (!this->bitArray[c])
+                {                    
+                    this->indexVec[this->indexCount] = c;
+                    this->indexCount++;
+                    this->bitArray[c] = true;
+                }
+                if(this->countVec[c] == this->intervalVec[c].size()){
+                    this->intervalVec[c].resize(this->countVec[c] * 2);
+                }
+                this->intervalVec[c][this->countVec[c]] = w;
+                this->countVec[c]++;
+            }
+        };
+
         template <typename RLBWT_STR, typename INDEX_SIZE = uint64_t>
         class HyperSetConstructor
         {
@@ -43,18 +158,21 @@ namespace stool
             using WEINER = WeinerInterval<INDEX_SIZE>;
 
             const RLBWT_STR &_rlbwt;
-            std::vector<std::vector<WEINER>> tmpIntervalVec;
-            std::vector<uint64_t> tmpIndexVec;
-            std::vector<bool> tmpBitArray;
             std::vector<bool> checkerArray;
-            SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
-            RangeDistinctDataStructure<CHARVEC> srdds2;
+            //SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
+            RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE> rangeOnRLBWT;
+            IntervalTemporary<INDEX_SIZE> intervalTemporary;
+
             std::vector<INDEX_SIZE> fposArray;
+            std::vector<CHAR> charTmpVec;
+            vector<WEINER> weinerTmpVec;
 
             uint64_t current_lcp = 0;
             uint64_t strSize = 0;
             uint64_t total_counter = 0;
             HyperSet<INDEX_SIZE> hyperSet;
+            HyperSet<INDEX_SIZE> hyperTmpSet;
+
             /*
             static stool::EliasFanoVector construct_sorted_fpos_array(const RLBWT_STR &rlbwt)
             {
@@ -108,25 +226,18 @@ namespace stool
                 uint64_t CHARMAX = UINT8_MAX + 1;
 
                 uint64_t runSize = _rlbwt.rle_size();
-                tmpIntervalVec.resize(CHARMAX);
-                tmpIndexVec.resize(0);
-                tmpBitArray.resize(CHARMAX, false);
                 this->checkerArray.resize(runSize, false);
-                srdds.initialize(__rlbwt);
+                //srdds.initialize(__rlbwt);
                 std::vector<INDEX_SIZE> v1 = RLBWTFunctions::construct_fpos_array<RLBWT_STR, INDEX_SIZE>(_rlbwt);
                 this->fposArray.swap(v1);
+                intervalTemporary.initialize();
 
                 this->strSize = this->_rlbwt.str_size();
-                srdds2.preprocess(this->_rlbwt.get_char_vec());
-            }
-            void clearWeinerTmpVec()
-            {
-                for (auto &it : tmpIndexVec)
-                {
-                    tmpBitArray[it] = false;
-                    tmpIntervalVec[it].resize(0);
-                }
-                tmpIndexVec.resize(0);
+
+                //charIntervalTmpVec.resize(CHARMAX);
+                charTmpVec.resize(CHARMAX);
+                weinerTmpVec.resize(CHARMAX);
+                rangeOnRLBWT.initialize(&_rlbwt);
             }
             WEINER getIntervalOnL(WEINER &interval)
             {
@@ -156,26 +267,16 @@ namespace stool
                     return false;
                 }
             }
-            vector<WEINER> range_distinct(WEINER &w, std::vector<CHAR> &charOutputVec)
-            {
-                //vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt,srdds, w.beginIndex, w.beginDiff, w.endIndex, w.endDiff, charOutputVec);
-                vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, RangeDistinctDataStructure<CHARVEC>>::range_distinct(_rlbwt,srdds2, w.beginIndex, w.beginDiff, w.endIndex, w.endDiff, charOutputVec);
-
-                return results;
-            }
             void computeNextIntervals(WEINER &w, bool isWeiner)
             {
                 WEINER frontL = this->getIntervalOnL(w);
-                std::vector<CHAR> charOutputVec;
-                vector<WEINER> results = range_distinct(frontL, charOutputVec);
-                //vector<WEINER> results = RangeDistinctDataStructureOnRLBWT<RLBWT_STR,
-                //                                                           INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt,
-                //                                                                                                                                       srdds, frontL.beginIndex, frontL.beginDiff,
-                //                                                                                                                                       frontL.endIndex, frontL.endDiff, charOutputVec);
-                for (uint64_t i = 0; i < results.size(); i++)
+                uint64_t resultCount = rangeOnRLBWT.range_distinct(frontL, weinerTmpVec, charTmpVec);
+
+                //vector<WEINER> results = range_distinct(frontL);
+                for (uint64_t i = 0; i < resultCount; i++)
                 {
-                    UCHAR c = charOutputVec[i];
-                    auto &it = results[i];
+                    UCHAR c = charTmpVec[i];
+                    auto &it = weinerTmpVec[i];
                     bool skip = false;
                     if (isWeiner)
                     {
@@ -183,21 +284,16 @@ namespace stool
                     }
                     if (!skip)
                     {
-                        if (!tmpBitArray[c])
-                        {
-                            tmpIndexVec.push_back(c);
-                            tmpBitArray[c] = true;
-                        }
-                        this->tmpIntervalVec[c].push_back(it);
+                        intervalTemporary.push(it, c);
                     }
 
                     //this->weinerTmpVec[c].push_back(intervals[i]);
                 }
             }
 
-            void computeNextSet(WEINER &lcpIntv, std::vector<WEINER> &weinerVec, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet)
+            void computeNextSet(WEINER &lcpIntv, std::vector<WEINER> &weinerVec, uint64_t weinerVecSize, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet)
             {
-                clearWeinerTmpVec();
+                intervalTemporary.clearWeinerTmpVec();
                 computeNextIntervals(lcpIntv, false);
 
                 uint64_t i = rank;
@@ -205,13 +301,10 @@ namespace stool
                 INDEX_SIZE begin_pos1 = this->fposArray[lcpIntv.beginIndex] + lcpIntv.beginDiff;
                 INDEX_SIZE end_pos1 = this->fposArray[lcpIntv.endIndex] + lcpIntv.endDiff;
 
-                while (i < weinerVec.size())
+                while (i < weinerVecSize)
                 {
                     INDEX_SIZE begin_pos2 = this->fposArray[weinerVec[i].beginIndex] + weinerVec[i].beginDiff;
                     INDEX_SIZE end_pos2 = this->fposArray[weinerVec[i].endIndex] + weinerVec[i].endDiff;
-                    //lcpIntv.print();
-                    //weinerVec[i].print();
-                    //std::cout << std::endl;
                     if (begin_pos1 <= begin_pos2 && end_pos2 <= end_pos1)
                     {
                         computeNextIntervals(weinerVec[i], true);
@@ -223,24 +316,11 @@ namespace stool
 
                     i++;
                 }
-
-                for (auto &it : tmpIndexVec)
-                {
-                    auto &currentVec = tmpIntervalVec[it];
-                    if (currentVec.size() > 1)
-                    {
-                        outputSet.lcpIntvVec.push_back(currentVec[0]);
-                        outputSet.widthVec.push_back(currentVec.size() - 1);
-                        for (uint64_t j = 1; j < currentVec.size(); j++)
-                        {
-                            outputSet.weinerVec.push_back(currentVec[j]);
-                        }
-                    }
-                }
+                intervalTemporary.move(outputSet);
             }
-            HyperSet<INDEX_SIZE> computeFirstSet()
+            void computeFirstSet(HyperSet<INDEX_SIZE> &output)
             {
-                HyperSet<INDEX_SIZE> output;
+                output.clear();
                 WEINER lcpIntv;
                 auto iter = std::min_element(this->fposArray.begin(), this->fposArray.end());
                 size_t minIndex = std::distance(this->fposArray.begin(), iter);
@@ -251,7 +331,6 @@ namespace stool
                 lcpIntv.beginDiff = 0;
                 lcpIntv.endIndex = maxIndex;
                 lcpIntv.endDiff = diff;
-                output.lcpIntvVec.push_back(lcpIntv);
 
                 uint64_t begin_lindex = 0;
                 uint64_t begin_diff = 0;
@@ -264,47 +343,52 @@ namespace stool
                 tmpArg.beginDiff = begin_diff;
                 tmpArg.endIndex = end_lindex;
                 tmpArg.endDiff = end_diff;
-                std::vector<CHAR> charOutputVec;
-                vector<WEINER> results = range_distinct(tmpArg, charOutputVec);
+                //std::vector<CHAR> charOutputVec;
+                uint64_t resultCount = rangeOnRLBWT.range_distinct(tmpArg, weinerTmpVec, charTmpVec);
+                assert(resultCount > 0);
+
                 //auto weinerIntervals = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt, srdds, begin_lindex, begin_diff, end_lindex, end_diff, charOutputVec);
-                for (auto &it : results)
+                uint64_t counter = 0;
+                for (uint64_t x = 0; x < resultCount; x++)
                 {
+                    auto &it = weinerTmpVec[x];
                     if (checkWeinerInterval(it))
                     {
-                        output.weinerVec.push_back(it);
+                        output.push_weiner(it);
+
+                        counter++;
                     }
                 }
-                output.widthVec.push_back(output.weinerVec.size());
-                return output;
+
+                output.push(lcpIntv, counter);
             }
 
-            HyperSet<INDEX_SIZE> computeNextSet(HyperSet<INDEX_SIZE> &inputSet)
+            void computeNextSet(HyperSet<INDEX_SIZE> &inputSet, HyperSet<INDEX_SIZE> &output)
             {
-                HyperSet<INDEX_SIZE> output;
-
+                output.clear();
                 uint64_t rank = 0;
-                for (uint64_t i = 0; i < inputSet.lcpIntvVec.size(); i++)
+                for (uint64_t i = 0; i < inputSet.lcpIntvCount; i++)
                 {
-                    computeNextSet(inputSet.lcpIntvVec[i], inputSet.weinerVec, rank, output);
+                    computeNextSet(inputSet.lcpIntvVec[i], inputSet.weinerVec, inputSet.weinerCount, rank, output);
                     rank += inputSet.widthVec[i];
                 }
-                return output;
             }
             void process()
             {
                 if (current_lcp == 0)
                 {
-                    auto tmp = this->computeFirstSet();
-                    hyperSet.swap(tmp);
+                    this->computeFirstSet(hyperTmpSet);
+                    hyperSet.swap(hyperTmpSet);
                 }
                 else
                 {
-                    auto tmp = this->computeNextSet(hyperSet);
-                    hyperSet.swap(tmp);
+                    this->computeNextSet(hyperSet, hyperTmpSet);
+                    hyperSet.swap(hyperTmpSet);
                 }
-                total_counter += hyperSet.weinerVec.size();
+
+                total_counter += hyperSet.weinerCount;
                 current_lcp++;
-                assert(hyperSet.weinerVec.size() > 0);
+                assert(hyperSet.weinerCount > 0);
             }
             bool isStop()
             {
@@ -349,8 +433,9 @@ namespace stool
                 while (!hsc.isStop())
                 {
                     hsc.process();
-                    for (auto it : hsc.hyperSet.weinerVec)
+                    for (uint64_t i = 0; i < hsc.hyperSet.weinerCount; i++)
                     {
+                        auto &it = hsc.hyperSet.weinerVec[i];
                         uint64_t pos = hsc.fposArray[it.endIndex] + it.endDiff + 1;
                         if (pos < r.size())
                         {
@@ -369,8 +454,9 @@ namespace stool
                 while (!hsc.isStop())
                 {
                     hsc.process();
-                    for (auto it : hsc.hyperSet.lcpIntvVec)
+                    for (uint64_t i = 0; i < hsc.hyperSet.lcpIntvCount; i++)
                     {
+                        auto &it = hsc.hyperSet.lcpIntvVec[i];
                         uint64_t beg = hsc.fposArray[it.beginIndex] + it.beginDiff;
                         uint64_t end = hsc.fposArray[it.endIndex] + it.endDiff;
                         r.push_back(stool::LCPInterval<uint64_t>(beg, end, hsc.current_lcp - 1));
@@ -391,11 +477,12 @@ namespace stool
                     hsc.process();
                     if (hsc.current_lcp % 100 == 0)
                     {
-                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
+                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
                     }
-                    for (auto it : hsc.hyperSet.lcpIntvVec)
+                    for (uint64_t i = 0; i < hsc.hyperSet.lcpIntvCount; i++)
                     {
-                        if (hsc.checkMaximalRepeat(it) && hsc.current_lcp > 1)
+                        auto &it = hsc.hyperSet.lcpIntvVec[i];
+                        if (hsc.checkMaximalRepeat(it))
                         {
                             uint64_t beg = hsc.fposArray[it.beginIndex] + it.beginDiff;
                             uint64_t end = hsc.fposArray[it.endIndex] + it.endDiff;
@@ -405,7 +492,7 @@ namespace stool
                         }
                     }
                 }
-                uint64_t dx = hsc.srdds.wt.select(1, 0) - 1;
+                uint64_t dx = __rlbwt.get_end_rle_lposition();
                 uint64_t dollerPos = __rlbwt.get_lpos(dx);
                 auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, __rlbwt.str_size());
                 out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX_SIZE>));
@@ -422,10 +509,11 @@ namespace stool
                     hsc.process();
                     if (hsc.current_lcp % 100 == 0)
                     {
-                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvVec.size() << std::endl;
+                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
                     }
-                    for (auto it : hsc.hyperSet.lcpIntvVec)
+                    for (uint64_t i = 0; i < hsc.hyperSet.lcpIntvCount; i++)
                     {
+                        auto &it = hsc.hyperSet.lcpIntvVec[i];
                         if (hsc.checkMaximalRepeat(it))
                         {
                             uint64_t beg = hsc.fposArray[it.beginIndex] + it.beginDiff;
@@ -435,7 +523,7 @@ namespace stool
                         }
                     }
                 }
-                uint64_t dx = hsc.srdds.wt.select(1, 0) - 1;
+                uint64_t dx = __rlbwt.get_end_rle_lposition();
                 uint64_t dollerPos = __rlbwt.get_lpos(dx);
                 auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, __rlbwt.str_size());
                 r.push_back(last);

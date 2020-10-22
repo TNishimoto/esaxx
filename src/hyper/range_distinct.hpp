@@ -197,11 +197,10 @@ namespace stool
 
             }
             
-            std::vector<stool::CharInterval<INDEX_SIZE>> range_distinct(INDEX_SIZE i, INDEX_SIZE j)
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
-                std::vector<stool::CharInterval<INDEX_SIZE>> r;
+                uint64_t count = 0;
 
-                //std::vector<uint64_t> output;
                 search_less(i, i, j, tmpSearchStack);
                 while(tmpSearchStack.size() > 0){
                     INDEX_SIZE p = tmpSearchStack.top();
@@ -215,11 +214,11 @@ namespace stool
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
                     auto pair = stool::CharInterval<INDEX_SIZE>(tmpRangeDistinctResult[c], p, c);
-                    r.push_back(pair);
+                    output[count++] = pair;
 
                     tmpSearchStack.pop();
                 }
-                return r;
+                return count;
             }
         };
 
