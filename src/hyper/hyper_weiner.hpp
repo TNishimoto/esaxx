@@ -303,21 +303,6 @@ namespace stool
                 output.beginIndex = _rlbwt.get_lindex_containing_the_position(begin_pos);
                 output.beginDiff = begin_pos - _rlbwt.get_lpos(output.beginIndex);
 
-                //this->fposArray[interval.beginIndex] + interval.beginDiff;
-
-                //INDEX_SIZE rank1 = wt.rank(interval.beginIndex+1, this->bwt[interval.beginIndex]);
-                //uint64_t xx = C[this->bwt[interval.beginIndex]] + rank1;
-                //std::cout << "X" << interval.beginIndex << "/" << interval.beginDiff << "/" << rank1 << std::endl;
-
-                //std::cout << (char)this->bwt[interval.beginIndex] << "/" << xx  << "/" << this->fposSortedArray.size()<< std::endl;
-
-                //assert(xx < this->fposSortedArray.size());
-
-                //INDEX_SIZE begin_pos2 = this->fposSortedArray[xx] + interval.beginDiff;
-                //std::cout << "@" << begin_pos << "/" << begin_pos2 << "/" << rank1 << std::endl;
-                //assert(begin_pos == begin_pos2);
-                //INDEX_SIZE end_pos = this->fposArray[interval.endIndex] + interval.endDiff;
-
                 INDEX_SIZE end_pos = this->get_fpos(interval.endIndex, interval.endDiff);
 
                 output.endIndex = _rlbwt.get_lindex_containing_the_position(end_pos);
@@ -389,6 +374,7 @@ namespace stool
 
                     i++;
                 }
+
                 intervalTemporary.move(outputSet);
             }
             void computeFirstSet(HyperSet<INDEX_SIZE> &output)
@@ -567,10 +553,12 @@ namespace stool
                 while (!hsc.isStop())
                 {
                     hsc.process();
+                    /*
                     if (hsc.current_lcp % 100 == 0)
                     {
                         std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
                     }
+                    */
                     for (uint64_t i = 0; i < hsc.hyperSet.lcpIntvCount; i++)
                     {
                         auto &it = hsc.hyperSet.lcpIntvVec[i];
