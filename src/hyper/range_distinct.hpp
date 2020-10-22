@@ -17,7 +17,7 @@ namespace stool
     {
         
 
-        template <typename CHAR_VEC, typename INDEX_SIZE = uint64_t>
+        template <typename CHAR_VEC, typename INDEX_SIZE>
         class RangeDistinctDataStructure
         {
         private:

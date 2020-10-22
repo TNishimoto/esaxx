@@ -40,7 +40,7 @@ void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck
 
     stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
 
-    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::constructLCPIntervals(rlestr, lightWeight);
+    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint64_t>::constructLCPIntervals(rlestr, lightWeight);
 
     if (correctCheck)
     {
@@ -65,35 +65,45 @@ void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck
     std::cout << "rlbwt = " << rlestr.rle_size() << std::endl;
 }
 
-void testMaximalSubstrings(std::string inputFile,bool lightWeight)
+void testMaximalSubstrings(std::string inputFile, bool lightWeight)
 {
     stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
     uint64_t input_text_size = rlestr.str_size();
-    std::vector<stool::LCPInterval<uint64_t>> test_Intervals = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::computeMaximalSubstrings(rlestr, lightWeight);
+    std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
 
-    
+    if (input_text_size - 10 < UINT32_MAX)
+    {
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint32_t>::computeMaximalSubstrings(rlestr, lightWeight);
+        test_Intervals.swap(tmp);
+    }
+    else
+    {
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint32_t>::computeMaximalSubstrings(rlestr, lightWeight);
+        test_Intervals.swap(tmp);
+    }
+
     BackwardText<> backer;
     backer.construct_from_rlbwt(&rlestr, false);
     std::vector<char> text;
     text.resize(input_text_size);
-    int64_t i = input_text_size-1;
-    for(auto c : backer){
+    int64_t i = input_text_size - 1;
+    for (auto c : backer)
+    {
         text[i] = c;
         i--;
     }
 
     //std::vector<char> text = backer.to_vector();
     vector<INDEX> sa = stool::construct_suffix_array(text);
-    
+
     using BWT = stool::esaxx::ForwardBWT<char, std::vector<char>, std::vector<INDEX>>;
     BWT bwt(&text, &sa);
     vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, INDEX>(text, sa);
     stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
     std::cout << "OK!" << std::endl;
-    
 }
 
-void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool lightWeight,bool correctCheck)
+void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool lightWeight, bool correctCheck)
 {
     auto start = std::chrono::system_clock::now();
 
@@ -105,7 +115,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
         throw std::runtime_error("Cannot open the output file!");
     }
     std::cout << "Enumerate Maximal Substrings..." << std::endl;
-    auto ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>>::outputMaximalSubstrings(rlestr, out, lightWeight);
+    uint64_t ms_count = 0;
+    if (input_text_size - 10 < UINT32_MAX)
+    {
+        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint32_t>::outputMaximalSubstrings(rlestr, out, lightWeight);
+    }
+    else
+    {
+        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint64_t>::outputMaximalSubstrings(rlestr, out, lightWeight);
+    }
     auto end = std::chrono::system_clock::now();
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
@@ -153,6 +171,5 @@ int main(int argc, char *argv[])
     }
 
     computeMaximalSubstrings(inputFile, outputFile, mode, true);
-    //testMaximalSubstrings(inputFile);
-
+    //testMaximalSubstrings(inputFile, mode);
 }

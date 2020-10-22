@@ -77,7 +77,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   construct_im(wt, bwt);
   uint64_t ms_count = 0;
 
-  if(bwt.size() < UINT32_MAX){
+  if(bwt.size() - 10 < UINT32_MAX){
    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(bwt, out);
   }else{
    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(bwt, out);

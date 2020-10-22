@@ -66,7 +66,7 @@ namespace stool
 
             const RLBWT_STR *rlbwt;
             //RANGE_DISTINCT *rd
-            RangeDistinctDataStructure<CHAR_VEC> srdds2;
+            RangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> srdds2;
             
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
             void initialize(const RLBWT_STR *_rlbwt, const sdsl::wt_huff<> *_wt){
