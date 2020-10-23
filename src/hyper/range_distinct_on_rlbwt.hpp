@@ -94,7 +94,7 @@ namespace stool
                 {
                     count = srdds2.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
 
-                    total_cover1 += range.endIndex - range.beginIndex;
+                    total_cover1 += range.endIndex - range.beginIndex + 1;
                     num1++;
                 }
                 else
@@ -102,7 +102,7 @@ namespace stool
                     count = srdds2.light_range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
                     //std::cout << "+" << count << std::endl;
 
-                    total_cover2 += range.endIndex - range.beginIndex;
+                    total_cover2 += range.endIndex - range.beginIndex + 1;
                     num2++;
                 }
 

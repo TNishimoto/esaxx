@@ -442,8 +442,10 @@ namespace stool
                 }
                 //double px = hsc.rangeOnRLBWT.total_cover / hsc.rangeOnRLBWT.num;
 
+                double average = ((double)(hsc.rangeOnRLBWT.total_cover1 + hsc.rangeOnRLBWT.total_cover2)) / ((double)(hsc.rangeOnRLBWT.num1 + hsc.rangeOnRLBWT.num2));
                 std::cout << "@" << hsc.rangeOnRLBWT.total_cover1 << "/" << hsc.rangeOnRLBWT.num1 << std::endl;
                 std::cout << "@" << hsc.rangeOnRLBWT.total_cover2 << "/" << hsc.rangeOnRLBWT.num2 << std::endl;
+                std::cout << "@Average: " << average << std::endl;
 
                 std::cout << "Range Distinct Count = " << hsc.debugCounter << "/" << __rlbwt.str_size()  << std::endl;
 
