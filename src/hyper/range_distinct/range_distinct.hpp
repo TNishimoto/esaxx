@@ -8,14 +8,61 @@
 
 #include "stool/src/debug.hpp"
 #include "stool/src/elias_fano_vector.hpp"
-#include "../beller/char_interval.hpp"
+#include "../../beller/char_interval.hpp"
 #include <sdsl/rmq_support.hpp> // include header for range minimum queries
 
 namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        
+
+        template <typename CHAR_VEC, typename INDEX_SIZE>
+        class LightRangeDistinctDataStructure
+        {
+        public:
+            const CHAR_VEC *_char_vec;
+
+            std::vector<int64_t> checker;
+            std::vector<uint64_t> beginIndexes;
+            std::vector<uint64_t> endIndexes;
+            std::vector<uint64_t> charIndexes;
+            void preprocess(const CHAR_VEC *__char_vec)
+            {
+                int32_t charMaxSize = ((int32_t)UINT8_MAX) + 1;
+                this->_char_vec = __char_vec;
+
+                checker.resize(charMaxSize, -1);
+                beginIndexes.resize(charMaxSize, 0);
+                endIndexes.resize(charMaxSize, 0);
+                charIndexes.resize(charMaxSize, 0);
+            }
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            {
+                uint64_t count = 0;
+                for (uint64_t x = i; x <= j; x++)
+                {
+                    uint8_t c = (*this->_char_vec)[x];
+                    if (checker[c] == -1)
+                    {
+                        checker[c] = count;
+                        beginIndexes[count] = x;
+                        endIndexes[count] = x;
+                        charIndexes[count] = c;
+                        count++;
+                    }
+                    else
+                    {
+                        endIndexes[checker[c]] = x;
+                    }
+                }
+                for (uint64_t x = 0; x < count; x++)
+                {
+                    output[x] = CharInterval<INDEX_SIZE>(beginIndexes[x], endIndexes[x], charIndexes[x]);
+                    checker[charIndexes[x]] = -1;
+                }
+                return count;
+            }
+        };
 
         template <typename CHAR_VEC, typename INDEX_SIZE>
         class RangeDistinctDataStructure
@@ -33,12 +80,6 @@ namespace stool
             std::vector<INDEX_SIZE> tmpRangeDistinctResult;
             std::stack<INDEX_SIZE> tmpSearchStack;
 
-            std::vector<int64_t> checker;
-            std::vector<uint64_t> beginIndexes;
-            std::vector<uint64_t> endIndexes;
-            std::vector<uint64_t> charIndexes;
-
-
             //std::unordered_map<CHAR, uint64_t> tmpRangeDistinctResult;
 
             INDEX_SIZE get_next(INDEX_SIZE i)
@@ -46,8 +87,8 @@ namespace stool
                 CHAR c = (*_char_vec)[i];
                 //INDEX_SIZE rank = rankVec[i];
                 //INDEX_SIZE rank = wt->rank(i, c);
-                INDEX_SIZE rank = wt->rank(i+1, c);
-                
+                INDEX_SIZE rank = wt->rank(i + 1, c);
+
                 if (positionVec[(uint8_t)c].size() == rank + 1)
                 {
                     return std::numeric_limits<INDEX_SIZE>::max();
@@ -62,7 +103,7 @@ namespace stool
                 CHAR c = (*_char_vec)[i];
                 //INDEX_SIZE rank = rankVec[i];
                 //INDEX_SIZE rank = wt->rank(i, c);
-                INDEX_SIZE rank = wt->rank(i+1, c);
+                INDEX_SIZE rank = wt->rank(i + 1, c);
 
                 //assert(rank == result);
 
@@ -176,13 +217,6 @@ namespace stool
                 this->positionVec.resize(charMaxSize);
                 size = _char_vec->size();
 
-                checker.resize(charMaxSize, -1);
-                beginIndexes.resize(charMaxSize, 0);
-                endIndexes.resize(charMaxSize, 0);
-                charIndexes.resize(charMaxSize, 0);
-
-
-
                 std::vector<std::vector<INDEX_SIZE>> positionSeqVec;
                 positionSeqVec.resize(charMaxSize, std::vector<INDEX_SIZE>());
                 tmpRangeDistinctResult.resize(charMaxSize, 0);
@@ -215,15 +249,15 @@ namespace stool
                 auto prev_vec = this->construct_prev_vector();
                 sdsl::rmq_succinct_sada<> prev_rmq(&prev_vec);
                 this->RmQ.swap(prev_rmq);
-
             }
-            
+
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
                 uint64_t count = 0;
 
                 search_less(i, i, j, tmpSearchStack);
-                while(tmpSearchStack.size() > 0){
+                while (tmpSearchStack.size() > 0)
+                {
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
                     tmpRangeDistinctResult[c] = p;
@@ -231,7 +265,8 @@ namespace stool
                 }
                 search_than(j, i, j, tmpSearchStack);
 
-                while(tmpSearchStack.size() > 0){
+                while (tmpSearchStack.size() > 0)
+                {
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
                     auto pair = stool::CharInterval<INDEX_SIZE>(tmpRangeDistinctResult[c], p, c);
@@ -241,30 +276,7 @@ namespace stool
                 }
                 return count;
             }
-            uint64_t light_range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
-            {
-                uint64_t count = 0;
-                for(uint64_t x=i;x<=j;x++){
-                    uint8_t c = (*this->_char_vec)[x];
-                    if(checker[c] == -1){
-                        checker[c] = count;
-                        beginIndexes[count] = x;
-                        endIndexes[count] = x;
-                        charIndexes[count] = c; 
-                        count++;
-                    }else{
-                        endIndexes[checker[c]] = x;
-                    }
-                }
-                for(uint64_t x=0;x<count;x++){
-                    output[x] = CharInterval<INDEX_SIZE>(beginIndexes[x], endIndexes[x], charIndexes[x]);
-                    checker[charIndexes[x]] = -1;
-                }
-                return count;
-
-            }
-
         };
 
-    } // namespace rlbwt
+    } // namespace lcp_on_rlbwt
 } // namespace stool

@@ -141,12 +141,16 @@ int main(int argc, char *argv[])
 {
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
-    p.add<bool>("mode", 'm', "mode", false, false);
+    //p.add<bool>("mode", 'm', "mode", false, false);
     p.add<string>("output_file", 'o', "output file name", false, "");
+    p.add<bool>("mode", 'm', "mode", false, false);
+    p.add<bool>("debug", 'd', "debug", false, false);
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
+    bool debug = p.get<bool>("debug");
     bool mode = p.get<bool>("mode");
+
     string outputFile = p.get<string>("output_file");
     string format = "binary";
 
@@ -169,7 +173,12 @@ int main(int argc, char *argv[])
             outputFile = inputFile + ".max";
         }
     }
-
-    computeMaximalSubstrings(inputFile, outputFile, mode, true);
-    //testMaximalSubstrings(inputFile, mode);
+    if (!debug)
+    {
+        computeMaximalSubstrings(inputFile, outputFile, mode, true);
+    }
+    else
+    {
+        testMaximalSubstrings(inputFile, mode);
+    }
 }

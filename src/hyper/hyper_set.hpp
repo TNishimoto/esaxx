@@ -8,8 +8,7 @@
 #include <vector>
 #include <type_traits>
 #include "../../module/rlbwt_iterator/src/include/sampling_functions.hpp"
-#include "./range_distinct_on_rlbwt.hpp"
-#include "./succinct_range_distinct.hpp"
+#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
 namespace stool
 {
@@ -145,6 +144,43 @@ namespace stool
                 }
                 this->intervalVec[c][this->countVec[c]] = w;
                 this->countVec[c]++;
+            }
+        };
+        template <typename INDEX_SIZE, typename CHAR>
+        class WeinerDataStructures
+        {
+
+        public:
+            using WEINER = WeinerInterval<INDEX_SIZE>;
+            std::vector<bool> checkerArray;
+            std::vector<CHAR> charTmpVec;
+            vector<WEINER> weinerTmpVec;
+
+            void initialize(uint64_t runSize)
+            {
+                uint64_t CHARMAX = UINT8_MAX + 1;
+                this->checkerArray.resize(runSize, false);
+
+                charTmpVec.resize(CHARMAX);
+                weinerTmpVec.resize(CHARMAX);
+            }
+            
+            template <typename RLBWT_STR>
+            bool checkWeinerInterval(WEINER &w, RLBWT_STR &_rlbwt)
+            {
+                bool b = _rlbwt.get_run(w.endIndex) == (w.endDiff + 1);
+                if (!b || !this->checkerArray[w.endIndex])
+                {
+                    if (b)
+                    {
+                        this->checkerArray[w.endIndex] = true;
+                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         };
 
