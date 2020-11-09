@@ -23,7 +23,7 @@ namespace stool
             using CHARVEC = typename RLBWT_STR::char_vec_type;
 
             using UCHAR = typename std::make_unsigned<CHAR>::type;
-            using WEINER = WeinerInterval<INDEX_SIZE>;
+            using RINTERVAL = RInterval<INDEX_SIZE>;
 
             bool lightWeight = false;
 
@@ -41,7 +41,6 @@ namespace stool
             HyperSetConstructor(const RLBWT_STR &__rlbwt, bool _lightWeight) : _RLBWTDS(__rlbwt, _lightWeight)
             {
                 lightWeight = _lightWeight;
-                //intervalTemporary.initialize();
                 uint64_t runSize = __rlbwt.rle_size();
                 this->wds.initialize(runSize);
 
@@ -77,9 +76,9 @@ namespace stool
             {
                 return strSize == total_counter;
             }
-            bool checkMaximalRepeat(WEINER &lcpIntv)
+            bool checkMaximalRepeat(const RINTERVAL &lcpIntv)
             {
-                WEINER it = this->_RLBWTDS.getIntervalOnL(lcpIntv);
+                RINTERVAL it = this->_RLBWTDS.getIntervalOnL(lcpIntv);
                 uint8_t fstChar = this->_RLBWTDS._rlbwt.get_char_by_run_index(it.beginIndex);
                 uint8_t lstChar = this->_RLBWTDS._rlbwt.get_char_by_run_index(it.endIndex);
                 if (fstChar == lstChar)

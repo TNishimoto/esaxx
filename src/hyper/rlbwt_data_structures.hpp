@@ -20,7 +20,7 @@ namespace stool
         public:
             using CHAR = typename RLBWT_STR::char_type;
             using CHARVEC = typename RLBWT_STR::char_vec_type;
-            using WEINER = WeinerInterval<INDEX_SIZE>;
+            using RINTERVAL = RInterval<INDEX_SIZE>;
 
             using UCHAR = typename std::make_unsigned<CHAR>::type;
 
@@ -39,6 +39,7 @@ namespace stool
                 lightWeight = _lightWeight;
                 //uint64_t CHARMAX = UINT8_MAX + 1;
                 uint64_t runSize = _rlbwt.rle_size();
+                intervalTemporary.initialize();
 
                 if (lightWeight)
                 {
@@ -138,9 +139,9 @@ namespace stool
                     return z;
                 }
             }
-            WEINER getIntervalOnL(WEINER &interval)
+            RINTERVAL getIntervalOnL(const RINTERVAL &interval)
             {
-                WEINER output;
+                RINTERVAL output;
                 INDEX_SIZE begin_pos = this->get_fpos(interval.beginIndex, interval.beginDiff);
                 output.beginIndex = _rlbwt.get_lindex_containing_the_position(begin_pos);
                 output.beginDiff = begin_pos - _rlbwt.get_lpos(output.beginIndex);
@@ -151,9 +152,9 @@ namespace stool
                 output.endDiff = end_pos - _rlbwt.get_lpos(output.endIndex);
                 return output;
             }
-            void computeNextIntervals(WEINER &w, bool isWeiner, WeinerDataStructures<INDEX_SIZE, CHAR> &wds, IntervalTemporary<INDEX_SIZE> &output)
+            void computeNextIntervals(const RINTERVAL &w, bool isWeiner, WeinerDataStructures<INDEX_SIZE, CHAR> &wds, IntervalTemporary<INDEX_SIZE> &output)
             {
-                WEINER frontL = this->getIntervalOnL(w);
+                RINTERVAL frontL = this->getIntervalOnL(w);
                 uint64_t resultCount = this->rangeOnRLBWT.range_distinct(frontL, wds.weinerTmpVec, wds.charTmpVec);
 
                 for (uint64_t i = 0; i < resultCount; i++)
@@ -165,6 +166,10 @@ namespace stool
                     {
                         skip = !wds.checkWeinerInterval(it, this->_rlbwt);
                     }
+                    else
+                    {
+                        skip = !output.occur(c);
+                    }
                     if (!skip)
                     {
                         output.push(it, c);
@@ -174,7 +179,7 @@ namespace stool
             void computeFirstLCPIntervalSet(HyperSet<INDEX_SIZE> &output, WeinerDataStructures<INDEX_SIZE, CHAR> &wds)
             {
                 output.clear();
-                WEINER lcpIntv;
+                RINTERVAL lcpIntv;
                 size_t minIndex = this->_rlbwt.get_end_rle_lposition();
 
                 uint64_t maxIndex = 0;
@@ -203,8 +208,8 @@ namespace stool
                 uint64_t end_lindex = this->_rlbwt.rle_size() - 1;
                 uint64_t end_diff = this->_rlbwt.get_run(end_lindex) - 1;
 
-                //vector<WEINER> results = range_distinct(frontL, charOutputVec);
-                WEINER tmpArg;
+                //vector<RINTERVAL> results = range_distinct(frontL, charOutputVec);
+                RINTERVAL tmpArg;
                 tmpArg.beginIndex = begin_lindex;
                 tmpArg.beginDiff = begin_diff;
                 tmpArg.endIndex = end_lindex;
@@ -228,21 +233,19 @@ namespace stool
 
                 output.push(lcpIntv, counter);
             }
-            void computeNextLCPIntervalSet(WEINER &lcpIntv, std::vector<WEINER> &weinerVec, uint64_t weinerVecSize, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet, WeinerDataStructures<INDEX_SIZE, CHAR> &wds)
+            void computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t weinerVecSize, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet, WeinerDataStructures<INDEX_SIZE, CHAR> &wds)
             {
                 intervalTemporary.clearWeinerTmpVec();
-                this->computeNextIntervals(lcpIntv, false, wds, this->intervalTemporary);
-
                 uint64_t i = rank;
 
-                INDEX_SIZE begin_pos1 = this->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
-                INDEX_SIZE end_pos1 = this->get_fpos(lcpIntv.endIndex, lcpIntv.endDiff);
+                INDEX_SIZE lcpIntvBeginPos = this->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
+                INDEX_SIZE lcpIntvEndPos = this->get_fpos(lcpIntv.endIndex, lcpIntv.endDiff);
 
                 while (i < weinerVecSize)
                 {
-                    INDEX_SIZE begin_pos2 = this->get_fpos(weinerVec[i].beginIndex, weinerVec[i].beginDiff);
-                    INDEX_SIZE end_pos2 = this->get_fpos(weinerVec[i].endIndex, weinerVec[i].endDiff);
-                    if (begin_pos1 <= begin_pos2 && end_pos2 <= end_pos1)
+                    INDEX_SIZE weinerBeginPos = this->get_fpos(weinerVec[i].beginIndex, weinerVec[i].beginDiff);
+                    INDEX_SIZE weinerEndPos = this->get_fpos(weinerVec[i].endIndex, weinerVec[i].endDiff);
+                    if (lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos)
                     {
                         this->computeNextIntervals(weinerVec[i], true, wds, this->intervalTemporary);
                     }
@@ -253,6 +256,7 @@ namespace stool
 
                     i++;
                 }
+                this->computeNextIntervals(lcpIntv, false, wds, this->intervalTemporary);
 
                 intervalTemporary.move(outputSet);
             }
@@ -260,6 +264,7 @@ namespace stool
             {
                 output.clear();
                 uint64_t rank = 0;
+                //const std::vector<RINTERVAL> * lcpIntvVec = inputSet.getLcpIntvVec();
                 for (uint64_t i = 0; i < inputSet.lcpIntvCount; i++)
                 {
                     this->computeNextLCPIntervalSet(inputSet.lcpIntvVec[i], inputSet.weinerVec, inputSet.weinerCount, rank, output, wds);

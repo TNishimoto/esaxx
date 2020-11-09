@@ -7,7 +7,7 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "../../module/rlbwt_iterator/src/include/sampling_functions.hpp"
+#include "../../module/rlbwt_iterator/src/include/weiner/sampling_functions.hpp"
 #include "range_distinct/range_distinct_on_rlbwt.hpp"
 
 namespace stool
@@ -19,9 +19,9 @@ namespace stool
         class HyperSet
         {
         public:
-            using WEINER = WeinerInterval<INDEX_SIZE>;
-            std::vector<WEINER> lcpIntvVec;
-            std::vector<WEINER> weinerVec;
+            using RINTERVAL = RInterval<INDEX_SIZE>;
+            std::vector<RINTERVAL> lcpIntvVec;
+            std::vector<RINTERVAL> weinerVec;
             std::vector<uint8_t> widthVec;
 
             uint64_t lcpIntvCount = 0;
@@ -33,6 +33,16 @@ namespace stool
                 this->weinerVec.resize(8);
                 this->widthVec.resize(8);
             }
+
+            const std::vector<RINTERVAL> *getLcpIntvVec() const {
+                return &this->lcpIntvVec;
+            }
+
+
+            const std::vector<RINTERVAL> *getWeinerVec() const {
+                return &this->weinerVec;
+            }
+            
 
             void swap(HyperSet &copy)
             {
@@ -48,7 +58,7 @@ namespace stool
                 this->weinerCount = copy.weinerCount;
                 copy.weinerCount = tmp2;
             }
-            void push(WEINER &w, uint64_t width)
+            void push(RINTERVAL &w, uint64_t width)
             {
 
                 if (this->lcpIntvCount == this->lcpIntvVec.size())
@@ -60,7 +70,7 @@ namespace stool
                 this->widthVec[this->lcpIntvCount] = width;
                 this->lcpIntvCount++;
             }
-            void push_weiner(WEINER &w)
+            void push_weiner(RINTERVAL &w)
             {
 
                 if (this->weinerCount == this->weinerVec.size())
@@ -80,9 +90,9 @@ namespace stool
         template <typename INDEX_SIZE>
         class IntervalTemporary
         {
-            using WEINER = WeinerInterval<INDEX_SIZE>;
+            using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            std::vector<std::vector<WEINER>> intervalVec;
+            std::vector<std::vector<RINTERVAL>> intervalVec;
             std::vector<uint64_t> indexVec;
             std::vector<bool> bitArray;
             std::vector<uint64_t> countVec;
@@ -101,6 +111,9 @@ namespace stool
                 bitArray.resize(CHARMAX, false);
                 countVec.resize(CHARMAX, 0);
             }
+            bool occur(uint64_t character){
+                return this->bitArray[character];
+            }
 
             void clearWeinerTmpVec()
             {
@@ -113,24 +126,25 @@ namespace stool
                 indexCount = 0;
             }
 
-            void move(HyperSet<INDEX_SIZE> &item)
+            void move(HyperSet<INDEX_SIZE> &output)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
-                    auto &it = this->indexVec[i];
-                    auto &currentVec = this->intervalVec[it];
-                    uint64_t count = this->countVec[it];
+                    auto character = this->indexVec[i];
+                    auto &currentVec = this->intervalVec[character];
+                    uint64_t count = this->countVec[character];
                     if (count > 1)
                     {
-                        item.push(currentVec[0], count - 1);
-                        for (uint64_t j = 1; j < count; j++)
+                        for (uint64_t j = 0; j < count-1; j++)
                         {
-                            item.push_weiner(currentVec[j]);
+                            output.push_weiner(currentVec[j]);
                         }
+
+                        output.push(currentVec[count-1], count - 1);
                     }
                 }
             }
-            void push(WeinerInterval<INDEX_SIZE> &w, uint8_t c)
+            void push(RINTERVAL &w, uint8_t c)
             {
                 if (!this->bitArray[c])
                 {
@@ -151,10 +165,10 @@ namespace stool
         {
 
         public:
-            using WEINER = WeinerInterval<INDEX_SIZE>;
+            using RINTERVAL = RInterval<INDEX_SIZE>;
             std::vector<bool> checkerArray;
             std::vector<CHAR> charTmpVec;
-            vector<WEINER> weinerTmpVec;
+            vector<RINTERVAL> weinerTmpVec;
 
             void initialize(uint64_t runSize)
             {
@@ -166,7 +180,7 @@ namespace stool
             }
             
             template <typename RLBWT_STR>
-            bool checkWeinerInterval(WEINER &w, RLBWT_STR &_rlbwt)
+            bool checkWeinerInterval(RINTERVAL &w, RLBWT_STR &_rlbwt)
             {
                 bool b = _rlbwt.get_run(w.endIndex) == (w.endDiff + 1);
                 if (!b || !this->checkerArray[w.endIndex])

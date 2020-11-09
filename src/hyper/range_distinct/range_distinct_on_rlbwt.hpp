@@ -10,7 +10,7 @@
 #include "rlbwt_iterator/src/include/rle_farray.hpp"
 #include "rlbwt_iterator/src/include/rlbwt_functions.hpp"
 
-#include "../weiner_interval.hpp"
+//#include "../weiner_interval.hpp"
 #include "range_distinct.hpp"
 #include "succinct_range_distinct.hpp"
 
@@ -50,7 +50,7 @@ namespace stool
                 srdds.initialize(_wt, _bwt);
             }
 
-            uint64_t range_distinct(WeinerInterval<INDEX_SIZE> range, std::vector<WeinerInterval<INDEX_SIZE>> &output, std::vector<CHAR> &charOutputVec)
+            uint64_t range_distinct(RInterval<INDEX_SIZE> range, std::vector<RInterval<INDEX_SIZE>> &output, std::vector<CHAR> &charOutputVec)
             {
 
                 uint64_t count = 0;
@@ -85,7 +85,7 @@ namespace stool
                     INDEX_SIZE cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
                     INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : rlbwt->get_run(cEndIndex) - 1;
 
-                    WeinerInterval<INDEX_SIZE> cInterval;
+                    RInterval<INDEX_SIZE> cInterval;
                     cInterval.beginIndex = cBeginIndex;
                     cInterval.beginDiff = cBeginDiff;
                     cInterval.endIndex = cEndIndex;
