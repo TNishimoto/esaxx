@@ -24,6 +24,7 @@ namespace stool
         public:
             using CHAR = typename RLBWT_STR::char_type;
             using CHAR_VEC = typename RLBWT_STR::char_vec_type;
+            using RINTERVAL = RInterval<INDEX_SIZE>;
 
             const RLBWT_STR *rlbwt;
             //RANGE_DISTINCT *rd
@@ -31,7 +32,6 @@ namespace stool
             LightRangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> light_srdds;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
 
-            std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
 
             uint64_t total_cover1 = 0;
             uint64_t num1 = 0;
@@ -39,9 +39,20 @@ namespace stool
             uint64_t total_cover2 = 0;
             uint64_t num2 = 0;
 
+            //std::vector<RInterval<INDEX_SIZE>> &output
+
+            std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
+            std::vector<CHAR> charTmpVec;
+            vector<RINTERVAL> rIntervalTmpVec;
+
+
             void initialize(const RLBWT_STR *_rlbwt, const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
+                charTmpVec.resize(CHARMAX);
+                rIntervalTmpVec.resize(CHARMAX);
+
+
                 this->rlbwt = _rlbwt;
                 //this->rd = _rd;
                 charIntervalTmpVec.resize(CHARMAX);
@@ -50,7 +61,7 @@ namespace stool
                 srdds.initialize(_wt, _bwt);
             }
 
-            uint64_t range_distinct(RInterval<INDEX_SIZE> range, std::vector<RInterval<INDEX_SIZE>> &output, std::vector<CHAR> &charOutputVec)
+            uint64_t range_distinct(RInterval<INDEX_SIZE> range)
             {
 
                 uint64_t count = 0;
@@ -91,9 +102,8 @@ namespace stool
                     cInterval.endIndex = cEndIndex;
                     cInterval.endDiff = cEndDiff;
 
-                    charOutputVec[x] = it.c;
-
-                    output[x] = cInterval;
+                    charTmpVec[x] = it.c;
+                    rIntervalTmpVec[x] = cInterval;
                 }
 
                 return count;

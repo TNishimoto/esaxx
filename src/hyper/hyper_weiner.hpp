@@ -8,6 +8,9 @@
 #include <vector>
 #include <type_traits>
 #include "hyper_set.hpp"
+#include "interval_temporary.hpp"
+#include "next_lcp_interval_set_computer.hpp"
+
 #include "./rlbwt_data_structures.hpp"
 
 namespace stool
@@ -27,7 +30,7 @@ namespace stool
 
             bool lightWeight = false;
 
-            WeinerDataStructures<INDEX_SIZE, CHAR> wds;
+            NextLCPIntervalSetComputer<RLBWT_STR, INDEX_SIZE> wds;
             RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> _RLBWTDS;
             HyperSet<INDEX_SIZE> hyperSet;
             HyperSet<INDEX_SIZE> hyperTmpSet;
@@ -41,8 +44,8 @@ namespace stool
             HyperSetConstructor(const RLBWT_STR &__rlbwt, bool _lightWeight) : _RLBWTDS(__rlbwt, _lightWeight)
             {
                 lightWeight = _lightWeight;
-                uint64_t runSize = __rlbwt.rle_size();
-                this->wds.initialize(runSize);
+                //uint64_t runSize = __rlbwt.rle_size();
+                this->wds.initialize(&this->_RLBWTDS);
 
 
                 //srdds.initialize(__rlbwt);
@@ -59,12 +62,12 @@ namespace stool
             {
                 if (current_lcp == 0)
                 {
-                    this->_RLBWTDS.computeFirstLCPIntervalSet(this->hyperTmpSet, wds);
+                    this->wds.computeFirstLCPIntervalSet(this->hyperTmpSet);
                     this->hyperSet.swap(this->hyperTmpSet);
                 }
                 else
                 {
-                    this->_RLBWTDS.computeNextLCPIntervalSet(this->hyperSet, this->hyperTmpSet, wds);
+                    this->wds.computeNextLCPIntervalSet(this->hyperSet, this->hyperTmpSet);
                     this->hyperSet.swap(this->hyperTmpSet);
                 }
 

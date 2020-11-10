@@ -8,6 +8,7 @@
 #include <vector>
 #include <type_traits>
 #include "./hyper_set.hpp"
+#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
 namespace stool
 {
@@ -32,14 +33,12 @@ namespace stool
             stool::EliasFanoVector fposSortedArray;
             std::vector<INDEX_SIZE> fposArray;
             bool lightWeight = false;
-            IntervalTemporary<INDEX_SIZE> intervalTemporary;
 
             RLBWTDataStructures(const RLBWT_STR &__rlbwt, bool _lightWeight) : _rlbwt(__rlbwt)
             {
                 lightWeight = _lightWeight;
                 //uint64_t CHARMAX = UINT8_MAX + 1;
                 uint64_t runSize = _rlbwt.rle_size();
-                intervalTemporary.initialize();
 
                 if (lightWeight)
                 {
@@ -151,125 +150,6 @@ namespace stool
                 output.endIndex = _rlbwt.get_lindex_containing_the_position(end_pos);
                 output.endDiff = end_pos - _rlbwt.get_lpos(output.endIndex);
                 return output;
-            }
-            void computeNextIntervals(const RINTERVAL &w, bool isWeiner, WeinerDataStructures<INDEX_SIZE, CHAR> &wds, IntervalTemporary<INDEX_SIZE> &output)
-            {
-                RINTERVAL frontL = this->getIntervalOnL(w);
-                uint64_t resultCount = this->rangeOnRLBWT.range_distinct(frontL, wds.weinerTmpVec, wds.charTmpVec);
-
-                for (uint64_t i = 0; i < resultCount; i++)
-                {
-                    UCHAR c = wds.charTmpVec[i];
-                    auto &it = wds.weinerTmpVec[i];
-                    bool skip = false;
-                    if (isWeiner)
-                    {
-                        skip = !wds.checkWeinerInterval(it, this->_rlbwt);
-                    }
-                    else
-                    {
-                        skip = !output.occur(c);
-                    }
-                    if (!skip)
-                    {
-                        output.push(it, c);
-                    }
-                }
-            }
-            void computeFirstLCPIntervalSet(HyperSet<INDEX_SIZE> &output, WeinerDataStructures<INDEX_SIZE, CHAR> &wds)
-            {
-                output.clear();
-                RINTERVAL lcpIntv;
-                size_t minIndex = this->_rlbwt.get_end_rle_lposition();
-
-                uint64_t maxIndex = 0;
-                UCHAR c = 0;
-                for (uint64_t i = 0; i < this->_rlbwt.rle_size(); i++)
-                {
-                    UCHAR c2 = this->_rlbwt.get_char_by_run_index(i);
-                    if (c < c2)
-                    {
-                        c = c2;
-                        maxIndex = i;
-                    }
-                    else if (c == c2)
-                    {
-                        maxIndex = i;
-                    }
-                }
-                uint64_t diff = this->_rlbwt.get_run(maxIndex) - 1;
-                lcpIntv.beginIndex = minIndex;
-                lcpIntv.beginDiff = 0;
-                lcpIntv.endIndex = maxIndex;
-                lcpIntv.endDiff = diff;
-
-                uint64_t begin_lindex = 0;
-                uint64_t begin_diff = 0;
-                uint64_t end_lindex = this->_rlbwt.rle_size() - 1;
-                uint64_t end_diff = this->_rlbwt.get_run(end_lindex) - 1;
-
-                //vector<RINTERVAL> results = range_distinct(frontL, charOutputVec);
-                RINTERVAL tmpArg;
-                tmpArg.beginIndex = begin_lindex;
-                tmpArg.beginDiff = begin_diff;
-                tmpArg.endIndex = end_lindex;
-                tmpArg.endDiff = end_diff;
-                //std::vector<CHAR> charOutputVec;
-                uint64_t resultCount = this->rangeOnRLBWT.range_distinct(tmpArg, wds.weinerTmpVec, wds.charTmpVec);
-                assert(resultCount > 0);
-
-                //auto weinerIntervals = RangeDistinctDataStructureOnRLBWT<RLBWT_STR, INDEX_SIZE, SuccinctRangeDistinctDataStructure<INDEX_SIZE>>::range_distinct(_rlbwt, srdds, begin_lindex, begin_diff, end_lindex, end_diff, charOutputVec);
-                uint64_t counter = 0;
-                for (uint64_t x = 0; x < resultCount; x++)
-                {
-                    auto &it = wds.weinerTmpVec[x];
-                    if (wds.checkWeinerInterval(it, this->_rlbwt))
-                    {
-                        output.push_weiner(it);
-
-                        counter++;
-                    }
-                }
-
-                output.push(lcpIntv, counter);
-            }
-            void computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t weinerVecSize, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet, WeinerDataStructures<INDEX_SIZE, CHAR> &wds)
-            {
-                intervalTemporary.clearWeinerTmpVec();
-                uint64_t i = rank;
-
-                INDEX_SIZE lcpIntvBeginPos = this->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
-                INDEX_SIZE lcpIntvEndPos = this->get_fpos(lcpIntv.endIndex, lcpIntv.endDiff);
-
-                while (i < weinerVecSize)
-                {
-                    INDEX_SIZE weinerBeginPos = this->get_fpos(weinerVec[i].beginIndex, weinerVec[i].beginDiff);
-                    INDEX_SIZE weinerEndPos = this->get_fpos(weinerVec[i].endIndex, weinerVec[i].endDiff);
-                    if (lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos)
-                    {
-                        this->computeNextIntervals(weinerVec[i], true, wds, this->intervalTemporary);
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                    i++;
-                }
-                this->computeNextIntervals(lcpIntv, false, wds, this->intervalTemporary);
-
-                intervalTemporary.move(outputSet);
-            }
-            void computeNextLCPIntervalSet(HyperSet<INDEX_SIZE> &inputSet, HyperSet<INDEX_SIZE> &output, WeinerDataStructures<INDEX_SIZE, CHAR> &wds)
-            {
-                output.clear();
-                uint64_t rank = 0;
-                //const std::vector<RINTERVAL> * lcpIntvVec = inputSet.getLcpIntvVec();
-                for (uint64_t i = 0; i < inputSet.lcpIntvCount; i++)
-                {
-                    this->computeNextLCPIntervalSet(inputSet.lcpIntvVec[i], inputSet.weinerVec, inputSet.weinerCount, rank, output, wds);
-                    rank += inputSet.widthVec[i];
-                }
             }
         };
     } // namespace lcp_on_rlbwt
