@@ -21,9 +21,13 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            std::vector<std::vector<RINTERVAL>> intervalVec;
+            std::vector<std::vector<RINTERVAL>> weinerIntervalVec;
+            std::vector<RINTERVAL> lcpIntervalVec;
+
             std::vector<uint64_t> indexVec;
-            std::vector<bool> bitArray;
+            std::vector<bool> weinerIntervalOccurrenceBitArray;
+            std::vector<bool> lcpIntvOccurrenceBitArray;
+
             std::vector<uint64_t> countVec;
             uint64_t indexCount = 0;
 
@@ -31,26 +35,31 @@ namespace stool
             void initialize()
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
-                intervalVec.resize(CHARMAX);
+                weinerIntervalVec.resize(CHARMAX);
                 for (uint64_t i = 0; i < CHARMAX; i++)
                 {
-                    intervalVec[i].resize(2);
+                    weinerIntervalVec[i].resize(2);
                 }
                 indexVec.resize(CHARMAX);
-                bitArray.resize(CHARMAX, false);
+                weinerIntervalOccurrenceBitArray.resize(CHARMAX, false);
                 countVec.resize(CHARMAX, 0);
+
+                lcpIntvOccurrenceBitArray.resize(CHARMAX, false);
+                lcpIntervalVec.resize(CHARMAX);
             }
             bool occur(uint64_t character){
-                return this->bitArray[character];
+                return this->weinerIntervalOccurrenceBitArray[character];
             }
 
-            void clearWeinerTmpVec()
+            void clear()
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto &it = this->indexVec[i];
-                    bitArray[it] = false;
+                    weinerIntervalOccurrenceBitArray[it] = false;
                     countVec[it] = 0;
+
+                    lcpIntvOccurrenceBitArray[it] = false;
                 }
                 indexCount = 0;
             }
@@ -60,35 +69,40 @@ namespace stool
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto character = this->indexVec[i];
-                    auto &currentVec = this->intervalVec[character];
+                    auto &currentVec = this->weinerIntervalVec[character];
                     uint64_t count = this->countVec[character];
-                    if (count > 1)
-                    {
-                        for (uint64_t j = 0; j < count-1; j++)
+                    if(this->lcpIntvOccurrenceBitArray[character]){
+                        for (uint64_t j = 0; j < count; j++)
                         {
                             output.push_weiner(currentVec[j]);
                         }
-
-                        output.push(currentVec[count-1], count - 1);
+                        output.push(this->lcpIntervalVec[character], count);
                     }
                 }
             }
-            void push(RINTERVAL &w, uint8_t c)
+            void pushWeinerInterval(RINTERVAL &w, uint8_t c)
             {
-                if (!this->bitArray[c])
+                if (!this->weinerIntervalOccurrenceBitArray[c])
                 {
                     this->indexVec[this->indexCount] = c;
                     this->indexCount++;
-                    this->bitArray[c] = true;
+                    this->weinerIntervalOccurrenceBitArray[c] = true;
                 }
-                if (this->countVec[c] == this->intervalVec[c].size())
+                if (this->countVec[c] == this->weinerIntervalVec[c].size())
                 {
-                    this->intervalVec[c].resize(this->countVec[c] * 2);
+                    this->weinerIntervalVec[c].resize(this->countVec[c] * 2);
                 }
-                this->intervalVec[c][this->countVec[c]] = w;
+                this->weinerIntervalVec[c][this->countVec[c]] = w;
                 this->countVec[c]++;
             }
+            void pushLCPInterval(RINTERVAL &w, uint8_t c)
+            {
+                this->lcpIntervalVec[c] = w;
+                this->lcpIntvOccurrenceBitArray[c] = true;
+            }
+
         };
+
 
 
     }

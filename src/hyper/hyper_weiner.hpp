@@ -24,7 +24,6 @@ namespace stool
         public:
             using CHAR = typename RLBWT_STR::char_type;
             using CHARVEC = typename RLBWT_STR::char_vec_type;
-
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using RINTERVAL = RInterval<INDEX_SIZE>;
 

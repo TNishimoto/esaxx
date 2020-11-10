@@ -58,6 +58,9 @@ namespace stool
                 this->weinerCount = copy.weinerCount;
                 copy.weinerCount = tmp2;
             }
+            void convertFrom(){
+                
+            }
             void push(RINTERVAL &w, uint64_t width)
             {
 

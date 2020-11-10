@@ -67,24 +67,23 @@ namespace stool
                 {
                     UCHAR c = this->_RLBWTDS->rangeOnRLBWT.charTmpVec[i];
                     auto &it = this->_RLBWTDS->rangeOnRLBWT.rIntervalTmpVec[i];
-                    bool skip = false;
                     if (isWeiner)
                     {
-                        skip = !this->checkWeinerInterval(it);
+                        if(this->checkWeinerInterval(it)){
+                            output.pushWeinerInterval(it, c);
+                        }
                     }
                     else
                     {
-                        skip = !output.occur(c);
-                    }
-                    if (!skip)
-                    {
-                        output.push(it, c);
+                        if(output.occur(c)){
+                            output.pushLCPInterval(it, c);
+                        }
                     }
                 }
             }
             void computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t weinerVecSize, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet)
             {
-                intervalTemporary.clearWeinerTmpVec();
+                intervalTemporary.clear();
                 uint64_t i = rank;
 
                 INDEX_SIZE lcpIntvBeginPos = this->_RLBWTDS->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
