@@ -16,7 +16,7 @@ namespace stool
     {
 
         template <typename INDEX_SIZE>
-        class HyperSet
+        class RIntervalStorage
         {
         public:
             using RINTERVAL = RInterval<INDEX_SIZE>;
@@ -27,7 +27,7 @@ namespace stool
             uint64_t lcpIntvCount = 0;
             uint64_t weinerCount = 0;
 
-            HyperSet()
+            RIntervalStorage()
             {
                 this->lcpIntvVec.resize(8);
                 this->weinerVec.resize(8);
@@ -44,7 +44,7 @@ namespace stool
             }
             
 
-            void swap(HyperSet &copy)
+            void swap(RIntervalStorage &copy)
             {
                 this->lcpIntvVec.swap(copy.lcpIntvVec);
                 this->weinerVec.swap(copy.weinerVec);

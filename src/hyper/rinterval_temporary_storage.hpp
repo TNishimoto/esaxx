@@ -17,7 +17,7 @@ namespace stool
     {
         
         template <typename INDEX_SIZE>
-        class IntervalTemporary
+        class RIntervalTemporaryStorage
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
@@ -64,7 +64,7 @@ namespace stool
                 indexCount = 0;
             }
 
-            void move(HyperSet<INDEX_SIZE> &output)
+            void move(RIntervalStorage<INDEX_SIZE> &output)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {

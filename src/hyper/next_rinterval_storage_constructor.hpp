@@ -8,7 +8,10 @@
 #include <vector>
 #include <type_traits>
 #include "../../module/rlbwt_iterator/src/include/weiner/sampling_functions.hpp"
-#include "./rlbwt_data_structures.hpp"
+#include "./range_distinct/rlbwt_data_structures.hpp"
+#include "rinterval_storage.hpp"
+#include "rinterval_temporary_storage.hpp"
+
 //#include "../../module/rlbwt_iterator/src/include/weiner/sampling_functions.hpp"
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -18,7 +21,7 @@ namespace stool
     {
 
         template <typename RLBWT_STR, typename INDEX_SIZE>
-        class NextLCPIntervalSetComputer
+        class NextRIntervalStorageConstructor
         {
 
             using CHAR = typename RLBWT_STR::char_type;
@@ -28,7 +31,7 @@ namespace stool
 
             std::vector<bool> checkerArray;
             RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> *_RLBWTDS;
-            IntervalTemporary<INDEX_SIZE> intervalTemporary;
+            RIntervalTemporaryStorage<INDEX_SIZE> intervalTemporary;
 
             bool checkWeinerInterval(RINTERVAL &w)
             {
@@ -58,7 +61,7 @@ namespace stool
             }
 
         private:
-            void computeNextIntervals(const RINTERVAL &w, bool isWeiner, IntervalTemporary<INDEX_SIZE> &output)
+            void computeNextIntervals(const RINTERVAL &w, bool isWeiner, RIntervalTemporaryStorage<INDEX_SIZE> &output)
             {
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
                 uint64_t resultCount = this->_RLBWTDS->rangeOnRLBWT.range_distinct(frontL);
@@ -81,7 +84,7 @@ namespace stool
                     }
                 }
             }
-            void computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t weinerVecSize, uint64_t rank, HyperSet<INDEX_SIZE> &outputSet)
+            void computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t weinerVecSize, uint64_t rank, RIntervalStorage<INDEX_SIZE> &outputSet)
             {
                 intervalTemporary.clear();
                 uint64_t i = rank;
@@ -110,7 +113,7 @@ namespace stool
             }
 
         public:
-            void computeFirstLCPIntervalSet(HyperSet<INDEX_SIZE> &output)
+            void computeFirstLCPIntervalSet(RIntervalStorage<INDEX_SIZE> &output)
             {
                 output.clear();
                 RINTERVAL lcpIntv;
@@ -165,7 +168,7 @@ namespace stool
 
                 output.push(lcpIntv, counter);
             }
-            void computeNextLCPIntervalSet(HyperSet<INDEX_SIZE> &inputSet, HyperSet<INDEX_SIZE> &output)
+            void computeNextLCPIntervalSet(RIntervalStorage<INDEX_SIZE> &inputSet, RIntervalStorage<INDEX_SIZE> &output)
             {
                 output.clear();
                 uint64_t rank = 0;

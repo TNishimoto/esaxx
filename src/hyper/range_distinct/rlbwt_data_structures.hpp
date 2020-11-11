@@ -7,8 +7,8 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "./hyper_set.hpp"
-#include "range_distinct/range_distinct_on_rlbwt.hpp"
+//#include "./rinterval_storage.hpp"
+#include "./range_distinct_on_rlbwt.hpp"
 
 namespace stool
 {

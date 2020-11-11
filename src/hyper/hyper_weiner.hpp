@@ -7,11 +7,8 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "hyper_set.hpp"
-#include "interval_temporary.hpp"
-#include "next_lcp_interval_set_computer.hpp"
+#include "next_rinterval_storage_constructor.hpp"
 
-#include "./rlbwt_data_structures.hpp"
 
 namespace stool
 {
@@ -29,10 +26,10 @@ namespace stool
 
             bool lightWeight = false;
 
-            NextLCPIntervalSetComputer<RLBWT_STR, INDEX_SIZE> wds;
+            NextRIntervalStorageConstructor<RLBWT_STR, INDEX_SIZE> wds;
             RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> _RLBWTDS;
-            HyperSet<INDEX_SIZE> hyperSet;
-            HyperSet<INDEX_SIZE> hyperTmpSet;
+            RIntervalStorage<INDEX_SIZE> hyperSet;
+            RIntervalStorage<INDEX_SIZE> hyperTmpSet;
 
             uint64_t current_lcp = 0;
             uint64_t strSize = 0;
