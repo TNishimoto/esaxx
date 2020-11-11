@@ -26,6 +26,7 @@ using namespace stool::rlbwt;
 #include "../test/naive_algorithms.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
 #include "../forward_bwt.hpp"
+#include "../hyper/rlcp_interval_enumerator.hpp"
 
 using namespace std;
 using namespace stool;
@@ -63,6 +64,19 @@ void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck
         std::cout << "OK!" << std::endl;
     }
     std::cout << "rlbwt = " << rlestr.rle_size() << std::endl;
+}
+void test2(std::string inputFile, bool lightWeight){
+    using RLBWT_STR = stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>>;
+    RLBWT_STR rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
+    lcp_on_rlbwt::RLBWTDataStructures<RLBWT_STR, uint64_t> rlbwtds(rlestr, lightWeight);
+    lcp_on_rlbwt::RLCPIntervalEnumerator<RLBWT_STR, uint64_t> enumerator(&rlbwtds);
+
+    for(auto w : enumerator){
+        w.first.print();
+    }
+
+
+
 }
 
 void testMaximalSubstrings(std::string inputFile, bool lightWeight)
@@ -180,5 +194,7 @@ int main(int argc, char *argv[])
     else
     {
         testMaximalSubstrings(inputFile, mode);
+
+        test2(inputFile, mode);
     }
 }

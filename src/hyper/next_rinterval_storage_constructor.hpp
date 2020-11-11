@@ -113,6 +113,12 @@ namespace stool
             }
 
         public:
+            void clear(){
+                for(uint64_t i=0;i<this->checkerArray.size();i++){
+                    this->checkerArray[i] = false;
+                }
+                this->intervalTemporary.clear();
+            }
             void computeFirstLCPIntervalSet(RIntervalStorage<INDEX_SIZE> &output)
             {
                 output.clear();
