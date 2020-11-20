@@ -15,7 +15,7 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        
+
         template <typename INDEX_SIZE>
         class RIntervalTemporaryStorage
         {
@@ -47,7 +47,8 @@ namespace stool
                 lcpIntvOccurrenceBitArray.resize(CHARMAX, false);
                 lcpIntervalVec.resize(CHARMAX);
             }
-            bool occur(uint64_t character){
+            bool occur(uint64_t character)
+            {
                 return this->weinerIntervalOccurrenceBitArray[character];
             }
 
@@ -71,7 +72,8 @@ namespace stool
                     auto character = this->indexVec[i];
                     auto &currentVec = this->weinerIntervalVec[character];
                     uint64_t count = this->countVec[character];
-                    if(this->lcpIntvOccurrenceBitArray[character]){
+                    if (this->weinerIntervalOccurrenceBitArray[character])
+                    {
                         for (uint64_t j = 0; j < count; j++)
                         {
                             output.push_weiner(currentVec[j]);
@@ -100,10 +102,16 @@ namespace stool
                 this->lcpIntervalVec[c] = w;
                 this->lcpIntvOccurrenceBitArray[c] = true;
             }
+            bool checkWeinerInterval(RINTERVAL &w, uint8_t c)
+            {
+                auto& lcpIntv = this->lcpIntervalVec[c];
+                bool b1 = lcpIntv.beginIndex == w.beginIndex && lcpIntv.beginDiff == w.beginDiff;
+                bool b2 = lcpIntv.endIndex == w.endIndex && lcpIntv.endDiff == w.endDiff;
 
+                //std::cout << c << "/" << b1 << "/" << b2 << std::endl;
+                return !b2;
+            }
         };
 
-
-
-    }
-}
+    } // namespace lcp_on_rlbwt
+} // namespace stool

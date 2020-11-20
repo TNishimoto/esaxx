@@ -29,10 +29,11 @@ namespace stool
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using UCHAR = typename std::make_unsigned<CHAR>::type;
 
-            std::vector<bool> checkerArray;
+            //std::vector<bool> checkerArray;
             RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> *_RLBWTDS;
             RIntervalTemporaryStorage<INDEX_SIZE> intervalTemporary;
 
+            /*
             bool checkWeinerInterval(RINTERVAL &w)
             {
                 bool b = this->_RLBWTDS->_rlbwt.get_run(w.endIndex) == (w.endDiff + 1);
@@ -49,6 +50,7 @@ namespace stool
                     return false;
                 }
             }
+            */
 
         public:
             void initialize(RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> *_rlbwtds)
@@ -56,11 +58,24 @@ namespace stool
                 this->_RLBWTDS = _rlbwtds;
                 uint64_t runSize = _rlbwtds->_rlbwt.rle_size();
                 //uint64_t CHARMAX = UINT8_MAX + 1;
-                this->checkerArray.resize(runSize, false);
+                //this->checkerArray.resize(runSize, false);
                 intervalTemporary.initialize();
             }
 
         private:
+            void getNextSAIntervalsForLCPIntervals(const RINTERVAL &w, RIntervalTemporaryStorage<INDEX_SIZE> &output){
+                RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
+                uint64_t resultCount = this->_RLBWTDS->rangeOnRLBWT.range_distinct(frontL);
+                for (uint64_t i = 0; i < resultCount; i++)
+                {
+                    UCHAR c = this->_RLBWTDS->rangeOnRLBWT.charTmpVec[i];
+                    auto &it = this->_RLBWTDS->rangeOnRLBWT.rIntervalTmpVec[i];
+                    output.pushLCPInterval(it, c);
+
+                }
+
+            }
+
             void computeNextIntervals(const RINTERVAL &w, bool isWeiner, RIntervalTemporaryStorage<INDEX_SIZE> &output)
             {
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
@@ -72,9 +87,14 @@ namespace stool
                     auto &it = this->_RLBWTDS->rangeOnRLBWT.rIntervalTmpVec[i];
                     if (isWeiner)
                     {
+                        if(output.checkWeinerInterval(it, c)){
+                            output.pushWeinerInterval(it, c);
+                        }
+                        /*
                         if(this->checkWeinerInterval(it)){
                             output.pushWeinerInterval(it, c);
                         }
+                        */
                     }
                     else
                     {
@@ -86,14 +106,20 @@ namespace stool
             }
             void computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t weinerVecSize, uint64_t rank, RIntervalStorage<INDEX_SIZE> &outputSet)
             {
+                /*
+                std::cout << "Next"  << std::endl;
+                lcpIntv.print2(this->_RLBWTDS->fposArray);
+                */
                 intervalTemporary.clear();
                 uint64_t i = rank;
 
                 INDEX_SIZE lcpIntvBeginPos = this->_RLBWTDS->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
                 INDEX_SIZE lcpIntvEndPos = this->_RLBWTDS->get_fpos(lcpIntv.endIndex, lcpIntv.endDiff);
 
+                this->getNextSAIntervalsForLCPIntervals(lcpIntv, this->intervalTemporary);
                 while (i < weinerVecSize)
                 {
+
                     INDEX_SIZE weinerBeginPos = this->_RLBWTDS->get_fpos(weinerVec[i].beginIndex, weinerVec[i].beginDiff);
                     INDEX_SIZE weinerEndPos = this->_RLBWTDS->get_fpos(weinerVec[i].endIndex, weinerVec[i].endDiff);
                     if (lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos)
@@ -102,21 +128,23 @@ namespace stool
                     }
                     else
                     {
+
                         break;
                     }
 
                     i++;
                 }
-                this->computeNextIntervals(lcpIntv, false, this->intervalTemporary);
 
                 intervalTemporary.move(outputSet);
             }
 
         public:
             void clear(){
+                /*
                 for(uint64_t i=0;i<this->checkerArray.size();i++){
                     this->checkerArray[i] = false;
                 }
+                */
                 this->intervalTemporary.clear();
             }
             void computeFirstLCPIntervalSet(RIntervalStorage<INDEX_SIZE> &output)
@@ -164,25 +192,38 @@ namespace stool
                 for (uint64_t x = 0; x < resultCount; x++)
                 {
                     auto &it = this->_RLBWTDS->rangeOnRLBWT.rIntervalTmpVec[x];
-                    if (this->checkWeinerInterval(it))
-                    {
                         output.push_weiner(it);
-
                         counter++;
-                    }
+
+                    //if (this->checkWeinerInterval(it))
+                    //{
+                    //}
                 }
 
                 output.push(lcpIntv, counter);
             }
             void computeNextLCPIntervalSet(RIntervalStorage<INDEX_SIZE> &inputSet, RIntervalStorage<INDEX_SIZE> &output)
             {
+                assert(inputSet.lcpIntvCount > 0);
+
                 output.clear();
                 uint64_t rank = 0;
+                //std::cout << "a" << inputSet.lcpIntvCount << std::endl;
                 for (uint64_t i = 0; i < inputSet.lcpIntvCount; i++)
                 {
                     this->computeNextLCPIntervalSet(inputSet.lcpIntvVec[i], inputSet.weinerVec, inputSet.weinerCount, rank, output);
                     rank += inputSet.widthVec[i];
                 }
+                /*
+                std::cout << "ENUMERATE" << std::endl;
+                for (uint64_t i = 0; i < output.lcpIntvCount; i++)
+                {
+                    output.lcpIntvVec[i].print2(this->_RLBWTDS->fposArray);
+                }
+                */
+
+                assert(output.lcpIntvCount > 0);
+
             }
         };
     } // namespace lcp_on_rlbwt

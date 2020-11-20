@@ -195,6 +195,6 @@ int main(int argc, char *argv[])
     {
         testMaximalSubstrings(inputFile, mode);
 
-        test2(inputFile, mode);
+        //test2(inputFile, mode);
     }
 }

@@ -73,7 +73,9 @@ namespace stool
             }
             bool isStop()
             {
-                return strSize == total_counter;
+                //std::cout << "STOP?" << strSize << "/" << total_counter << std::endl;
+                assert(total_counter <= strSize);
+                return total_counter == strSize;
             }
             bool checkMaximalRepeat(const RINTERVAL &lcpIntv)
             {
