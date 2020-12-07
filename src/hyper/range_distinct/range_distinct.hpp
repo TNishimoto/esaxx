@@ -8,24 +8,25 @@
 
 #include "stool/src/debug.hpp"
 #include "stool/src/elias_fano_vector.hpp"
-#include "../beller/char_interval.hpp"
+#include "../../beller/char_interval.hpp"
 #include <sdsl/rmq_support.hpp> // include header for range minimum queries
 
 namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        
 
-        template <typename CHAR_VEC, typename INDEX_SIZE = int64_t>
+
+        template <typename CHAR_VEC, typename INDEX_SIZE>
         class RangeDistinctDataStructure
         {
         private:
             using CHAR = typename CHAR_VEC::value_type;
 
             const CHAR_VEC *_char_vec;
+            const sdsl::wt_huff<> *wt;
             std::vector<stool::EliasFanoVector> positionVec;
-            std::vector<INDEX_SIZE> rankVec;
+            //std::vector<INDEX_SIZE> rankVec;
             INDEX_SIZE size;
             sdsl::rmq_succinct_sada<> RMQ;
             sdsl::rmq_succinct_sada<> RmQ;
@@ -37,7 +38,10 @@ namespace stool
             INDEX_SIZE get_next(INDEX_SIZE i)
             {
                 CHAR c = (*_char_vec)[i];
-                INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = wt->rank(i, c);
+                INDEX_SIZE rank = wt->rank(i + 1, c);
+
                 if (positionVec[(uint8_t)c].size() == rank + 1)
                 {
                     return std::numeric_limits<INDEX_SIZE>::max();
@@ -50,7 +54,12 @@ namespace stool
             int64_t get_prev(INDEX_SIZE i)
             {
                 CHAR c = (*_char_vec)[i];
-                INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = rankVec[i];
+                //INDEX_SIZE rank = wt->rank(i, c);
+                INDEX_SIZE rank = wt->rank(i + 1, c);
+
+                //assert(rank == result);
+
                 if (rank == 0)
                 {
                     return -1;
@@ -153,24 +162,24 @@ namespace stool
             RangeDistinctDataStructure()
             {
             }
-            void preprocess(const CHAR_VEC *__char_vec)
+            void preprocess(const CHAR_VEC *__char_vec, const sdsl::wt_huff<> *_wt)
             {
+                wt = _wt;
                 int32_t charMaxSize = ((int32_t)UINT8_MAX) + 1;
                 this->_char_vec = __char_vec;
                 this->positionVec.resize(charMaxSize);
+                size = _char_vec->size();
 
                 std::vector<std::vector<INDEX_SIZE>> positionSeqVec;
                 positionSeqVec.resize(charMaxSize, std::vector<INDEX_SIZE>());
                 tmpRangeDistinctResult.resize(charMaxSize, 0);
 
-                //std::unordered_map<CHAR, std::vector<uint64_t>> positionSeqMap;
-                size = _char_vec->size();
-                this->rankVec.resize(size, 0);
+                //this->rankVec.resize(size, 0);
 
                 for (INDEX_SIZE i = 0; i < size; i++)
                 {
                     uint8_t c = (uint8_t)(*_char_vec)[i];
-                    this->rankVec[i] = positionSeqVec[c].size();
+                    //this->rankVec[i] = positionSeqVec[c].size();
 
                     positionSeqVec[c].push_back(i);
                 }
@@ -193,16 +202,15 @@ namespace stool
                 auto prev_vec = this->construct_prev_vector();
                 sdsl::rmq_succinct_sada<> prev_rmq(&prev_vec);
                 this->RmQ.swap(prev_rmq);
-
             }
-            
-            std::vector<stool::CharInterval<INDEX_SIZE>> range_distinct(INDEX_SIZE i, INDEX_SIZE j)
-            {
-                std::vector<stool::CharInterval<INDEX_SIZE>> r;
 
-                //std::vector<uint64_t> output;
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            {
+                uint64_t count = 0;
+
                 search_less(i, i, j, tmpSearchStack);
-                while(tmpSearchStack.size() > 0){
+                while (tmpSearchStack.size() > 0)
+                {
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
                     tmpRangeDistinctResult[c] = p;
@@ -210,17 +218,18 @@ namespace stool
                 }
                 search_than(j, i, j, tmpSearchStack);
 
-                while(tmpSearchStack.size() > 0){
+                while (tmpSearchStack.size() > 0)
+                {
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
                     auto pair = stool::CharInterval<INDEX_SIZE>(tmpRangeDistinctResult[c], p, c);
-                    r.push_back(pair);
+                    output[count++] = pair;
 
                     tmpSearchStack.pop();
                 }
-                return r;
+                return count;
             }
         };
 
-    } // namespace rlbwt
+    } // namespace lcp_on_rlbwt
 } // namespace stool

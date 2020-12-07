@@ -25,21 +25,26 @@ namespace stool
             std::vector<bool> checker;
             std::vector<uint64_t> counter;
             std::vector<uint8_t> occurrenceChars;
+            std::vector<CharInterval<INDEX>> charIntervalTmpVec;
+
             uint64_t lcp = 0;
+            uint64_t debugCounter = 0;
 
             void initialize(int_vector<> &bwt)
             {
-                queArr.resize(UINT8_MAX);
-                counter.resize(UINT8_MAX, 0);
+                uint64_t CHARMAX = UINT8_MAX + 1;
+
+                queArr.resize(CHARMAX);
+                counter.resize(CHARMAX, 0);
                 checker.resize(bwt.size() + 1, false);
                 checker[0] = false;
                 occurrenceChars.resize(0);
+                charIntervalTmpVec.resize(CHARMAX);
             }
         };
         template <typename INDEX>
         std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(int_vector<> &bwt, IntervalSearchDataStructure &range, BellerComponent<INDEX> &comp, bool &isEnd)
         {
-
             using INTERVAL = stool::LCPInterval<INDEX>;
             uint64_t n = bwt.size();
             //uint8_t lastChar = bwt[bwt.size() - 1];
@@ -51,14 +56,18 @@ namespace stool
             if (comp.lcp == 0)
             {
                 INTERVAL fst(0, n - 1, 0);
-                auto tmp1 = range.getIntervals(fst.i, fst.j);
+                uint64_t charIntvCount = range.getIntervals(fst.i, fst.j, comp.charIntervalTmpVec);
+                            comp.debugCounter++;
+
                 std::set<uint8_t> nextOccurrenceSet;
 
-                for (auto intv : tmp1)
+                for (uint64_t i = 0; i < charIntvCount; i++)
                 {
+                    auto &intv = comp.charIntervalTmpVec[i];
                     comp.queArr[intv.c].push(INTERVAL(intv.i, intv.j, 1));
                     nextOccurrenceSet.insert(intv.c);
                 }
+
                 for (auto c : nextOccurrenceSet)
                 {
                     comp.occurrenceChars.push_back(c);
@@ -110,11 +119,13 @@ namespace stool
                         last_idx = top.j + 1;
                         //auto tmp = getIntervals(top.i, top.j, bwt, C, wt);
 
-                        auto tmpx = range.getIntervals(top.i, top.j);
-                        //check(tmp, tmpx);
+                        uint64_t charIntvCount = range.getIntervals(top.i, top.j, comp.charIntervalTmpVec);
+                                    comp.debugCounter++;
 
-                        for (auto intv : tmpx)
+                        //check(tmp, tmpx);
+                        for (uint64_t i = 0; i < charIntvCount; i++)
                         {
+                            auto &intv = comp.charIntervalTmpVec[i];
                             comp.queArr[intv.c].push(INTERVAL(intv.i, intv.j, top.lcp + 1));
                             nextOccurrenceSet.insert(intv.c);
                         }
@@ -130,12 +141,15 @@ namespace stool
                             last_idx = UINT64_MAX;
 
                             //auto tmp = getIntervals(top.i, top.j, bwt, C, wt);
-                            auto tmpx = range.getIntervals(top.i, top.j);
+                            uint64_t charIntvCount = range.getIntervals(top.i, top.j, comp.charIntervalTmpVec);
+                                        comp.debugCounter++;
+
 
                             //check(tmp, tmpx);
 
-                            for (auto intv : tmpx)
+                            for (uint64_t i = 0; i < charIntvCount; i++)
                             {
+                                auto &intv = comp.charIntervalTmpVec[i];
                                 comp.queArr[intv.c].push(INTERVAL(intv.i, intv.j, top.lcp + 1));
                                 nextOccurrenceSet.insert(intv.c);
                             }
@@ -219,13 +233,15 @@ namespace stool
             {
 
                 auto r2 = computeMaximalSubstrings(bwt, range, comp, isEnd);
-                for (auto& it : r2)
+                for (auto &it : r2)
                 {
                     out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
                 }
 
                 count += r2.size();
             }
+
+                std::cout << "Range Distinct Count = " << comp.debugCounter << "/" << bwt.size() << std::endl;
             uint64_t dx = range.wt.select(1, 0) - 1;
             auto last = stool::LCPInterval<INDEX>(dx, dx, bwt.size());
             out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX>));

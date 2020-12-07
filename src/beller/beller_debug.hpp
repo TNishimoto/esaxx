@@ -43,6 +43,7 @@ namespace stool
                 {
                     if (vec1[i].i != vec2[i].i || vec1[i].j != vec2[i].j || vec1[i].c != vec2[i].c)
                     {
+                        std::cout << "Distinct Values" << std::endl;
                         std::cout << vec1[i].to_string() << "/" << vec2[i].to_string() << std::endl;
                         throw -1;
                     }
