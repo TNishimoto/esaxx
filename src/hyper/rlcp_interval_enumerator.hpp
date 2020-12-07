@@ -8,12 +8,12 @@
 #include <vector>
 #include <type_traits>
 #include "hyper_weiner.hpp"
-
+/*
 namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        template <typename RLBWT_STR, typename INDEX_SIZE>
+        template <typename RLBWT_STR, typename INDEX_SIZE, typename RLBWTDS, typename FPOSDS>
         class RLCPIntervalEnumerator
         {
             using CHAR = typename RLBWT_STR::char_type;
@@ -21,8 +21,8 @@ namespace stool
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            NextRIntervalStorageConstructor<RLBWT_STR, INDEX_SIZE> wds;
-            RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> *_RLBWTDS;
+            NextRIntervalStorageConstructor<RLBWT_STR, INDEX_SIZE, RLBWTDS> wds;
+            //RLBWTDataStructures<RLBWT_STR, INDEX_SIZE, FPOSDS> *_RLBWTDS;
             RIntervalStorage<INDEX_SIZE> rintervalStorage;
             RIntervalStorage<INDEX_SIZE> rintervalTmpStorage;
             uint64_t current_lcp = 0;
@@ -41,10 +41,6 @@ namespace stool
                     this->rintervalStorage.swap(this->rintervalTmpStorage);
                 }
                 current_lcp++;
-            }
-            RLCPIntervalEnumerator(RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
-            {
-                this->wds.initialize(this->_RLBWTDS);
             }
             class iterator
             {
@@ -114,3 +110,4 @@ namespace stool
 
     } // namespace lcp_on_rlbwt
 } // namespace stool
+*/

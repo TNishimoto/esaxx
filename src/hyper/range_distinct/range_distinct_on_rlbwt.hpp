@@ -13,65 +13,86 @@
 //#include "../weiner_interval.hpp"
 #include "range_distinct.hpp"
 #include "succinct_range_distinct.hpp"
+#include "./light_range_distinct.hpp"
 
 namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        template <typename RLBWT_STR, typename INDEX_SIZE>
+        template <typename INDEX_SIZE, typename LPOSARRAY>
         class RangeDistinctDataStructureOnRLBWT
         {
         public:
-            using CHAR = typename RLBWT_STR::char_type;
-            using CHAR_VEC = typename RLBWT_STR::char_vec_type;
-            using RINTERVAL = RInterval<INDEX_SIZE>;
-
-            const RLBWT_STR *rlbwt;
+            //using CHAR = typename RLBWT_STR::char_type;
+            //using CHAR_VEC = typename RLBWT_STR::char_vec_type;
+            //const RLBWT_STR *rlbwt;
             //RANGE_DISTINCT *rd
             //RangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> srdds2;
-            LightRangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> light_srdds;
+            //std::vector<RInterval<INDEX_SIZE>> &output
+
+            using RINTERVAL = RInterval<INDEX_SIZE>;
+            LightRangeDistinctDataStructure<sdsl::int_vector<>, INDEX_SIZE> light_srdds;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> srdds;
-
-
             uint64_t total_cover1 = 0;
             uint64_t num1 = 0;
 
             uint64_t total_cover2 = 0;
             uint64_t num2 = 0;
-
-            //std::vector<RInterval<INDEX_SIZE>> &output
-
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
-            std::vector<CHAR> charTmpVec;
+            std::vector<uint8_t> charTmpVec;
+
             vector<RINTERVAL> rIntervalTmpVec;
+            const LPOSARRAY *lpos_array;
 
-
-            void initialize(const RLBWT_STR *_rlbwt, const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt)
+            void initialize(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt, const LPOSARRAY *_lpos_array)
             {
+
+                lpos_array = _lpos_array;
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 charTmpVec.resize(CHARMAX);
                 rIntervalTmpVec.resize(CHARMAX);
 
-
-                this->rlbwt = _rlbwt;
+                //this->rlbwt = _rlbwt;
                 //this->rd = _rd;
                 charIntervalTmpVec.resize(CHARMAX);
                 //srdds2.preprocess(rlbwt->get_char_vec(), _wt);
-                light_srdds.preprocess(rlbwt->get_char_vec());
+                light_srdds.preprocess(_bwt);
                 srdds.initialize(_wt, _bwt);
             }
 
-            uint64_t range_distinct(RInterval<INDEX_SIZE> range)
+            bool check(RInterval<INDEX_SIZE> &range)
             {
+                uint64_t CHARMAX = UINT8_MAX + 1;
 
+                std::vector<CharInterval<INDEX_SIZE>> DEBUGcharIntervalTmpVec1;
+                std::vector<CharInterval<INDEX_SIZE>> DEBUGcharIntervalTmpVec2;
+                DEBUGcharIntervalTmpVec1.resize(CHARMAX);
+                DEBUGcharIntervalTmpVec2.resize(CHARMAX);
+
+                assert(range.beginIndex <= range.endIndex);
+                uint64_t count1 = srdds.range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec1);
+                uint64_t count2 = light_srdds.range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec2);
+                if(count1 != count2){
+                    std::cout << "count distinct" << std::endl;
+                    throw -1;
+                }else{
+                    DEBUGcharIntervalTmpVec1.resize(count1);
+                    DEBUGcharIntervalTmpVec2.resize(count2);
+                    stool::beller::check(DEBUGcharIntervalTmpVec1, DEBUGcharIntervalTmpVec2);
+
+                }
+                return true;
+
+            }
+            uint64_t range_distinct(RInterval<INDEX_SIZE> &range)
+            {
                 uint64_t count = 0;
+                assert(range.beginIndex <= range.endIndex);
+                //assert(check(range));
 
                 if (range.endIndex - range.beginIndex >= 16)
                 {
 
-                    //std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
-
-                    //count = srdds2.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
                     count = srdds.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
 
                     total_cover1 += range.endIndex - range.beginIndex + 1;
@@ -94,7 +115,8 @@ namespace stool
                     INDEX_SIZE cBeginIndex = it.i;
                     INDEX_SIZE cEndIndex = it.j;
                     INDEX_SIZE cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
-                    INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : rlbwt->get_run(cEndIndex) - 1;
+                    uint64_t end_run = (*lpos_array)[cEndIndex + 1] - (*lpos_array)[cEndIndex];
+                    INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : end_run - 1;
 
                     RInterval<INDEX_SIZE> cInterval;
                     cInterval.beginIndex = cBeginIndex;
@@ -108,7 +130,6 @@ namespace stool
 
                 return count;
             }
-
         };
 
     } // namespace lcp_on_rlbwt

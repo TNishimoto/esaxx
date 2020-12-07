@@ -15,19 +15,20 @@ namespace stool
     namespace lcp_on_rlbwt
     {
 
-        template <typename RLBWT_STR, typename INDEX_SIZE>
+        template <typename RLBWTDS>
         class HyperSetConstructor
         {
         public:
-            using CHAR = typename RLBWT_STR::char_type;
-            using CHARVEC = typename RLBWT_STR::char_vec_type;
+            using CHAR = typename RLBWTDS::CHAR;
+            //using CHARVEC = typename RLBWT_STR::char_vec_type;
+            using INDEX_SIZE = typename RLBWTDS::INDEX;
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            bool lightWeight = false;
+            //bool lightWeight = false;
 
-            NextRIntervalStorageConstructor<RLBWT_STR, INDEX_SIZE> wds;
-            RLBWTDataStructures<RLBWT_STR, INDEX_SIZE> _RLBWTDS;
+            NextRIntervalStorageConstructor<INDEX_SIZE, RLBWTDS> wds;
+            RLBWTDS &_RLBWTDS;
             RIntervalStorage<INDEX_SIZE> hyperSet;
             RIntervalStorage<INDEX_SIZE> hyperTmpSet;
 
@@ -37,16 +38,16 @@ namespace stool
             uint64_t debugCounter = 0;
 
 
-            HyperSetConstructor(const RLBWT_STR &__rlbwt, bool _lightWeight) : _RLBWTDS(__rlbwt, _lightWeight)
+            HyperSetConstructor(RLBWTDS &__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
-                lightWeight = _lightWeight;
+                //lightWeight = _lightWeight;
                 //uint64_t runSize = __rlbwt.rle_size();
                 this->wds.initialize(&this->_RLBWTDS);
 
 
                 //srdds.initialize(__rlbwt);
 
-                this->strSize = this->_RLBWTDS._rlbwt.str_size();
+                this->strSize = this->_RLBWTDS.str_size();
 
                 //charIntervalTmpVec.resize(CHARMAX);
 
@@ -80,8 +81,8 @@ namespace stool
             bool checkMaximalRepeat(const RINTERVAL &lcpIntv)
             {
                 RINTERVAL it = this->_RLBWTDS.getIntervalOnL(lcpIntv);
-                uint8_t fstChar = this->_RLBWTDS._rlbwt.get_char_by_run_index(it.beginIndex);
-                uint8_t lstChar = this->_RLBWTDS._rlbwt.get_char_by_run_index(it.endIndex);
+                uint8_t fstChar = this->_RLBWTDS.get_char_by_run_index(it.beginIndex);
+                uint8_t lstChar = this->_RLBWTDS.get_char_by_run_index(it.endIndex);
                 if (fstChar == lstChar)
                 {
                     /*
@@ -107,9 +108,9 @@ namespace stool
                 }
             }
 
-            static std::vector<uint64_t> constructLCPArray(const RLBWT_STR &__rlbwt, bool lightWeight)
+            static std::vector<uint64_t> constructLCPArray(RLBWTDS *__RLBWTDS)
             {
-                HyperSetConstructor<RLBWT_STR, INDEX_SIZE> hsc(__rlbwt, lightWeight);
+                HyperSetConstructor<RLBWTDS> hsc(__RLBWTDS);
                 std::vector<uint64_t> r;
                 r.resize(hsc.strSize, 0);
 
@@ -129,9 +130,10 @@ namespace stool
                 }
                 return r;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(const RLBWT_STR &__rlbwt, bool lightWeight)
-            {
-                HyperSetConstructor<RLBWT_STR, INDEX_SIZE> hsc(__rlbwt, lightWeight);
+            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(RLBWTDS *__RLBWTDS)
+            {                
+                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS);
+
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
                 while (!hsc.isStop())
@@ -150,9 +152,10 @@ namespace stool
                 //return weiner.enumerateLCPInterval();
             }
 
-            static uint64_t outputMaximalSubstrings(const RLBWT_STR &__rlbwt, std::ofstream &out, bool lightWeight)
+            static uint64_t outputMaximalSubstrings(std::ofstream &out, RLBWTDS *__RLBWTDS)
             {
-                HyperSetConstructor<RLBWT_STR, INDEX_SIZE> hsc(__rlbwt, lightWeight);
+                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS);
+
                 uint64_t count = 0;
 
                 while (!hsc.isStop())
@@ -184,18 +187,19 @@ namespace stool
                 std::cout << "@" << hsc._RLBWTDS.rangeOnRLBWT.total_cover2 << "/" << hsc._RLBWTDS.rangeOnRLBWT.num2 << std::endl;
                 std::cout << "@Average: " << average << std::endl;
 
-                std::cout << "Range Distinct Count = " << hsc.debugCounter << "/" << __rlbwt.str_size()  << std::endl;
+                std::cout << "Range Distinct Count = " << hsc.debugCounter << "/" << __RLBWTDS->str_size()  << std::endl;
 
-                uint64_t dx = __rlbwt.get_end_rle_lposition();
-                uint64_t dollerPos = __rlbwt.get_lpos(dx);
-                auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, __rlbwt.str_size());
+                uint64_t dx = __RLBWTDS->get_end_rle_lposition();
+                uint64_t dollerPos = __RLBWTDS->get_lpos(dx);
+                auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, __RLBWTDS->str_size());
                 out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX_SIZE>));
                 count += 1;
                 return count;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(const RLBWT_STR &__rlbwt, bool lightWeight)
+            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(RLBWTDS *__RLBWTDS)
             {
-                HyperSetConstructor<RLBWT_STR, INDEX_SIZE> hsc(__rlbwt, lightWeight);
+                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS);
+
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
                 while (!hsc.isStop())
@@ -217,9 +221,9 @@ namespace stool
                         }
                     }
                 }
-                uint64_t dx = __rlbwt.get_end_rle_lposition();
-                uint64_t dollerPos = __rlbwt.get_lpos(dx);
-                auto last = stool::LCPInterval<uint64_t>(dollerPos, dollerPos, __rlbwt.str_size());
+                uint64_t dx = __RLBWTDS->get_end_rle_lposition();
+                uint64_t dollerPos = __RLBWTDS->get_lpos(dx);
+                auto last = stool::LCPInterval<uint64_t>(dollerPos, dollerPos, __RLBWTDS->str_size());
                 r.push_back(last);
                 return r;
             }

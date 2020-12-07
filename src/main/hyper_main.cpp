@@ -27,33 +27,29 @@ using namespace stool::rlbwt;
 #include "../postorder_maximal_substring_intervals.hpp"
 #include "../forward_bwt.hpp"
 #include "../hyper/rlcp_interval_enumerator.hpp"
+#include "../rlbwt/io.hpp"
+#include <sdsl/bit_vectors.hpp>
+#include "../rlbwt/fpos_data_structure.hpp"
 
-using namespace std;
-using namespace stool;
-//using namespace stool::rlbwt;
+#include "../rlbwt/bwt_decompress.hpp"
 
 using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
+/*
 void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck)
 {
-
     stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
+    using FPOSDS = std::vector<uint64_t>;
+    using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<RLBWT<>, uint64_t, FPOSDS>;
+    FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(rlestr);
+    RDS ds = RDS(rlestr, fposds);
 
-    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint64_t>::constructLCPIntervals(rlestr, lightWeight);
+    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, RDS>::constructLCPIntervals(rlestr, &ds);
 
     if (correctCheck)
     {
-        /*
-        if (text.size() <= 100)
-        {
-            std::cout << "Text: ";
-            std::cout << text << std::endl;
-        }
-        */
-
-        //RLBWT<>::check_text_for_rlbwt(text);
 
         std::vector<char> text2 = stool::load_char_vec_from_file(inputFile, true);
         vector<INDEX> sa = stool::construct_suffix_array(text2);
@@ -65,40 +61,70 @@ void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck
     }
     std::cout << "rlbwt = " << rlestr.rle_size() << std::endl;
 }
-void test2(std::string inputFile, bool lightWeight){
+*/
+
+/*
+void test2(std::string inputFile, bool lightWeight)
+{
+
     using RLBWT_STR = stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>>;
     RLBWT_STR rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
     lcp_on_rlbwt::RLBWTDataStructures<RLBWT_STR, uint64_t> rlbwtds(rlestr, lightWeight);
-    lcp_on_rlbwt::RLCPIntervalEnumerator<RLBWT_STR, uint64_t> enumerator(&rlbwtds);
+    lcp_on_rlbwt::RLCPIntervalEnumerator<RLBWT_STR, uint64_t, RDS> enumerator(&rlbwtds);
 
     for(auto w : enumerator){
         w.first.print();
     }
-
-
-
 }
+*/
 
 void testMaximalSubstrings(std::string inputFile, bool lightWeight)
 {
-    stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
-    uint64_t input_text_size = rlestr.str_size();
-    std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
+    sdsl::int_vector<> diff_char_vec;
+    diff_char_vec.width(8);
+    std::cout << lightWeight << std::endl;
 
+    std::vector<bool> run_bits;
+    stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
+    std::vector<uint64_t> lpos_vec = stool::rlbwt2::construct_lpos_array(run_bits);
+    sdsl::wt_huff<> wt;
+
+    assert(diff_char_vec.size() + 1 == lpos_vec.size());
+    /*
+    for(uint64_t i=0;i<diff_char_vec.size();i++){
+        std::cout << (char)diff_char_vec[i] << std::flush;
+    }
+    */
+
+    construct_im(wt, diff_char_vec);
+
+
+
+    using FPOSDS = std::vector<uint64_t>;
+    using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, FPOSDS>;
+    FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
+
+    RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
+
+    uint64_t input_text_size = lpos_vec[lpos_vec.size()-1];
+    std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
     if (input_text_size - 10 < UINT32_MAX)
     {
-        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint32_t>::computeMaximalSubstrings(rlestr, lightWeight);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
         test_Intervals.swap(tmp);
     }
     else
     {
-        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint32_t>::computeMaximalSubstrings(rlestr, lightWeight);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
         test_Intervals.swap(tmp);
     }
 
-    BackwardText<> backer;
-    backer.construct_from_rlbwt(&rlestr, false);
-    std::vector<char> text;
+    //stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
+
+    //BackwardText<> backer;
+    //backer.construct_from_rlbwt(&rlestr, false);
+    std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
+    /*
     text.resize(input_text_size);
     int64_t i = input_text_size - 1;
     for (auto c : backer)
@@ -106,6 +132,7 @@ void testMaximalSubstrings(std::string inputFile, bool lightWeight)
         text[i] = c;
         i--;
     }
+    */
 
     //std::vector<char> text = backer.to_vector();
     vector<INDEX> sa = stool::construct_suffix_array(text);
@@ -116,12 +143,17 @@ void testMaximalSubstrings(std::string inputFile, bool lightWeight)
     stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
     std::cout << "OK!" << std::endl;
 }
-
+/*
 void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool lightWeight, bool correctCheck)
 {
     auto start = std::chrono::system_clock::now();
-
     stool::rlbwt::RLBWT<std::vector<CHAR>, std::vector<INDEX>> rlestr = stool::rlbwt::Constructor::load_RLBWT_from_file<CHAR, INDEX>(inputFile);
+
+    using FPOSDS = std::vector<uint64_t>;
+    using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<RLBWT<>, uint64_t, FPOSDS>;
+    FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(rlestr);
+    RDS ds = RDS(rlestr, fposds);
+
     uint64_t input_text_size = rlestr.str_size();
     std::ofstream out(outputFile, std::ios::out | std::ios::binary);
     if (!out)
@@ -132,11 +164,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     uint64_t ms_count = 0;
     if (input_text_size - 10 < UINT32_MAX)
     {
-        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint32_t>::outputMaximalSubstrings(rlestr, out, lightWeight);
+        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, RDS>::outputMaximalSubstrings(rlestr, out, &ds);
     }
     else
     {
-        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, uint64_t>::outputMaximalSubstrings(rlestr, out, lightWeight);
+        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, RDS>::outputMaximalSubstrings(rlestr, out, &ds);
     }
     auto end = std::chrono::system_clock::now();
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -151,6 +183,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     std::cout << "_______________________________________________________" << std::endl;
     std::cout << "\033[39m" << std::endl;
 }
+*/
 int main(int argc, char *argv[])
 {
     cmdline::parser p;
@@ -187,14 +220,19 @@ int main(int argc, char *argv[])
             outputFile = inputFile + ".max";
         }
     }
+    
+    
+
+    testMaximalSubstrings(inputFile, mode);
+    /*
     if (!debug)
     {
         computeMaximalSubstrings(inputFile, outputFile, mode, true);
     }
     else
     {
-        testMaximalSubstrings(inputFile, mode);
-
         //test2(inputFile, mode);
     }
+    */
+    
 }

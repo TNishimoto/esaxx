@@ -99,13 +99,14 @@ namespace stool
             }
             void pushLCPInterval(RINTERVAL &w, uint8_t c)
             {
+                
                 this->lcpIntervalVec[c] = w;
                 this->lcpIntvOccurrenceBitArray[c] = true;
             }
             bool checkWeinerInterval(RINTERVAL &w, uint8_t c)
             {
                 auto& lcpIntv = this->lcpIntervalVec[c];
-                bool b1 = lcpIntv.beginIndex == w.beginIndex && lcpIntv.beginDiff == w.beginDiff;
+                //bool b1 = lcpIntv.beginIndex == w.beginIndex && lcpIntv.beginDiff == w.beginDiff;
                 bool b2 = lcpIntv.endIndex == w.endIndex && lcpIntv.endDiff == w.endDiff;
 
                 //std::cout << c << "/" << b1 << "/" << b2 << std::endl;
