@@ -63,6 +63,7 @@ namespace stool
 
         static void load_RLBWT_from_file(std::string filename, sdsl::int_vector<> &diff_char_vec, std::vector<bool> &run_bits)
         {
+            diff_char_vec.width(8);
 
             std::ifstream inp;
             std::vector<char> buffer;
@@ -99,6 +100,8 @@ namespace stool
                     if (prevChar != c || x == 0)
                     {
                         run_bits.push_back(1);
+                        run_bits.push_back(0);
+
                         diff_char_vec[currentRunP++] = c;
                         prevChar = c;
                     }
@@ -117,11 +120,19 @@ namespace stool
         static std::vector<uint64_t> construct_lpos_array(std::vector<bool> &run_bits)
         {
             std::vector<uint64_t> r;
+            uint64_t prev_i = 0;
             for (uint64_t i = 0; i < run_bits.size(); i++)
             {
                 if (run_bits[i])
                 {
-                    r.push_back(i);
+                    if(r.size() == 0){
+                        r.push_back(i);
+                    }else{
+                        uint64_t diff = i - prev_i - 1;
+                        uint64_t x = r[r.size()-1] + diff;
+                        r.push_back(x);
+                    }
+                    prev_i = i;
                 }
             }
             return r;

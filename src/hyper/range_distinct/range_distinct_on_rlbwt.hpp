@@ -23,12 +23,6 @@ namespace stool
         class RangeDistinctDataStructureOnRLBWT
         {
         public:
-            //using CHAR = typename RLBWT_STR::char_type;
-            //using CHAR_VEC = typename RLBWT_STR::char_vec_type;
-            //const RLBWT_STR *rlbwt;
-            //RANGE_DISTINCT *rd
-            //RangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE> srdds2;
-            //std::vector<RInterval<INDEX_SIZE>> &output
 
             using RINTERVAL = RInterval<INDEX_SIZE>;
             LightRangeDistinctDataStructure<sdsl::int_vector<>, INDEX_SIZE> light_srdds;
@@ -44,6 +38,8 @@ namespace stool
             vector<RINTERVAL> rIntervalTmpVec;
             const LPOSARRAY *lpos_array;
 
+            //RangeDistinctDataStructureOnRLBWT(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt, const LPOSARRAY *_lpos_array)
+
             void initialize(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt, const LPOSARRAY *_lpos_array)
             {
 
@@ -51,11 +47,7 @@ namespace stool
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 charTmpVec.resize(CHARMAX);
                 rIntervalTmpVec.resize(CHARMAX);
-
-                //this->rlbwt = _rlbwt;
-                //this->rd = _rd;
                 charIntervalTmpVec.resize(CHARMAX);
-                //srdds2.preprocess(rlbwt->get_char_vec(), _wt);
                 light_srdds.preprocess(_bwt);
                 srdds.initialize(_wt, _bwt);
             }

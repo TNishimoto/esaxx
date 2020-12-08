@@ -114,7 +114,6 @@ namespace stool
 
                 
                 //std::cout << "Next"  << std::endl;
-                //lcpIntv.print();
                 //lcpIntv.print2(_RLBWTDS->_fposDS);
                 
 
@@ -150,11 +149,6 @@ namespace stool
         public:
             void clear()
             {
-                /*
-                for(uint64_t i=0;i<this->checkerArray.size();i++){
-                    this->checkerArray[i] = false;
-                }
-                */
                 this->intervalTemporary.clear();
             }
             void computeFirstLCPIntervalSet(RIntervalStorage<INDEX_SIZE> &output)

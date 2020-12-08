@@ -15,7 +15,7 @@ namespace stool
     namespace lcp_on_rlbwt
     {
 
-        template <typename INDEX_SIZE, typename FPOSDS>
+        template <typename INDEX_SIZE, typename LPOSDS, typename FPOSDS>
         class RLBWTDataStructures
         {
         public:
@@ -29,73 +29,22 @@ namespace stool
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             const sdsl::int_vector<> &bwt;
             sdsl::wt_huff<> &wt;
-            const std::vector<uint64_t> &lpos_vec;
+            const LPOSDS &lpos_vec;
             const FPOSDS &_fposDS;
+            RangeDistinctDataStructureOnRLBWT<INDEX_SIZE, LPOSDS > rangeOnRLBWT;
 
             //const RLBWT_STR &_rlbwt;
-            RangeDistinctDataStructureOnRLBWT<INDEX_SIZE, std::vector<uint64_t>> rangeOnRLBWT;
-            /*
-            std::vector<uint64_t> C;
-            stool::EliasFanoVector fposSortedArray;
-            std::vector<INDEX_SIZE> fposArray;
-            bool lightWeight = false;
-            */
 
             RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,
-                                sdsl::wt_huff<> &_wt, const std::vector<uint64_t> &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
+                                sdsl::wt_huff<> &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
             {
 
-                rangeOnRLBWT.initialize(&wt, &bwt, &lpos_vec);
-
-                //lightWeight = _lightWeight;
-                //uint64_t CHARMAX = UINT8_MAX + 1;
-                //uint64_t runSize = _rlbwt.rle_size();
-
-                /*
-                if (lightWeight)
-                {
-                    RLBWTDataStructures::construct_C(__rlbwt, this->C);
-                    RLBWTDataStructures::construct_sorted_fpos_array(__rlbwt, this->fposSortedArray);
-                }
-                else
-                {
-                    std::vector<INDEX_SIZE> v1 = RLBWTFunctions::construct_fpos_array<RLBWT_STR, INDEX_SIZE>(_rlbwt);
-                    this->fposArray.swap(v1);
-                }
-                */
-
-                //uint64_t runSize = _rlbwt.rle_size();
-                /*
-                bwt.width(8);
-                bwt.resize(runSize);
-                const CHARVEC *chars = __rlbwt.get_char_vec();
-                for (uint64_t i = 0; i < runSize; i++)
-                {
-                    bwt[i] = (*chars)[i];
-                }
-                construct_im(wt, bwt);
-
-                auto pp = __rlbwt.get_run_vec();
-                */
+                rangeOnRLBWT.initialize(&wt, &bwt, &lpos_vec);                
             }
 
-            INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff)
+            INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff) const
             {
                 return _fposDS[index] + diff;
-                /*
-                if (this->lightWeight)
-                {
-                    INDEX_SIZE rank1 = wt.rank(index + 1, this->bwt[index]);
-                    uint64_t xx = C[this->bwt[index]] + rank1;
-                    INDEX_SIZE begin_pos2 = this->fposSortedArray[xx] + diff;
-                    return begin_pos2;
-                }
-                else
-                {
-                    uint64_t z = this->fposArray[index] + diff;
-                    return z;
-                }
-                */
             }
             uint64_t get_lindex_containing_the_position(uint64_t lposition) const
             {
@@ -136,7 +85,7 @@ namespace stool
                 return std::numeric_limits<INDEX>::max();
             }
 
-            RINTERVAL getIntervalOnL(const RINTERVAL &interval)
+            RINTERVAL getIntervalOnL(const RINTERVAL &interval) const
             {
                 RINTERVAL output;
                 INDEX_SIZE begin_pos = this->get_fpos(interval.beginIndex, interval.beginDiff);
