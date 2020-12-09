@@ -183,7 +183,10 @@ namespace stool
                     }
                     auto end = std::chrono::system_clock::now();
                     double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-                    std::cout << "Loop Time: " << elapsed1 << std::endl;
+
+                    if(elapsed1 > 10){
+                        std::cout << "Loop Time: " << elapsed1 << std::endl;
+                    }
                 }
                 /*
                 double average = ((double)(hsc._RLBWTDS.rangeOnRLBWT.total_cover1 + hsc._RLBWTDS.rangeOnRLBWT.total_cover2)) / ((double)(hsc._RLBWTDS.rangeOnRLBWT.num1 + hsc._RLBWTDS.rangeOnRLBWT.num2));

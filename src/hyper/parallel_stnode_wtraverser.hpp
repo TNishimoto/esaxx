@@ -16,7 +16,7 @@ namespace stool
         template <typename INDEX_SIZE, typename RLBWTDS>
         void parallel_process_stnodes(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &tree, STNodeWTraverser<INDEX_SIZE, RLBWTDS> &tmp_tree, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
         {
-            if (tree.lcpIntvCount > 0)
+            if (tree.node_count() > 0)
             {
 
                 tmp_tree.computeNextLCPIntervalSet(tree, em);
@@ -82,10 +82,10 @@ namespace stool
                 uint64_t x = 0;
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    uint64_t k = this->sub_trees[i].size();
+                    uint64_t k = this->sub_trees[i].node_count();
                     if (x <= index && index < x + k)
                     {
-                        return this->sub_trees[i].lcpIntvVec[index - x];
+                        return this->sub_trees[i].get_stnode(index - x);
                     }
                     else
                     {
@@ -140,28 +140,28 @@ namespace stool
             void process()
             {
                 //std::cout << "LCP = " << current_lcp << std::endl;
-                if (this->child_count > 10000)
+                if (this->child_count >10000)
                 {
                     std::cout << "LCP = " << this->current_lcp << ", node count = " << this->node_count << ", child count = " << this->child_count << std::endl;
                 }
                 if (current_lcp > 0)
                 {
-                    if (this->child_count < 1000)
+                    bool b = this->child_count < 1000 || this->sub_trees.size() == 1;
+                    //bool b = true;
+                    if (b)
                     {
                         this->single_process();
                     }
                     else
                     {
-                        auto start = std::chrono::system_clock::now();
                         this->allocate_data();
+                        auto start = std::chrono::system_clock::now(); 
+
+                        this->parallel_process();
+ 
                         auto end = std::chrono::system_clock::now();
                         double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
-                        start = std::chrono::system_clock::now();
-                        this->parallel_process();
-                        end = std::chrono::system_clock::now();
-                        double elapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-                        std::cout << "Time, " << elapsed1 << ", " << elapsed2 << std::endl;  
+                       std::cout << "Time, " << elapsed1 << ", " << std::endl;  
 
                     }
                 }
@@ -174,8 +174,8 @@ namespace stool
                 this->node_count = 0;
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    k += sub_trees[i].weinerCount;
-                    this->node_count += sub_trees[i].size();
+                    k += sub_trees[i].children_count();
+                    this->node_count += sub_trees[i].node_count();
                 }
                 total_counter += k;
                 this->child_count = k;
@@ -194,7 +194,7 @@ namespace stool
                 std::queue<uint64_t> lower_indexes, upper_indexes;
                 for (uint64_t i = 0; i < this->get_tree_count(); i++)
                 {
-                    if (this->sub_trees[i].weinerCount <= child_avg_count)
+                    if (this->sub_trees[i].children_count() <= child_avg_count)
                     {
                         lower_indexes.push(i);
                     }
@@ -215,7 +215,7 @@ namespace stool
                 {
                     uint64_t i = upper_indexes.front();
 
-                    while (this->sub_trees[i].weinerCount > child_avg_count)
+                    while (this->sub_trees[i].children_count() > child_avg_count)
                     {
                         //this->print();
 
@@ -226,7 +226,7 @@ namespace stool
                         //std::cout << i << " -> " << j << std::endl;
 
                         this->sub_trees[i].spill(this->sub_trees[j], child_avg_count);
-                        if (this->sub_trees[j].weinerCount > child_avg_count)
+                        if (this->sub_trees[j].children_count() > child_avg_count)
                         {
                             lower_indexes.pop();
                         }
@@ -240,7 +240,7 @@ namespace stool
             {
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    std::cout << "[" << i << ": " << this->sub_trees[i].lcpIntvCount << ", " << this->sub_trees[i].weinerCount << "]" << std::flush;
+                    std::cout << "[" << i << ": " << this->sub_trees[i].node_count() << ", " << this->sub_trees[i].children_count() << "]" << std::flush;
                 }
                 std::cout << std::endl;
             }

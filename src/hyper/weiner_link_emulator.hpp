@@ -23,14 +23,11 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            std::vector<std::vector<RINTERVAL>> weinerIntervalVec;
-            std::vector<RINTERVAL> lcpIntervalVec;
-
+            std::vector<std::vector<RINTERVAL>> childrenVec;
+            std::vector<RINTERVAL> stnodeVec;
             std::vector<uint64_t> indexVec;
-            //std::vector<bool> weinerIntervalOccurrenceBitArray;
-            std::vector<bool> lcpIntvOccurrenceBitArray;
+            std::vector<bool> stnodeOccFlagArray;
 
-            std::vector<uint64_t> explicitChildrenCountVec;
             uint64_t indexCount = 0;
             uint64_t explicitChildCount = 0;
 
@@ -46,20 +43,13 @@ namespace stool
 
             void initialize(RLBWTDS *_rlbwtds)
             {
-                //lightDS = _lightDS;
                 _RLBWTDS = _rlbwtds;
                 uint64_t CHARMAX = UINT8_MAX + 1;
-                weinerIntervalVec.resize(CHARMAX);
-                for (uint64_t i = 0; i < CHARMAX; i++)
-                {
-                    weinerIntervalVec[i].resize(2);
-                }
+                childrenVec.resize(CHARMAX);
                 indexVec.resize(CHARMAX);
-                //weinerIntervalOccurrenceBitArray.resize(CHARMAX, false);
-                explicitChildrenCountVec.resize(CHARMAX, 0);
 
-                lcpIntvOccurrenceBitArray.resize(CHARMAX, false);
-                lcpIntervalVec.resize(CHARMAX);
+                stnodeOccFlagArray.resize(CHARMAX, false);
+                stnodeVec.resize(CHARMAX);
 
                 rIntervalTmpVec.resize(CHARMAX);
                 charTmpVec.resize(CHARMAX);
@@ -76,45 +66,37 @@ namespace stool
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto &it = this->indexVec[i];
-                    k += explicitChildrenCountVec[it];
+                    k += childrenVec[it].size();
                 }
                 return k;
             }
 
-            /*
-            bool occur(uint64_t character)
-            {
-                return this->weinerIntervalOccurrenceBitArray[character];
-            }
-            */
             void clear()
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto &it = this->indexVec[i];
-                    //weinerIntervalOccurrenceBitArray[it] = false;
-                    explicitChildrenCountVec[it] = 0;
+                    childrenVec[it].clear();
 
-                    lcpIntvOccurrenceBitArray[it] = false;
+                    stnodeOccFlagArray[it] = false;
                 }
                 indexCount = 0;
                 explicitChildCount = 0;
             }
 
-            void move_st_internal_nodes(std::vector<RINTERVAL> &outputSTVec, std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<uint8_t> &outputWidthVec,
-                                        uint64_t start_st_index, uint64_t start_children_index)
+            void move_st_internal_nodes(std::vector<RINTERVAL> &outputSTVec, std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<uint8_t> &outputWidthVec)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto character = this->indexVec[i];
-                    auto &currentVec = this->weinerIntervalVec[character];
-                    uint64_t count = this->explicitChildrenCountVec[character];
-                    outputSTVec[start_st_index] = this->lcpIntervalVec[character];
-                    outputWidthVec[start_st_index] = count;
-                    start_st_index++;
+                    auto &currentVec = this->childrenVec[character];
+                    uint64_t count = this->childrenVec[character].size();
+                    //uint64_t count = this->explicitChildrenCountVec[character];
+                    outputSTVec.push_back(this->stnodeVec[character]);
+                    outputWidthVec.push_back(count);
                     for (uint64_t j = 0; j < count; j++)
                     {
-                        outputExplicitChildrenVec[start_children_index++] = currentVec[j];
+                        outputExplicitChildrenVec.push_back(currentVec[j]);
                         //output.push_weiner(currentVec[j]);
                     }
                 }
@@ -124,36 +106,22 @@ namespace stool
             void pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
 
-                if (this->explicitChildrenCountVec[c] == 0)
+                if (this->childrenVec[c].size() == 0)
                 {
 
                     this->indexVec[this->indexCount] = c;
                     this->indexCount++;
-                    //this->weinerIntervalOccurrenceBitArray[c] = true;
                 }
-                if (this->explicitChildrenCountVec[c] == this->weinerIntervalVec[c].size())
-                {
-                    this->weinerIntervalVec[c].resize(this->explicitChildrenCountVec[c] * 2);
-                }
-                this->weinerIntervalVec[c][this->explicitChildrenCountVec[c]] = w;
-                this->explicitChildrenCountVec[c]++;
+                this->childrenVec[c].push_back(w);
+
                 explicitChildCount++;
             }
             void pushLCPInterval(const RINTERVAL &w, uint8_t c)
             {
 
-                this->lcpIntervalVec[c] = w;
-                this->lcpIntvOccurrenceBitArray[c] = true;
+                this->stnodeVec[c] = w;
+                this->stnodeOccFlagArray[c] = true;
             }
-            /*
-            bool checkWeinerInterval(RINTERVAL &w, uint8_t c)
-            {
-                auto &lcpIntv = this->lcpIntervalVec[c];
-                bool b2 = lcpIntv.endIndex == w.endIndex && lcpIntv.endDiff == w.endDiff;
-
-                return !b2;
-            }
-            */
 
             //template <typename LPOSDS, typename RANGEDS>
             void getNextSAIntervalsForLCPIntervals(const RINTERVAL &w)
@@ -183,7 +151,7 @@ namespace stool
                     typename RLBWTDS::UCHAR c = this->charTmpVec[i];
                     auto &it = this->rIntervalTmpVec[i];
 
-                    auto &lcpIntv = this->lcpIntervalVec[c];
+                    auto &lcpIntv = this->stnodeVec[c];
                     bool isLastChild = lcpIntv.endIndex == it.endIndex && lcpIntv.endDiff == it.endDiff;
                     if (!isLastChild)
                     {
@@ -191,14 +159,6 @@ namespace stool
                     }
                 }
             }
-            /*
-            uint64_t computeFirstWeinerIntervals(const RINTERVAL &w)
-            {
-                uint64_t resultCount = this->range_distinct(w);
-                assert(resultCount > 0);
-                return resultCount;
-            }
-            */
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
                 assert(this->lightDS != nullptr);
@@ -328,7 +288,7 @@ namespace stool
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto character = this->indexVec[i];
-                    uint64_t explicitChildrenCount = this->explicitChildrenCountVec[character];
+                    uint64_t explicitChildrenCount = this->childrenVec[character].size();
                     if (explicitChildrenCount > 0)
                     {
                         this->indexVec[k++] = this->indexVec[i];
