@@ -19,7 +19,7 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        template <typename INDEX_SIZE, typename LPOSARRAY>
+        template <typename INDEX_SIZE>
         class RangeDistinctDataStructureOnRLBWT
         {
         public:
@@ -32,22 +32,11 @@ namespace stool
 
             uint64_t total_cover2 = 0;
             uint64_t num2 = 0;
-            std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
-            std::vector<uint8_t> charTmpVec;
 
-            vector<RINTERVAL> rIntervalTmpVec;
-            const LPOSARRAY *lpos_array;
-
-            //RangeDistinctDataStructureOnRLBWT(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt, const LPOSARRAY *_lpos_array)
-
-            void initialize(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt, const LPOSARRAY *_lpos_array)
+            void initialize(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt)
             {
 
-                lpos_array = _lpos_array;
                 uint64_t CHARMAX = UINT8_MAX + 1;
-                charTmpVec.resize(CHARMAX);
-                rIntervalTmpVec.resize(CHARMAX);
-                charIntervalTmpVec.resize(CHARMAX);
                 light_srdds.preprocess(_bwt);
                 srdds.initialize(_wt, _bwt);
             }
@@ -76,50 +65,28 @@ namespace stool
                 return true;
 
             }
-            uint64_t range_distinct(RInterval<INDEX_SIZE> &range)
+            uint64_t range_distinct(uint64_t l, uint64_t r, std::vector<CharInterval<INDEX_SIZE>> &charIntervalTmpVec)
             {
                 uint64_t count = 0;
-                assert(range.beginIndex <= range.endIndex);
+                assert(l <= r);
                 //assert(check(range));
 
-                if (range.endIndex - range.beginIndex >= 16)
+                if (l - r >= 16)
                 {
+                    count = srdds.range_distinct(l, r, charIntervalTmpVec);
 
-                    count = srdds.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
-
-                    total_cover1 += range.endIndex - range.beginIndex + 1;
+                    total_cover1 += r - l + 1;
                     num1++;
                 }
                 else
                 {
-                    count = light_srdds.range_distinct(range.beginIndex, range.endIndex, charIntervalTmpVec);
+                    count = light_srdds.range_distinct(l, r, charIntervalTmpVec);
                     //std::cout << "+" << count << std::endl;
 
-                    total_cover2 += range.endIndex - range.beginIndex + 1;
+                    total_cover2 += r - l + 1;
                     num2++;
                 }
-
                 assert(count > 0);
-
-                for (uint64_t x = 0; x < count; x++)
-                {
-                    auto &it = charIntervalTmpVec[x];
-                    INDEX_SIZE cBeginIndex = it.i;
-                    INDEX_SIZE cEndIndex = it.j;
-                    INDEX_SIZE cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
-                    uint64_t end_run = (*lpos_array)[cEndIndex + 1] - (*lpos_array)[cEndIndex];
-                    INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : end_run - 1;
-
-                    RInterval<INDEX_SIZE> cInterval;
-                    cInterval.beginIndex = cBeginIndex;
-                    cInterval.beginDiff = cBeginDiff;
-                    cInterval.endIndex = cEndIndex;
-                    cInterval.endDiff = cEndDiff;
-
-                    charTmpVec[x] = it.c;
-                    rIntervalTmpVec[x] = cInterval;
-                }
-
                 return count;
             }
         };

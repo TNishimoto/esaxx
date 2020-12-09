@@ -7,7 +7,12 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "next_rinterval_storage_constructor.hpp"
+//#include "next_rinterval_storage_constructor.hpp"
+#include "../../module/rlbwt_iterator/src/include/weiner/sampling_functions.hpp"
+#include "./range_distinct/rlbwt_data_structures.hpp"
+
+#include "rinterval_storage.hpp"
+#include "weiner_link_emulator.hpp"
 
 
 namespace stool
@@ -27,23 +32,25 @@ namespace stool
 
             //bool lightWeight = false;
 
-            NextRIntervalStorageConstructor<INDEX_SIZE, RLBWTDS> wds;
+            //NextRIntervalStorageConstructor<INDEX_SIZE, RLBWTDS> wds;
             RLBWTDS &_RLBWTDS;
-            RIntervalStorage<INDEX_SIZE> hyperSet;
-            RIntervalStorage<INDEX_SIZE> hyperTmpSet;
+            RIntervalStorage<INDEX_SIZE, RLBWTDS> hyperSet;
+            RIntervalStorage<INDEX_SIZE, RLBWTDS> hyperTmpSet;
 
             uint64_t current_lcp = 0;
             uint64_t strSize = 0;
             uint64_t total_counter = 0;
             uint64_t debugCounter = 0;
+            ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
 
 
             HyperSetConstructor(RLBWTDS &__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
                 //lightWeight = _lightWeight;
                 //uint64_t runSize = __rlbwt.rle_size();
-                this->wds.initialize(&this->_RLBWTDS);
+                //this->wds.initialize(&this->_RLBWTDS);
 
+                em.initialize(&this->_RLBWTDS);
 
                 //srdds.initialize(__rlbwt);
 
@@ -59,23 +66,24 @@ namespace stool
             {
                 if (current_lcp == 0)
                 {
-                    this->wds.computeFirstLCPIntervalSet(this->hyperTmpSet);
-                    this->hyperSet.swap(this->hyperTmpSet);
+                    this->hyperSet.first_compute(em);
                 }
                 else
                 {
-                    this->wds.computeNextLCPIntervalSet(this->hyperSet, this->hyperTmpSet);
+                    this->hyperTmpSet.computeNextLCPIntervalSet(this->hyperSet, em);
+                    //this->wds.computeNextLCPIntervalSet(this->hyperSet, this->hyperTmpSet);
                     this->hyperSet.swap(this->hyperTmpSet);
                 }
 
                 total_counter += hyperSet.weinerCount;
+                assert(total_counter <= strSize);
+
                 current_lcp++;
                 assert(hyperSet.weinerCount > 0);
             }
             bool isStop()
             {
                 //std::cout << "STOP?" << strSize << "/" << total_counter << std::endl;
-                assert(total_counter <= strSize);
                 return total_counter == strSize;
             }
             bool checkMaximalRepeat(const RINTERVAL &lcpIntv)
@@ -205,6 +213,7 @@ namespace stool
                 while (!hsc.isStop())
                 {
                     hsc.process();
+                    
                     if (hsc.current_lcp % 100 == 0)
                     {
                         std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;

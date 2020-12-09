@@ -31,7 +31,7 @@ namespace stool
             sdsl::wt_huff<> &wt;
             const LPOSDS &lpos_vec;
             const FPOSDS &_fposDS;
-            RangeDistinctDataStructureOnRLBWT<INDEX_SIZE, LPOSDS > rangeOnRLBWT;
+            RangeDistinctDataStructureOnRLBWT<INDEX_SIZE> rangeOnRLBWT;
 
             //const RLBWT_STR &_rlbwt;
 
@@ -39,7 +39,7 @@ namespace stool
                                 sdsl::wt_huff<> &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
             {
 
-                rangeOnRLBWT.initialize(&wt, &bwt, &lpos_vec);                
+                rangeOnRLBWT.initialize(&wt, &bwt);                
             }
 
             INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff) const

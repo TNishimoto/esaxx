@@ -209,6 +209,9 @@ namespace stool
                 return begin_pos2;
             }
             */
+           uint64_t size() const {
+               return this->bwt.size();
+           }
         };
     } // namespace lcp_on_rlbwt
 } // namespace stool
