@@ -79,7 +79,7 @@ void test2(std::string inputFile, bool lightWeight)
 }
 */
 
-void testMaximalSubstrings(std::string inputFile, string mode)
+void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
 {
 
     sdsl::int_vector<> diff_char_vec;
@@ -109,7 +109,7 @@ void testMaximalSubstrings(std::string inputFile, string mode)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds, thread_num);
             test_Intervals.swap(tmp);
         }
         else
@@ -118,7 +118,7 @@ void testMaximalSubstrings(std::string inputFile, string mode)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds, thread_num);
             test_Intervals.swap(tmp);
         }
     }
@@ -133,7 +133,7 @@ void testMaximalSubstrings(std::string inputFile, string mode)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds, thread_num);
             test_Intervals.swap(tmp);
         }
         else
@@ -142,7 +142,7 @@ void testMaximalSubstrings(std::string inputFile, string mode)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds, thread_num);
             test_Intervals.swap(tmp);
         }
     }
@@ -189,7 +189,7 @@ void testMaximalSubstrings(std::string inputFile, string mode)
     std::cout << "OK!" << std::endl;
 }
 
-void computeMaximalSubstrings(std::string inputFile, std::string outputFile, string mode)
+void computeMaximalSubstrings(std::string inputFile,std::string outputFile, string mode, int thread_num)
 {
     auto start = std::chrono::system_clock::now();
 
@@ -231,7 +231,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
             input_text_size = ds.str_size();
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds);
+            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds, thread_num);
         }
         else
         {
@@ -242,7 +242,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
             input_text_size = ds.str_size();
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds);
+            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds, thread_num);
         }
     }
     else
@@ -259,7 +259,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
             input_text_size = ds.str_size();
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds);
+            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds, thread_num);
         }
         else
         {
@@ -270,7 +270,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
             input_text_size = ds.str_size();
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds);
+            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds, thread_num);
         }
     }
 
@@ -293,7 +293,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
-    std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;    
+    std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "LPOS Vector \t\t\t\t\t : " << (LPOSMODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
     std::cout << "FPOS Vector \t\t\t\t\t : " << (FPOSMODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
@@ -313,6 +313,8 @@ int main(int argc, char *argv[])
     //p.add<bool>("mode", 'm', "mode", false, false);
     p.add<string>("output_file", 'o', "output file name", false, "");
     p.add<string>("mode", 'm', "mode", false, "00");
+    p.add<int>("thread_num", 'p', "thread number", false, -1);
+
     p.add<bool>("debug", 'd', "debug", false, false);
 
     p.parse_check(argc, argv);
@@ -322,6 +324,12 @@ int main(int argc, char *argv[])
 
     string outputFile = p.get<string>("output_file");
     string format = "binary";
+    int thread_num = p.get<int>("thread_num");
+    if(thread_num < 0){
+        thread_num = std::thread::hardware_concurrency();
+    }
+
+    std::cout << "Thread number = " << thread_num << std::endl;
 
     std::ifstream ifs(inputFile);
     bool inputFileExist = ifs.is_open();
@@ -345,11 +353,11 @@ int main(int argc, char *argv[])
 
     if (!debug)
     {
-        computeMaximalSubstrings(inputFile, outputFile, mode);
+        computeMaximalSubstrings(inputFile, outputFile, mode, thread_num);
     }
     else
     {
-        testMaximalSubstrings(inputFile, mode);
+        testMaximalSubstrings(inputFile, mode, thread_num);
 
         //test2(inputFile, mode);
     }

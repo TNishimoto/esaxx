@@ -71,7 +71,8 @@ namespace stool
                 assert(l <= r);
                 //assert(check(range));
 
-                if (l - r >= 16)
+                if (false)
+                //if (l - r >= 16)
                 {
                     count = srdds.range_distinct(l, r, charIntervalTmpVec);
 

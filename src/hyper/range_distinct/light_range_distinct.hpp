@@ -38,6 +38,7 @@ namespace stool
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
                 uint64_t count = 0;
+                assert(i <= j);
                 for (uint64_t x = i; x <= j; x++)
                 {
                     uint8_t c = (*this->_char_vec)[x];
@@ -59,6 +60,7 @@ namespace stool
                     output[x] = CharInterval<INDEX_SIZE>(beginIndexes[x], endIndexes[x], charIndexes[x]);
                     checker[charIndexes[x]] = -1;
                 }
+                assert(count > 0);
                 return count;
             }
         };

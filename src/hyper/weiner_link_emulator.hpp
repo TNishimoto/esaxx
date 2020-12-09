@@ -34,7 +34,6 @@ namespace stool
             uint64_t indexCount = 0;
             uint64_t explicitChildCount = 0;
 
-
         public:
             // For range distinct
             std::vector<uint8_t> charTmpVec;
@@ -42,9 +41,12 @@ namespace stool
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
+            LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> *lightDS = nullptr;
+            SuccinctRangeDistinctDataStructure<INDEX_SIZE> *heavyDS = nullptr;
 
             void initialize(RLBWTDS *_rlbwtds)
             {
+                //lightDS = _lightDS;
                 _RLBWTDS = _rlbwtds;
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 weinerIntervalVec.resize(CHARMAX);
@@ -199,7 +201,18 @@ namespace stool
             */
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
-                uint64_t count = this->_RLBWTDS->rangeOnRLBWT.range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                assert(this->lightDS != nullptr);
+                uint64_t count = 0;
+                if (range.endIndex - range.beginIndex > 16)
+                {
+                    count = this->heavyDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                }
+                else
+                {
+                    count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                }
+                //uint64_t count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+
                 assert(count > 0);
 
                 for (uint64_t x = 0; x < count; x++)

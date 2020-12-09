@@ -8,11 +8,27 @@
 #include <vector>
 #include <type_traits>
 #include "stnode_wtraverser.hpp"
-
+#include <thread>
 namespace stool
 {
     namespace lcp_on_rlbwt
     {
+        template <typename INDEX_SIZE, typename RLBWTDS>
+        void parallel_process_stnodes(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &tree, STNodeWTraverser<INDEX_SIZE, RLBWTDS> &tmp_tree, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+        {
+            if (tree.lcpIntvCount > 0)
+            {
+
+                tmp_tree.computeNextLCPIntervalSet(tree, em);
+                tree.swap(tmp_tree);
+            }
+        }
+        template <typename INDEX_SIZE>
+        void addtest(INDEX_SIZE i, INDEX_SIZE j, uint64_t &r)
+        {
+            r = i + j;
+        }
+
         template <typename INDEX_SIZE, typename RLBWTDS>
         class ParallelSTNodeWTraverser
         {
@@ -22,6 +38,8 @@ namespace stool
             std::vector<STNODE_WTRAVERSER> sub_trees;
             std::vector<STNODE_WTRAVERSER> sub_tmp_trees;
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
+            std::vector<LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>> lightRDs;
+            std::vector<SuccinctRangeDistinctDataStructure<INDEX_SIZE>> heavyRDs;
 
         public:
             uint64_t current_lcp = 0;
@@ -43,8 +61,20 @@ namespace stool
                 {
                     sub_trees.push_back(STNODE_WTRAVERSER());
                     sub_tmp_trees.push_back(STNODE_WTRAVERSER());
+                    lightRDs.push_back(LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>());
+                    lightRDs[lightRDs.size() - 1].preprocess(&_RLBWTDS.bwt);
+
+                    heavyRDs.push_back(SuccinctRangeDistinctDataStructure<INDEX_SIZE>());
+                    heavyRDs[heavyRDs.size() - 1].initialize(&_RLBWTDS.wt, &_RLBWTDS.bwt);
+
                     ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
                     ems[ems.size() - 1].initialize(&_RLBWTDS);
+                }
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+
+                    ems[i].lightDS = &lightRDs[i];
+                    ems[i].heavyDS = &heavyRDs[i];
                 }
             }
             RINTERVAL &get_stnode(uint64_t index)
@@ -84,28 +114,60 @@ namespace stool
                 assert(false);
                 throw -1;
             }
-
+            /*
             void process(STNODE_WTRAVERSER &tree, STNODE_WTRAVERSER &tmp_tree, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
-                if (tree.lcpIntvCount > 0)
+            }
+            */
+            void single_process()
+            {
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    tmp_tree.computeNextLCPIntervalSet(tree, em);
-                    tree.swap(tmp_tree);
+                    parallel_process_stnodes<INDEX_SIZE, RLBWTDS>(sub_trees[i], sub_tmp_trees[i], ems[i]);
                 }
             }
+            void parallel_process()
+            {
+                std::vector<thread> threads;
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees[i]), ref(sub_tmp_trees[i]), ref(ems[i])));
+                }
+                for (thread &t : threads)
+                    t.join();
+            }
+
             void process()
             {
-                std::cout << "LCP = " << current_lcp << std::endl;
+                //std::cout << "LCP = " << current_lcp << std::endl;
+                if (this->child_count > 10000)
+                {
+                    std::cout << "LCP = " << this->current_lcp << ", node count = " << this->node_count << ", child count = " << this->child_count << std::endl;
+                }
                 if (current_lcp > 0)
                 {
-                    this->allocate_data();
-                    for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                    if (this->child_count < 1000)
                     {
-                        this->process(sub_trees[i], sub_tmp_trees[i], ems[i]);
+                        this->single_process();
+                    }
+                    else
+                    {
+                        auto start = std::chrono::system_clock::now();
+                        this->allocate_data();
+                        auto end = std::chrono::system_clock::now();
+                        double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+                        start = std::chrono::system_clock::now();
+                        this->parallel_process();
+                        end = std::chrono::system_clock::now();
+                        double elapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                        std::cout << "Time, " << elapsed1 << ", " << elapsed2 << std::endl;  
+
                     }
                 }
                 else
                 {
+
                     this->sub_trees[0].first_compute(ems[0]);
                 }
                 uint64_t k = 0;
@@ -141,9 +203,13 @@ namespace stool
                         upper_indexes.push(i);
                     }
                 }
-                if(upper_indexes.size() == 0) return;
-                std::cout << "ALLOCATE, " << "AVERAGE = " << child_avg_count << std::endl;
+                if (upper_indexes.size() == 0)
+                    return;
+                /*
+                std::cout << "ALLOCATE, "
+                          << "AVERAGE = " << child_avg_count << std::endl;
                 this->print();
+                */
 
                 while (upper_indexes.size() > 0)
                 {
@@ -164,10 +230,11 @@ namespace stool
                         {
                             lower_indexes.pop();
                         }
+                        //this->print();
                     }
                     upper_indexes.pop();
                 }
-                this->print();
+                //this->print();
             }
             void print()
             {

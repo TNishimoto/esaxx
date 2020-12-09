@@ -19,23 +19,18 @@ namespace stool
         class SuccinctRangeDistinctDataStructure
         {
         public:
-            //std::vector<uint64_t> C;
             const sdsl::wt_huff<> *wt;
             uint8_t lastChar;
             uint64_t size;
-            //sdsl::int_vector<> bwt;
             std::vector<uint8_t> cs;
             std::vector<uint64_t> cs1;
             std::vector<uint64_t> cs2;
             std::vector<uint64_t> C;
-            //const sdsl::int_vector<> *bwt;
             void initialize(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt)
             {
-                //bwt = _bwt;
                 wt = _wt;
                 this->size = wt->size();
                 lastChar = (*_bwt)[_bwt->size() - 1];
-                //using CHAR_VEC = typename RLBWT_STR::char_vec_type;
                 uint64_t CHARMAX = UINT8_MAX + 1;
 
                 cs.resize(CHARMAX, 0);
@@ -46,7 +41,6 @@ namespace stool
             }
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
-                //std::vector<CharInterval<INDEX_SIZE>> r;
                 assert(i <= j);
                 uint64_t k;
                 uint64_t newJ = j + 1 == this->size ? this->size : j + 2;
@@ -78,8 +72,7 @@ namespace stool
                 {
                     uint64_t left = this->size - 1;
                     uint64_t right = left;
-                    //assert((*bwt)[left] == (*bwt)[right]);
-
+                    
                     output[k++] = CharInterval<INDEX_SIZE>(left, right, lastChar);
                 }
 

@@ -13,7 +13,7 @@
 
 #include "parallel_stnode_wtraverser.hpp"
 #include "weiner_link_emulator.hpp"
-
+#include <thread>
 
 namespace stool
 {
@@ -44,24 +44,21 @@ namespace stool
             uint64_t debugCounter = 0;
             //ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
 
-
-            HyperSetConstructor(RLBWTDS &__RLBWTDS) : _RLBWTDS(__RLBWTDS)
+            HyperSetConstructor(RLBWTDS &__RLBWTDS, uint64_t thread_num) : _RLBWTDS(__RLBWTDS)
             {
                 //lightWeight = _lightWeight;
                 //uint64_t runSize = __rlbwt.rle_size();
                 //this->wds.initialize(&this->_RLBWTDS);
 
                 //em.initialize(&this->_RLBWTDS);
-                stnodeSequencer.initialize(4, __RLBWTDS);
+
+                stnodeSequencer.initialize(thread_num, __RLBWTDS);
 
                 //srdds.initialize(__rlbwt);
 
-
                 //charIntervalTmpVec.resize(CHARMAX);
-
             }
 
-            
             /*
             void process()
             {
@@ -106,9 +103,9 @@ namespace stool
                 }
             }
 
-            static std::vector<uint64_t> constructLCPArray(RLBWTDS *__RLBWTDS)
+            static std::vector<uint64_t> constructLCPArray(RLBWTDS *__RLBWTDS, int thread_num)
             {
-                HyperSetConstructor<RLBWTDS> hsc(__RLBWTDS);
+                HyperSetConstructor<RLBWTDS> hsc(__RLBWTDS, thread_num);
                 std::vector<uint64_t> r;
                 r.resize(hsc.stnodeSequencer.strSize, 0);
 
@@ -128,9 +125,9 @@ namespace stool
                 }
                 return r;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(RLBWTDS *__RLBWTDS)
-            {                
-                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS);
+            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(RLBWTDS *__RLBWTDS, int thread_num)
+            {
+                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS, thread_num);
 
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
@@ -150,14 +147,15 @@ namespace stool
                 //return weiner.enumerateLCPInterval();
             }
 
-            static uint64_t outputMaximalSubstrings(std::ofstream &out, RLBWTDS *__RLBWTDS)
+            static uint64_t outputMaximalSubstrings(std::ofstream &out, RLBWTDS *__RLBWTDS, int thread_num)
             {
-                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS);
+                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS, thread_num);
 
                 uint64_t count = 0;
 
                 while (!hsc.stnodeSequencer.isStop())
                 {
+
                     hsc.stnodeSequencer.process();
                     /*
                     if (hsc.current_lcp % 100 == 0)
@@ -165,27 +163,36 @@ namespace stool
                         std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
                     }
                     */
+                    auto start = std::chrono::system_clock::now();
+
                     for (uint64_t i = 0; i < hsc.stnodeSequencer.node_count; i++)
                     {
                         auto &it = hsc.stnodeSequencer.get_stnode(i);
+                        /*
                         if (hsc.checkMaximalRepeat(it))
                         {
+                            
                             uint64_t beg = hsc._RLBWTDS.get_fpos(it.beginIndex, it.beginDiff);
                             uint64_t end = hsc._RLBWTDS.get_fpos(it.endIndex, it.endDiff);
                             stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.stnodeSequencer.current_lcp - 1);
                             count++;
                             out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
+                            
                         }
+                        */
                     }
+                    auto end = std::chrono::system_clock::now();
+                    double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                    std::cout << "Loop Time: " << elapsed1 << std::endl;
                 }
-                //double px = hsc.rangeOnRLBWT.total_cover / hsc.rangeOnRLBWT.num;
-
+                /*
                 double average = ((double)(hsc._RLBWTDS.rangeOnRLBWT.total_cover1 + hsc._RLBWTDS.rangeOnRLBWT.total_cover2)) / ((double)(hsc._RLBWTDS.rangeOnRLBWT.num1 + hsc._RLBWTDS.rangeOnRLBWT.num2));
                 std::cout << "@" << hsc._RLBWTDS.rangeOnRLBWT.total_cover1 << "/" << hsc._RLBWTDS.rangeOnRLBWT.num1 << std::endl;
                 std::cout << "@" << hsc._RLBWTDS.rangeOnRLBWT.total_cover2 << "/" << hsc._RLBWTDS.rangeOnRLBWT.num2 << std::endl;
                 std::cout << "@Average: " << average << std::endl;
 
                 std::cout << "Range Distinct Count = " << hsc.debugCounter << "/" << __RLBWTDS->str_size()  << std::endl;
+                */
 
                 uint64_t dx = __RLBWTDS->get_end_rle_lposition();
                 uint64_t dollerPos = __RLBWTDS->get_lpos(dx);
@@ -194,16 +201,16 @@ namespace stool
                 count += 1;
                 return count;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(RLBWTDS *__RLBWTDS)
+            static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(RLBWTDS *__RLBWTDS, int thread_num)
             {
-                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS);
+                HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS, thread_num);
 
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
                 while (!hsc.stnodeSequencer.isStop())
                 {
                     hsc.stnodeSequencer.process();
-                    
+
                     if (hsc.stnodeSequencer.current_lcp % 100 == 0)
                     {
                         std::cout << "LCP = " << (hsc.stnodeSequencer.current_lcp - 1) << ", LCP Interval count = " << hsc.stnodeSequencer.node_count << std::endl;

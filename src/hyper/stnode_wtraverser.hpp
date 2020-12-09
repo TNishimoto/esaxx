@@ -100,7 +100,7 @@ namespace stool
                 uint64_t k = 0;
                 uint64_t k2 = 0;
                 int64_t x = this->lcpIntvCount-1;
-                while(x >= 0 && k <= capacity){
+                while(x >= 0 && k <= capacity && (this->weinerCount - k) > limit_child_count ){
                     k += this->widthVec[x--];
                     k2++;
                 }
