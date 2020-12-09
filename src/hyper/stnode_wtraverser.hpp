@@ -16,7 +16,7 @@ namespace stool
     namespace lcp_on_rlbwt
     {
         template <typename INDEX_SIZE, typename RLBWTDS>
-        class RIntervalStorage
+        class STNodeWTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
@@ -29,7 +29,7 @@ namespace stool
             uint64_t lcpIntvCount = 0;
             uint64_t weinerCount = 0;
 
-            RIntervalStorage()
+            STNodeWTraverser()
             {
                 this->lcpIntvVec.resize(8);
                 this->weinerVec.resize(8);
@@ -46,8 +46,11 @@ namespace stool
             {
                 return &this->weinerVec;
             }
+            uint64_t size(){
+                return this->lcpIntvCount;
+            }
 
-            void swap(RIntervalStorage &copy)
+            void swap(STNodeWTraverser &copy)
             {
                 this->lcpIntvVec.swap(copy.lcpIntvVec);
                 this->weinerVec.swap(copy.weinerVec);
@@ -71,7 +74,7 @@ namespace stool
                 em.computeFirstLCPIntervalSet();
                 this->move_from(em);
             }
-            void computeNextLCPIntervalSet(RIntervalStorage<INDEX_SIZE, RLBWTDS> &inputSet, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            void computeNextLCPIntervalSet(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &inputSet, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
                 assert(inputSet.lcpIntvCount > 0);
 
@@ -85,34 +88,56 @@ namespace stool
                     rank += inputSet.widthVec[i];
                 }
 
-                assert(this->lcpIntvCount > 0);
+                //assert(this->lcpIntvCount > 0);
+            }
+            void spill(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item, uint64_t limit_child_count){
+                //std::cout << "SPILL" << limit_child_count << std::endl;
+                //this->print();
+                //item.print();
+                assert(item.weinerCount <= limit_child_count);
+
+                uint64_t capacity = limit_child_count - item.weinerCount;
+                uint64_t k = 0;
+                uint64_t k2 = 0;
+                int64_t x = this->lcpIntvCount-1;
+                while(x >= 0 && k <= capacity){
+                    k += this->widthVec[x--];
+                    k2++;
+                }
+                uint64_t newChildrenCount = item.weinerCount + k;
+                if(newChildrenCount >= item.weinerVec.size()){
+                    item.weinerVec.resize(newChildrenCount * 2);
+                }
+                for(uint64_t i = this->weinerCount - k;i < this->weinerCount;i++){
+                    item.weinerVec[item.weinerCount] = this->weinerVec[i];
+                    item.weinerCount++;
+                }
+                this->weinerCount -= k;
+
+                uint64_t newSTNodeCount = item.lcpIntvCount + k2;
+                if(newSTNodeCount >= item.lcpIntvVec.size()){
+                    item.lcpIntvVec.resize(newSTNodeCount * 2);
+                    item.widthVec.resize(newSTNodeCount * 2);
+                }
+
+                for(uint64_t i = this->lcpIntvCount - k2;i < this->lcpIntvCount;i++){
+                    item.lcpIntvVec[item.lcpIntvCount] = this->lcpIntvVec[i];
+                    item.widthVec[item.lcpIntvCount] = this->widthVec[i];
+                    item.lcpIntvCount++;
+                }
+                this->lcpIntvCount -= k2;
+
+                //std::cout << "SPILL EMD" << std::endl;
+                //this->print();
+                //item.print();
+
+            }
+            void print(){
+                std::cout << "[" << this->lcpIntvCount << ", " << this->weinerCount << "]" << std::endl;
+                
             }
 
         private:
-            /*
-            void push(RINTERVAL &w, uint64_t width)
-            {
-
-                if (this->lcpIntvCount == this->lcpIntvVec.size())
-                {
-                    this->lcpIntvVec.resize(this->lcpIntvCount * 2);
-                    this->widthVec.resize(this->lcpIntvCount * 2);
-                }
-                this->lcpIntvVec[this->lcpIntvCount] = w;
-                this->widthVec[this->lcpIntvCount] = width;
-                this->lcpIntvCount++;
-            }
-            void push_weiner(RINTERVAL &w)
-            {
-
-                if (this->weinerCount == this->weinerVec.size())
-                {
-                    this->weinerVec.resize(this->weinerCount * 2);
-                }
-                this->weinerVec[this->weinerCount] = w;
-                this->weinerCount++;
-            }
-            */
             void move_from(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
                 uint64_t stnodeCount = em.get_explicit_stnode_count();

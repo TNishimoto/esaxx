@@ -98,22 +98,6 @@ namespace stool
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            /*
-            void move(RIntervalStorage<INDEX_SIZE> &output)
-            {
-                for (uint64_t i = 0; i < this->indexCount; i++)
-                {
-                    auto character = this->indexVec[i];
-                    auto &currentVec = this->weinerIntervalVec[character];
-                    uint64_t count = this->explicitChildrenCountVec[character];
-                    for (uint64_t j = 0; j < count; j++)
-                    {
-                        output.push_weiner(currentVec[j]);
-                    }
-                    output.push(this->lcpIntervalVec[character], count);
-                }
-            }
-            */
 
             void move_st_internal_nodes(std::vector<RINTERVAL> &outputSTVec, std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<uint8_t> &outputWidthVec,
                                         uint64_t start_st_index, uint64_t start_children_index)

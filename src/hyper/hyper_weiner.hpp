@@ -11,7 +11,7 @@
 #include "../../module/rlbwt_iterator/src/include/weiner/sampling_functions.hpp"
 #include "./range_distinct/rlbwt_data_structures.hpp"
 
-#include "rinterval_storage.hpp"
+#include "parallel_stnode_wtraverser.hpp"
 #include "weiner_link_emulator.hpp"
 
 
@@ -34,14 +34,15 @@ namespace stool
 
             //NextRIntervalStorageConstructor<INDEX_SIZE, RLBWTDS> wds;
             RLBWTDS &_RLBWTDS;
-            RIntervalStorage<INDEX_SIZE, RLBWTDS> hyperSet;
-            RIntervalStorage<INDEX_SIZE, RLBWTDS> hyperTmpSet;
+            ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> stnodeSequencer;
+            /*
+            STNodeWTraverser<INDEX_SIZE, RLBWTDS> hyperSet;
+            STNodeWTraverser<INDEX_SIZE, RLBWTDS> hyperTmpSet;
+            */
 
-            uint64_t current_lcp = 0;
-            uint64_t strSize = 0;
-            uint64_t total_counter = 0;
+            //uint64_t current_lcp = 0;
             uint64_t debugCounter = 0;
-            ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
+            //ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
 
 
             HyperSetConstructor(RLBWTDS &__RLBWTDS) : _RLBWTDS(__RLBWTDS)
@@ -50,18 +51,18 @@ namespace stool
                 //uint64_t runSize = __rlbwt.rle_size();
                 //this->wds.initialize(&this->_RLBWTDS);
 
-                em.initialize(&this->_RLBWTDS);
+                //em.initialize(&this->_RLBWTDS);
+                stnodeSequencer.initialize(4, __RLBWTDS);
 
                 //srdds.initialize(__rlbwt);
 
-                this->strSize = this->_RLBWTDS.str_size();
 
                 //charIntervalTmpVec.resize(CHARMAX);
 
             }
 
             
-
+            /*
             void process()
             {
                 if (current_lcp == 0)
@@ -81,11 +82,7 @@ namespace stool
                 current_lcp++;
                 assert(hyperSet.weinerCount > 0);
             }
-            bool isStop()
-            {
-                //std::cout << "STOP?" << strSize << "/" << total_counter << std::endl;
-                return total_counter == strSize;
-            }
+            */
             bool checkMaximalRepeat(const RINTERVAL &lcpIntv)
             {
                 RINTERVAL it = this->_RLBWTDS.getIntervalOnL(lcpIntv);
@@ -93,13 +90,6 @@ namespace stool
                 uint8_t lstChar = this->_RLBWTDS.get_char_by_run_index(it.endIndex);
                 if (fstChar == lstChar)
                 {
-                    /*
-                    uint64_t p1 = srdds.wt.rank(it.beginIndex + 1, fstChar);
-                    uint64_t p2 = srdds.wt.rank(it.endIndex + 1, fstChar);
-
-                    uint64_t p1 = srdds.wt.rank(it.beginIndex + 1, fstChar);
-                    uint64_t p2 = srdds.wt.rank(it.endIndex + 1, fstChar);
-                    */
 
                     if (it.beginIndex != it.endIndex)
                     {
@@ -120,14 +110,14 @@ namespace stool
             {
                 HyperSetConstructor<RLBWTDS> hsc(__RLBWTDS);
                 std::vector<uint64_t> r;
-                r.resize(hsc.strSize, 0);
+                r.resize(hsc.stnodeSequencer.strSize, 0);
 
-                while (!hsc.isStop())
+                while (!hsc.stnodeSequencer.isStop())
                 {
-                    hsc.process();
-                    for (uint64_t i = 0; i < hsc.hyperSet.weinerCount; i++)
+                    hsc.stnodeSequencer.process();
+                    for (uint64_t i = 0; i < hsc.stnodeSequencer.child_count; i++)
                     {
-                        auto &it = hsc.hyperSet.weinerVec[i];
+                        auto &it = hsc.stnodeSequencer.get_child(i);
                         uint64_t pos = hsc.get_fpos(it.endIndex, it.endDiff) + 1;
                         if (pos < r.size())
                         {
@@ -166,23 +156,23 @@ namespace stool
 
                 uint64_t count = 0;
 
-                while (!hsc.isStop())
+                while (!hsc.stnodeSequencer.isStop())
                 {
-                    hsc.process();
+                    hsc.stnodeSequencer.process();
                     /*
                     if (hsc.current_lcp % 100 == 0)
                     {
                         std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
                     }
                     */
-                    for (uint64_t i = 0; i < hsc.hyperSet.lcpIntvCount; i++)
+                    for (uint64_t i = 0; i < hsc.stnodeSequencer.node_count; i++)
                     {
-                        auto &it = hsc.hyperSet.lcpIntvVec[i];
+                        auto &it = hsc.stnodeSequencer.get_stnode(i);
                         if (hsc.checkMaximalRepeat(it))
                         {
                             uint64_t beg = hsc._RLBWTDS.get_fpos(it.beginIndex, it.beginDiff);
                             uint64_t end = hsc._RLBWTDS.get_fpos(it.endIndex, it.endDiff);
-                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.current_lcp - 1);
+                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.stnodeSequencer.current_lcp - 1);
                             count++;
                             out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
                         }
@@ -210,22 +200,22 @@ namespace stool
 
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
-                while (!hsc.isStop())
+                while (!hsc.stnodeSequencer.isStop())
                 {
-                    hsc.process();
+                    hsc.stnodeSequencer.process();
                     
-                    if (hsc.current_lcp % 100 == 0)
+                    if (hsc.stnodeSequencer.current_lcp % 100 == 0)
                     {
-                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
+                        std::cout << "LCP = " << (hsc.stnodeSequencer.current_lcp - 1) << ", LCP Interval count = " << hsc.stnodeSequencer.node_count << std::endl;
                     }
-                    for (uint64_t i = 0; i < hsc.hyperSet.lcpIntvCount; i++)
+                    for (uint64_t i = 0; i < hsc.stnodeSequencer.node_count; i++)
                     {
-                        auto &it = hsc.hyperSet.lcpIntvVec[i];
+                        auto &it = hsc.stnodeSequencer.get_stnode(i);
                         if (hsc.checkMaximalRepeat(it))
                         {
                             uint64_t beg = hsc._RLBWTDS.get_fpos(it.beginIndex, it.beginDiff);
                             uint64_t end = hsc._RLBWTDS.get_fpos(it.endIndex, it.endDiff);
-                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.current_lcp - 1);
+                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.stnodeSequencer.current_lcp - 1);
                             r.push_back(newLCPIntv);
                         }
                     }
