@@ -24,6 +24,7 @@ namespace stool
             std::vector<uint8_t> widthVec;
 
         public:
+            std::vector<bool> maximal_repeat_check_vec;
 
             STNodeWTraverser()
             {
@@ -31,16 +32,17 @@ namespace stool
             RINTERVAL& get_stnode(uint64_t i){
                 return this->stnodeVec[i];
             }
-
-            const std::vector<RINTERVAL> *getLcpIntvVec() const
+            
+            std::vector<RINTERVAL> *get_stnode_vec()
             {
                 return &this->stnodeVec;
             }
 
-            const std::vector<RINTERVAL> *getWeinerVec() const
+            std::vector<RINTERVAL> *get_child_vec()
             {
                 return &this->childVec;
             }
+            
             /*
             uint64_t size(){
                 return this->stnodeVec.size();
@@ -71,6 +73,9 @@ namespace stool
             {
                 em.computeFirstLCPIntervalSet();
                 em.move_st_internal_nodes(this->stnodeVec, this->childVec, this->widthVec);
+
+                this->maximal_repeat_check_vec.resize(1);
+                this->maximal_repeat_check_vec[0] = true;
 
                 //this->move_from(em);
             }
@@ -124,6 +129,12 @@ namespace stool
                 std::cout << "[" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
                 
             }
+            void print2(const RLBWTDS &ds){
+                for(uint64_t i=0;i<this->node_count();i++){
+                    this->stnodeVec[i].print2(ds._fposDS);
+                }
+            }
+
 
         private:
         };

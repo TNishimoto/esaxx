@@ -55,6 +55,10 @@ INCLUDE_DIRECTORIES(module)
 add_library(fn STATIC ${STOOL_SOURCES})
 target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
 
+#add_library(fn2 STATIC ${STOOL_SOURCES})
+#target_link_libraries(fn sdsl divsufsort divsufsort64)
+
+
 ### Main executive files
 #add_executable(enumSubstring.out src/main/enumSubstring.cpp)
 #target_link_libraries(enumSubstring.out fn)
@@ -72,8 +76,8 @@ target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree
 #
 #add_executable(lisInLcpArray.out src/debug/lis_in_lcp_array.cpp )
 #target_link_libraries(lisInLcpArray.out fn)
-add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
-target_link_libraries(online_rlbwt.out fn)
+#add_executable(online_rlbwt.out ${MYMOD_SOURCE_DIR}/rlbwt_iterator/src/main/compress_main.cpp)
+#target_link_libraries(online_rlbwt.out fn)
 
 
 ### Debug

@@ -21,7 +21,7 @@ using namespace stool::rlbwt;
 //#include "hpp/bwt.hpp"
 //#include "hpp/fmindex.hpp"
 #include "../beller/beller_debug.hpp"
-#include "../hyper/hyper_weiner.hpp"
+#include "../hyper/application.hpp"
 #include "../main/common.hpp"
 #include "../test/naive_algorithms.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
@@ -47,7 +47,7 @@ void testLCPIntervals(std::string inputFile, bool lightWeight, bool correctCheck
     FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(rlestr);
     RDS ds = RDS(rlestr, fposds);
 
-    auto testVec = stool::lcp_on_rlbwt::HyperSetConstructor<RLBWT<>, RDS>::constructLCPIntervals(rlestr, &ds);
+    auto testVec = stool::lcp_on_rlbwt::Application<RLBWT<>, RDS>::constructLCPIntervals(rlestr, &ds);
 
     if (correctCheck)
     {
@@ -88,6 +88,15 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     sdsl::wt_huff<> wt;
     construct_im(wt, diff_char_vec);
 
+//DEBUG
+    if(diff_char_vec.size() < 100){
+        std::cout << "Run heads: ";
+        for(uint64_t i=0;i<diff_char_vec.size();i++){
+            std::cout << (char)diff_char_vec[i];
+        }
+        std::cout << std::endl;
+    }
+
     //uint64_t input_text_size = ds.str_size();
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
 
@@ -111,7 +120,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
         else
@@ -123,7 +132,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
 
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
     }
@@ -140,7 +149,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
         else
@@ -151,7 +160,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
     }
@@ -163,7 +172,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     {
         std::cout << "LightWeight Mode" << std::endl;
 
-        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(&ds);
         test_Intervals.swap(tmp);
     }
     else
@@ -173,7 +182,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         stool::EliasFanoVector efv;
         efv.build_from_bit_vector(run_bits);
 
-        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(&ds);
         test_Intervals.swap(tmp);
     }
     */
@@ -184,7 +193,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     }
     else
     {
-        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::computeMaximalSubstrings(&ds);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(&ds);
         test_Intervals.swap(tmp);
     }
     */
@@ -208,6 +217,15 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
     sdsl::wt_huff<> wt;
     construct_im(wt, diff_char_vec);
 
+    //DEBUG
+    if(diff_char_vec.size() < 100){
+        std::cout << "Run heads: ";
+        for(uint64_t i=0;i<diff_char_vec.size();i++){
+            std::cout << (char)diff_char_vec[i];
+        }
+        std::cout << std::endl;
+    }
+
     //uint64_t input_text_size = ds.str_size();
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
 
@@ -224,6 +242,7 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
     }
     uint64_t input_text_size = 0;
     uint64_t ms_count = 0;
+    stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
 
     if (LPOSMODE == '0')
     {
@@ -242,7 +261,7 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, stnodeTraverser);
+            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         }
         else
         {
@@ -255,7 +274,7 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, stnodeTraverser);
+            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         }
     }
     else
@@ -274,7 +293,7 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, stnodeTraverser);
+            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         }
         else
         {
@@ -287,7 +306,7 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, stnodeTraverser);
+            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         }
     }
 
@@ -296,11 +315,11 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
     uint64_t ms_count = 0;
     if (input_text_size - 10 < UINT32_MAX)
     {
-        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds);
+        ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, &ds);
     }
     else
     {
-        ms_count = stool::lcp_on_rlbwt::HyperSetConstructor<RDS>::outputMaximalSubstrings(out, &ds);
+        ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, &ds);
     }
     */
     auto end = std::chrono::system_clock::now();
@@ -314,7 +333,10 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "LPOS Vector \t\t\t\t\t : " << (LPOSMODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
     std::cout << "FPOS Vector \t\t\t\t\t : " << (FPOSMODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
+    std::cout << "Peak children count \t\t\t : " << st_result.max_nodes_at_level << std::endl;
+
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
+    std::cout << "The number of runs on BWT \t\t : " << diff_char_vec.size() << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
     std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;

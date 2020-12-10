@@ -88,7 +88,10 @@ namespace stool
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
+
                     auto character = this->indexVec[i];
+
+
                     auto &currentVec = this->childrenVec[character];
                     uint64_t count = this->childrenVec[character].size();
                     //uint64_t count = this->explicitChildrenCountVec[character];
@@ -118,7 +121,6 @@ namespace stool
             }
             void pushLCPInterval(const RINTERVAL &w, uint8_t c)
             {
-
                 this->stnodeVec[c] = w;
                 this->stnodeOccFlagArray[c] = true;
             }

@@ -19,8 +19,18 @@ namespace stool
 {
     namespace rlbwt2
     {
-        static uint64_t count_runs(std::string filename)
+        struct BWTAnalysisResult{
+            uint64_t run_count;
+            uint64_t str_size;
+
+            uint64_t min_char = UINT64_MAX;
+            uint64_t min_char_pos;
+            uint64_t min_char_count;
+
+        };
+        static BWTAnalysisResult count_runs(std::string filename)
         {
+            BWTAnalysisResult result;
             std::ifstream inp;
             std::vector<char> buffer;
             uint64_t bufferSize = 8192;
@@ -49,6 +59,14 @@ namespace stool
                 for (uint64_t i = 0; i < buffer.size(); i++)
                 {
                     uint8_t c = buffer[i];
+                    if(c < result.min_char){
+                        result.min_char = c;
+                        result.min_char_pos = x;
+                        result.min_char_count = 1;
+                    }else if(c == result.min_char){
+                        result.min_char_count++;
+                    }
+
                     if (prevChar != c || x == 0)
                     {
                         count_run++;
@@ -58,7 +76,10 @@ namespace stool
                 }
             }
             inp.close();
-            return count_run;
+
+            result.run_count = count_run;
+            result.str_size = x;
+            return result;
         }
 
         static void load_RLBWT_from_file(std::string filename, sdsl::int_vector<> &diff_char_vec, std::vector<bool> &run_bits)
@@ -70,8 +91,11 @@ namespace stool
             uint64_t bufferSize = 8192;
             buffer.resize(8192);
 
-            uint64_t runCount = count_runs(filename);
-            diff_char_vec.resize(runCount);
+            BWTAnalysisResult analysisResult = count_runs(filename);
+            diff_char_vec.resize(analysisResult.run_count);
+            if(analysisResult.min_char != 0){
+                std::cout << "We replace the character " << (int)analysisResult.min_char << "(" << (char)analysisResult.min_char << ") with 0" << std::endl;
+            }
 
             inp.open(filename, std::ios::binary);
             bool inputFileExist = inp.is_open();
@@ -97,6 +121,9 @@ namespace stool
                 {
                     assert(buffer[i] >=0);
                     uint8_t c = buffer[i];
+                    if(c == analysisResult.min_char){
+                        c = 0;
+                    }
                     if (prevChar != c || x == 0)
                     {
                         run_bits.push_back(1);

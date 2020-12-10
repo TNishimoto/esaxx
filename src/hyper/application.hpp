@@ -19,9 +19,40 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
+        class STTreeAnalysisResult
+        {
+        public:
+            uint64_t max_nodes_at_level;
+        };
+
+        template <typename INDEX_SIZE, typename RLBWTDS>
+        void find_maximal_repeats(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, RLBWTDS &_RLBWTDS, uint64_t start_index, uint64_t size, std::vector<bool> &ms_check_vec)
+        {
+            ms_check_vec.resize(size, false);
+            uint64_t end_index = start_index + size - 1;
+            for (uint64_t i = start_index; i <= end_index; i++)
+            {
+                const RInterval<INDEX_SIZE> &it = stnodeSequencer.get_stnode(i);
+                bool b = checkMaximalRepeat(it, _RLBWTDS);
+                ms_check_vec[i] = b;
+            }
+        }
+        /*
+        template <typename INDEX_SIZE, typename RLBWTDS>
+        void find_maximal_repeats_with_multi_thread(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, RLBWTDS &_RLBWTDS, std::vector<bool> &ms_check_vec, uint64_t )
+        {
+            ms_check_vec.resize(size, false);
+            uint64_t end_index = start_index + size - 1;
+            for(uint64_t i=start_index;i <= end_index;i++){
+                const RInterval<INDEX_SIZE> &it = stnodeSequencer.get_stnode(i);
+                bool b = checkMaximalRepeat(it, _RLBWTDS);
+                ms_check_vec[i] = b;
+            }
+        }
+        */
 
         template <typename RLBWTDS>
-        class HyperSetConstructor
+        class Application
         {
         public:
             using CHAR = typename RLBWTDS::CHAR;
@@ -30,29 +61,6 @@ namespace stool
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            
-            static bool checkMaximalRepeat(const RINTERVAL &lcpIntv, RLBWTDS &_RLBWTDS)
-            {
-                RINTERVAL it = _RLBWTDS.getIntervalOnL(lcpIntv);
-                uint8_t fstChar = _RLBWTDS.get_char_by_run_index(it.beginIndex);
-                uint8_t lstChar = _RLBWTDS.get_char_by_run_index(it.endIndex);
-                if (fstChar == lstChar)
-                {
-
-                    if (it.beginIndex != it.endIndex)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
             /*
             static std::vector<uint64_t> constructLCPArray(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
             {
@@ -97,7 +105,7 @@ namespace stool
                 //return weiner.enumerateLCPInterval();
             }
 
-            static uint64_t outputMaximalSubstrings(std::ofstream &out, ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
+            static uint64_t outputMaximalSubstrings(std::ofstream &out, ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
 
                 uint64_t count = 0;
@@ -107,36 +115,49 @@ namespace stool
 
                     stnodeSequencer.process();
                     /*
-                    if (hsc.current_lcp % 100 == 0)
+                    if (stnodeSequencer.current_lcp % 100 == 0)
                     {
-                        std::cout << "LCP = " << (hsc.current_lcp - 1) << ", LCP Interval count = " << hsc.hyperSet.lcpIntvCount << std::endl;
+                        std::cout << "LCP = " << (stnodeSequencer.current_lcp - 1) << ", LCP Interval count = " << stnodeSequencer.total_counter << std::endl;
                     }
                     */
+                    
                     auto start = std::chrono::system_clock::now();
 
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    auto trees = stnodeSequencer.get_sub_trees();
+
+                    for (uint64_t i = 0; i < trees->size(); i++)
                     {
-                        auto &it = stnodeSequencer.get_stnode(i);
-                        /*
-                        if (hsc.checkMaximalRepeat(it))
+                        auto &tree = (*trees)[i];
+
+                        assert(tree.node_count() == tree.maximal_repeat_check_vec.size());
+                        for (uint64_t j = 0; j < tree.maximal_repeat_check_vec.size(); j++)
                         {
-                            
-                            uint64_t beg = hsc._RLBWTDS.get_fpos(it.beginIndex, it.beginDiff);
-                            uint64_t end = hsc._RLBWTDS.get_fpos(it.endIndex, it.endDiff);
-                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, hsc.stnodeSequencer.current_lcp - 1);
-                            count++;
-                            out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
-                            
+                            auto &it = tree.get_stnode(j);
+                            bool b = tree.maximal_repeat_check_vec[j];
+                            if (b)
+                            {
+                                count++;
+                                /*
+                                uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                                uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                                //std::cout << beg << ", " << end << std::endl;
+                                stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
+
+                                out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
+                                */
+                            }
                         }
-                        */
                     }
                     auto end = std::chrono::system_clock::now();
                     double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
-                    if(elapsed1 > 10){
+                    /*
+                    if (elapsed1 > 10)
+                    {
                         std::cout << "Loop Time: " << elapsed1 << std::endl;
                     }
+                    */
                 }
+                analysis.max_nodes_at_level = stnodeSequencer.peak_child_count;
                 /*
                 double average = ((double)(hsc._RLBWTDS.rangeOnRLBWT.total_cover1 + hsc._RLBWTDS.rangeOnRLBWT.total_cover2)) / ((double)(hsc._RLBWTDS.rangeOnRLBWT.num1 + hsc._RLBWTDS.rangeOnRLBWT.num2));
                 std::cout << "@" << hsc._RLBWTDS.rangeOnRLBWT.total_cover1 << "/" << hsc._RLBWTDS.rangeOnRLBWT.num1 << std::endl;
@@ -155,27 +176,39 @@ namespace stool
             }
             static std::vector<stool::LCPInterval<uint64_t>> computeMaximalSubstrings(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
             {
-                //HyperSetConstructor<RLBWTDS> hsc(*__RLBWTDS, thread_num);
+                //Application<RLBWTDS> hsc(*__RLBWTDS, thread_num);
 
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
                 while (!stnodeSequencer.isStop())
                 {
                     stnodeSequencer.process();
-
+                    /*
                     if (stnodeSequencer.current_lcp % 100 == 0)
                     {
                         std::cout << "LCP = " << (stnodeSequencer.current_lcp - 1) << ", LCP Interval count = " << stnodeSequencer.node_count << std::endl;
                     }
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    */
+                    auto trees = stnodeSequencer.get_sub_trees();
+
+                    for (uint64_t i = 0; i < trees->size(); i++)
                     {
-                        auto &it = stnodeSequencer.get_stnode(i);
-                        if (checkMaximalRepeat(it, *stnodeSequencer._RLBWTDS))
+                        auto &tree = (*trees)[i];
+
+                        assert(tree.node_count() == tree.maximal_repeat_check_vec.size());
+                        for (uint64_t j = 0; j < tree.maximal_repeat_check_vec.size(); j++)
                         {
-                            uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                            uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                            stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
-                            r.push_back(newLCPIntv);
+                            auto &it = tree.get_stnode(j);
+                            bool b = tree.maximal_repeat_check_vec[j];
+                            if (b)
+                            {
+
+                                uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                                uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                                //std::cout << beg << ", " << end << std::endl;
+                                stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
+                                r.push_back(newLCPIntv);
+                            }
                         }
                     }
                 }
