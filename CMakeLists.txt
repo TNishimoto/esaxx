@@ -35,9 +35,9 @@ LINK_DIRECTORIES(~/lib)
 INCLUDE_DIRECTORIES(~/include)
 endif()
 
-add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
-add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
-add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
+#add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
+#add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
+#add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
 
 #SDSL lib and include directory are here
 #Please modify it appropriately.
@@ -52,8 +52,12 @@ FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
 
 
-add_library(fn STATIC ${STOOL_SOURCES})
-target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
+#add_library(fn STATIC ${STOOL_SOURCES})
+#target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
+
+add_library(fn2 STATIC ${STOOL_SOURCES})
+target_link_libraries(fn2 sdsl divsufsort divsufsort64)
+
 
 #add_library(fn2 STATIC ${STOOL_SOURCES})
 #target_link_libraries(fn sdsl divsufsort divsufsort64)
@@ -63,8 +67,8 @@ target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree
 #add_executable(enumSubstring.out src/main/enumSubstring.cpp)
 #target_link_libraries(enumSubstring.out fn)
 #
-#add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
-#target_link_libraries(enumMaximalSubstring.out fn)
+add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
+target_link_libraries(enumMaximalSubstring.out fn2)
 #add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
 #target_link_libraries(enumLineMaximalSubstring.out fn)
 #add_executable(enumMaximalSubstringWithRLBWT.out src/main/enumMaximalSubstringWithRLBWT.cpp )
@@ -81,11 +85,11 @@ target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree
 
 
 ### Debug
-add_executable(beller.out src/main/beller_main.cpp)
-target_link_libraries(beller.out fn)
-
-add_executable(hyper.out src/main/hyper_main.cpp)
-target_link_libraries(hyper.out fn)
+#add_executable(beller.out src/main/beller_main.cpp)
+#target_link_libraries(beller.out fn)
+#
+#add_executable(hyper.out src/main/hyper_main.cpp)
+#target_link_libraries(hyper.out fn)
 
 
 
