@@ -69,6 +69,11 @@ target_link_libraries(fn2 sdsl divsufsort divsufsort64)
 #
 add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out fn2)
+
+add_executable(enumMaximalSubstring_input_bwt.out src/main/enumMaximalSubstring_input_bwt.cpp)
+target_link_libraries(enumMaximalSubstring_input_bwt.out fn2)
+
+
 #add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
 #target_link_libraries(enumLineMaximalSubstring.out fn)
 #add_executable(enumMaximalSubstringWithRLBWT.out src/main/enumMaximalSubstringWithRLBWT.cpp )
