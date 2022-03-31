@@ -251,6 +251,13 @@ std::vector<INDEX> construct_naive_SA_with_uint64(const std::vector<CHAR> &text)
         });
     return r;
 }
+
+/*
+bool check_test(std::vector<uint8_t> &text){
+
+}
+*/
+
 bool check_test(std::vector<char> &text)
 {
   for (auto &it : text)

@@ -32,7 +32,6 @@ using namespace std;
 using CHAR = uint8_t;
 using INDEX = uint64_t;
 
-
 template <typename T, typename U>
 bool super_equal_check(const T &vec1, const U &vec2)
 {
@@ -54,24 +53,59 @@ bool super_equal_check(const T &vec1, const U &vec2)
   return true;
 }
 
+/*
+std::vector<char> to_char_string(std::vector<uint8_t> &text){
+
+}
+*/
+
+void minimal_substring_test(std::vector<uint8_t> &text)
+{
+  /*
+  bool is_contained_minus_character = stool::esaxx::check_test(text);
+  if (is_contained_minus_character)
+  {
+    std::cout << "This text contains minus character!" << std::endl;
+  }
+  */
+  std::vector<INDEX> sa = stool::esaxx::construct_naive_SA_with_uint64<uint8_t, INDEX>(text);
+  std::vector<INDEX> lcpArray = stool::constructLCP<uint8_t, INDEX>(text, sa);
+  vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings_with_uint64<uint8_t, INDEX>(text, sa);
+  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_minimal_substrings(text, sa, lcpArray);
+  stool::sort_in_preorder(test_intervals);
+
+
+  for (auto &it : correct_intervals)
+  {
+    std::cout << it.to_string() << std::endl;
+  }
+  std::cout << std::endl;
+  for (auto &it : test_intervals)
+  {
+    std::cout << it.to_string() << std::endl;
+  }
+
+
+  stool::equal_check(correct_intervals, test_intervals);
+  std::cout << "[ESAXX OK!]";
+}
+
 void minimal_substring_test(std::string filename)
 {
   std::cout << "minimal substring intervals test";
 
   vector<char> text;
   stool::IO::load(filename, text); // input text
-  //vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
-  bool is_contained_minus_character = stool::esaxx::check_test(text);
-  if (is_contained_minus_character)
-  {
-    std::cout << "This text contains minus character!" << std::endl;
-  }
-  //std::vector<INDEX> sa = stool::construct_naive_SA<char, INDEX>(text);
+  // vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
+  // std::vector<INDEX> sa = stool::construct_naive_SA<char, INDEX>(text);
   std::vector<INDEX> sa = stool::esaxx::construct_naive_SA_with_uint64<char, INDEX>(text);
   std::vector<INDEX> lcpArray = stool::constructLCP<char, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings_with_uint64<char, INDEX>(text, sa);
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::MinimalSubstringIntervals<>::compute_minimal_substrings<char, INDEX>(text, sa, lcpArray);
+  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_minimal_substrings(text, sa, lcpArray);
   stool::sort_in_preorder(test_intervals);
+
+  //;
+  // = stool::esaxx::MinimalSubstringIntervals<>::compute_minimal_substrings<>(text, sa, lcpArray);
 
   for (auto &it : correct_intervals)
   {
@@ -85,6 +119,8 @@ void minimal_substring_test(std::string filename)
 
   stool::equal_check(correct_intervals, test_intervals);
   std::cout << "[ESAXX OK!]";
+
+  /*
 
   if (!is_contained_minus_character)
   {
@@ -117,18 +153,27 @@ void minimal_substring_test(std::string filename)
   stool::equal_check(correct_intervals, rlbwt_test_intervals);
 
   std::cout << "[RLBWT OK!]" << std::endl;
+  */
 }
 
 int main(int argc, char *argv[])
 {
+  for (uint64_t i = 0; i < 100; i++)
+  {
+    std::vector<uint8_t> text = stool::StringCreator::create_uint8_t_binary_string(10, i);
+    minimal_substring_test(text);
+  }
 
+  /*
   cmdline::parser p;
   p.add<string>("input_file", 'i', "input file name", true);
 
   p.parse_check(argc, argv);
   string filename = p.get<string>("input_file");
 
-  vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
+  vector<char> text;
+  stool::IO::load(filename, text); // input text
+  text.push_back(0);
   bool is_contained_minus_character = stool::esaxx::check_test(text);
   if (is_contained_minus_character)
   {
@@ -136,40 +181,41 @@ int main(int argc, char *argv[])
   }
 
   minimal_substring_test("test");
+  */
 
-    /*
-  using SA_PLAIN = std::vector<INDEX>;
-  using SA_SDSL = sdsl::csa_sada<>;
-  using LCP_PLAIN = std::vector<INDEX>;
-  using LCPINTERVALS = vector<stool::LCPInterval<INDEX>>;
-  using LCP_SDSL = sdsl::lcp_dac<>;
-  using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
-  using SA_RLBWT = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
-  using BWT_RLBWT = stool::rlbwt::ForwardBWT<std::vector<char>, std::vector<INDEX>>;
+  /*
+using SA_PLAIN = std::vector<INDEX>;
+using SA_SDSL = sdsl::csa_sada<>;
+using LCP_PLAIN = std::vector<INDEX>;
+using LCPINTERVALS = vector<stool::LCPInterval<INDEX>>;
+using LCP_SDSL = sdsl::lcp_dac<>;
+using LCP_RLBWT = stool::rlbwt::ForwardLCPArray<std::vector<INDEX>>;
+using SA_RLBWT = stool::rlbwt::ForwardSA<std::vector<INDEX>>;
+using BWT_RLBWT = stool::rlbwt::ForwardBWT<std::vector<char>, std::vector<INDEX>>;
 
-  stool::rlbwt::RLBWT<std::vector<char>, std::vector<INDEX>> rlestr;
-  stool::rlbwt::Constructor::construct_from_file<>(rlestr, filename);
-  LCP_RLBWT lcp_rlbwt;
-  lcp_rlbwt.construct_from_rlbwt(&rlestr, false);
+stool::rlbwt::RLBWT<std::vector<char>, std::vector<INDEX>> rlestr;
+stool::rlbwt::Constructor::construct_from_file<>(rlestr, filename);
+LCP_RLBWT lcp_rlbwt;
+lcp_rlbwt.construct_from_rlbwt(&rlestr, false);
 
-  SA_PLAIN sa_naive = stool::esaxx::construct_naive_SA_with_uint64<char, INDEX>(text);
-  LCP_PLAIN lcp_naive = stool::constructLCP<char, INDEX>(text, sa_naive);
+SA_PLAIN sa_naive = stool::esaxx::construct_naive_SA_with_uint64<char, INDEX>(text);
+LCP_PLAIN lcp_naive = stool::constructLCP<char, INDEX>(text, sa_naive);
 
-  SA_SDSL sa_sdsl;
-  construct(sa_sdsl, filename, 1);
-  LCP_SDSL lcp_sdsl;
-  construct(lcp_sdsl, filename, 1);
+SA_SDSL sa_sdsl;
+construct(sa_sdsl, filename, 1);
+LCP_SDSL lcp_sdsl;
+construct(lcp_sdsl, filename, 1);
 
-  SA_RLBWT *sa_pointer = const_cast<SA_RLBWT *>(lcp_rlbwt.get_ForwardSA());
+SA_RLBWT *sa_pointer = const_cast<SA_RLBWT *>(lcp_rlbwt.get_ForwardSA());
 
-  BWT_RLBWT bwt_rlbwt(&rlestr);
-  using BWT_SDSL = decltype(sa_sdsl.bwt);
+BWT_RLBWT bwt_rlbwt(&rlestr);
+using BWT_SDSL = decltype(sa_sdsl.bwt);
 
-  lcp_interval_test(text, sa_naive, sa_naive, lcp_naive, "ESAXX");
-  lcp_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, "SDSL");
-  lcp_interval_test(text, sa_naive, *sa_pointer, lcp_rlbwt, "RLBWT");
+lcp_interval_test(text, sa_naive, sa_naive, lcp_naive, "ESAXX");
+lcp_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, "SDSL");
+lcp_interval_test(text, sa_naive, *sa_pointer, lcp_rlbwt, "RLBWT");
 
-  maximal_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, sa_sdsl.bwt, "SDSL");
-  maximal_interval_test(text, sa_naive, *sa_pointer, lcp_sdsl, bwt_rlbwt, "RLBWT");
-    */
+maximal_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, sa_sdsl.bwt, "SDSL");
+maximal_interval_test(text, sa_naive, *sa_pointer, lcp_sdsl, bwt_rlbwt, "RLBWT");
+  */
 }

@@ -338,7 +338,7 @@ namespace stool
     };
 
     template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
-    std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
+    static std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
     {
       // stool::Printer::print(text);
       // std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
