@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
+#include "stool/include/cmdline.h"
 //#include "../esa.hxx"
 #include "../test/old_postorder_maximal_substrings.hpp"
 

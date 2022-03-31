@@ -1,11 +1,11 @@
 #include <cassert>
 #include <chrono>
-#include "../module/stool/src/io.hpp"
-#include "../module/stool/src/sa_bwt_lcp.hpp"
+#include "../module/stool/include/io.hpp"
+#include "../module/stool/include/sa_bwt_lcp.hpp"
 
-#include "../module/stool/src/print.hpp"
-#include "../module/stool/src/cmdline.h"
-#include "../module/stool/src/debug.hpp"
+#include "../module/stool/include/print.hpp"
+#include "../module/stool/include/cmdline.h"
+#include "../module/stool/include/debug.hpp"
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"

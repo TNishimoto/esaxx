@@ -48,7 +48,7 @@ include_directories(~/include)
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
-FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp module/libdivsufsort/sa.cpp)
+FILE(GLOB STOOL_SOURCES module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
 
 

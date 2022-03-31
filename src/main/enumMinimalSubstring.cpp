@@ -4,15 +4,15 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
-#include "stool/src/io.hpp"
+#include "stool/include/cmdline.h"
+#include "stool/include/io.hpp"
 //#include "../postorder_suffix_tree.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../minimal_substrings/postorder_special_suffix_tree.hpp"
 #include "../minimal_substrings/minimal_substring_iterator.hpp"
 //#include "../minimal_substrings/naive_minimal_substrings.hpp"
 //#include "../minimal_substrings/minimal_substring_tree.hpp"
-#include "stool/src/sa_bwt_lcp.hpp"
+#include "stool/include/sa_bwt_lcp.hpp"
 #include "common.hpp"
 
 using namespace std;

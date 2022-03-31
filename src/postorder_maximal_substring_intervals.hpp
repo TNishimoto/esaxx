@@ -4,13 +4,13 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
+#include "stool/include/cmdline.h"
 #include <exception>
-#include "stool/src/io.hpp"
-#include "stool/src/print.hpp"
+#include "stool/include/io.hpp"
+#include "stool/include/print.hpp"
 #include "main/common.hpp"
 
-#include "stool/src/sa_bwt_lcp.hpp"
+#include "stool/include/sa_bwt_lcp.hpp"
 
 //#include "minimal_substrings/postorder_special_suffix_tree.hpp"
 #include "postorder_lcp_intervals.hpp"

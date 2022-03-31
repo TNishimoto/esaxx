@@ -12,7 +12,7 @@
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
 
-#include "stool/src/cmdline.h"
+#include "stool/include/cmdline.h"
 #include "common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
@@ -59,8 +59,13 @@ uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory
   std::string text;
   if (usingMemory)
   {
-    std::string tmp = stool::load_string_from_file(filename, false);
-    text.swap(tmp);
+    std::vector<char> tmp;
+    stool::IO::load(filename, tmp);
+    text.resize(tmp.size());
+    for(uint64_t i=0;i<tmp.size();i++){
+      text[i] = tmp[i];
+    }
+    //text.swap(tmp);
   }
   using BWT = std::vector<char>;
   auto start_sa = std::chrono::system_clock::now();
@@ -115,7 +120,9 @@ uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory
 
 uint64_t iterateMS(string filename, std::ofstream &out)
 {
-  vector<CHAR> T = stool::load_char_vec_from_file(filename, true); // input text
+  vector<CHAR> T;
+  stool::IO::load(filename, T); // input text
+  T.push_back(0);
   input_text_size = T.size();
 
   // Construction Suffix Array

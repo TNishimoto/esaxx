@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
+#include "stool/include/cmdline.h"
 #include "../test/esa.hxx"
-#include "stool/src/io.hpp"
-#include "stool/src/sa_bwt_lcp.hpp"
+#include "stool/include/io.hpp"
+#include "stool/include/sa_bwt_lcp.hpp"
 
 
 

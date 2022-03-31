@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
+#include "stool/include/cmdline.h"
 #include "common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"

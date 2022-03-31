@@ -8,8 +8,8 @@
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
 
-#include "stool/src/cmdline.h"
-#include "stool/src/debug.hpp"
+#include "stool/include/cmdline.h"
+#include "stool/include/debug.hpp"
 
 #include "common.hpp"
 #include "libdivsufsort/sa.hpp"
