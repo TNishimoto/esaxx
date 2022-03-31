@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-
+project(esaxx CXX)
 
 #if(APPLE)
 #set(CMAKE_CXX_FLAGS "-std=c++11  -m64 -w")
@@ -17,32 +17,55 @@ endif(CPP_STATIC)
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
+set(ROOT_PROJECT  "esaxx")
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+    message("Release Mode")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+
+# Set PROJECT_IS_TOP_LEVEL to ON if if this is the top level project (not
+# if this is included as a subproject of something else). Note that this is
+# handled automatically for CMake >= 3.21.
+if (CMAKE_VERSION VERSION_LESS 3.21)
+    if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+        set (PROJECT_IS_TOP_LEVEL ON)
+    endif ()
+endif ()
+
 #### Modules
-set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
-set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
-set(MYMOD_DIR 1)
+
+if(NOT TARGET stool)
+add_subdirectory(module/stool)
+endif()
+
+#set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
+#set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
+#set(MYMOD_DIR 1)
 
 #add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
 #include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
 
-if(COMPILE_LIBDIVSUFSORT)
-add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
-include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
-else()
 #libdivsufsort directory is here.
 #Please modify it appropriately.
 LINK_DIRECTORIES(~/lib)
 INCLUDE_DIRECTORIES(~/include)
-endif()
-
-#add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
-#add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
-#add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
 
 #SDSL lib and include directory are here
 #Please modify it appropriately.
 LINK_DIRECTORIES(~/lib)
 include_directories(~/include)
+
+
+
+#if(COMPILE_LIBDIVSUFSORT)
+#add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
+#include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
+#else()
+#endif()
+
+#add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
+#add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
+#add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
 
 
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
@@ -51,12 +74,10 @@ include_directories(~/include)
 FILE(GLOB STOOL_SOURCES module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
 
-
 #add_library(fn STATIC ${STOOL_SOURCES})
 #target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
 
-add_library(fn2 STATIC ${STOOL_SOURCES})
-target_link_libraries(fn2 sdsl divsufsort divsufsort64)
+
 
 
 #add_library(fn2 STATIC ${STOOL_SOURCES})
@@ -67,11 +88,29 @@ target_link_libraries(fn2 sdsl divsufsort divsufsort64)
 #add_executable(enumSubstring.out src/main/enumSubstring.cpp)
 #target_link_libraries(enumSubstring.out fn)
 #
+
+
+
+if (PROJECT_IS_TOP_LEVEL)
+add_library(fn2 STATIC ${STOOL_SOURCES})
+target_link_libraries(fn2 sdsl divsufsort divsufsort64)
+
+
 add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out fn2)
 
 add_executable(enumMaximalSubstring_input_bwt.out src/main/enumMaximalSubstring_input_bwt.cpp)
 target_link_libraries(enumMaximalSubstring_input_bwt.out fn2)
+
+else()
+add_library(esaxx STATIC ${SOURCES})
+target_link_libraries(esaxx sdsl divsufsort divsufsort64 stool)
+endif()
+
+
+
+
+
 
 
 #add_executable(enumLineMaximalSubstring.out src/main/enumLineMaximalSubstring.cpp )
