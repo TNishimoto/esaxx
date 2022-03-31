@@ -56,38 +56,11 @@ LINK_DIRECTORIES(~/lib)
 include_directories(~/include)
 
 
-
-#if(COMPILE_LIBDIVSUFSORT)
-#add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
-#include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
-#else()
-#endif()
-
-#add_subdirectory(${MYMOD_SOURCE_DIR}/Basics ${MYMOD_BINARY_DIR}/Basics)
-#add_subdirectory(${MYMOD_SOURCE_DIR}/BTree ${MYMOD_BINARY_DIR}/BTree)
-#add_subdirectory(${MYMOD_SOURCE_DIR}/OnlineRlbwt ${MYMOD_BINARY_DIR}/OnlineRlbwt)
-
-
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
 FILE(GLOB STOOL_SOURCES module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
-
-#add_library(fn STATIC ${STOOL_SOURCES})
-#target_link_libraries(fn sdsl divsufsort divsufsort64  online_rlbwt Basics BTree)
-
-
-
-
-#add_library(fn2 STATIC ${STOOL_SOURCES})
-#target_link_libraries(fn sdsl divsufsort divsufsort64)
-
-
-### Main executive files
-#add_executable(enumSubstring.out src/main/enumSubstring.cpp)
-#target_link_libraries(enumSubstring.out fn)
-#
 
 
 
@@ -101,6 +74,10 @@ target_link_libraries(enumMaximalSubstring.out fn2)
 
 add_executable(enumMaximalSubstring_input_bwt.out src/main/enumMaximalSubstring_input_bwt.cpp)
 target_link_libraries(enumMaximalSubstring_input_bwt.out fn2)
+
+add_executable(test.out src/debug/minimal_substring_test_main.cpp)
+target_link_libraries(test.out fn2)
+
 
 else()
 add_library(esaxx STATIC ${SOURCES})

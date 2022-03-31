@@ -9,24 +9,29 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/include/cmdline.h"
-#include "../../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
-
-using namespace std;
-using CHAR = uint8_t;
-using INDEX = uint64_t;
-#include "../test/old_postorder_maximal_substrings.hpp"
+#include "stool/include/debug.hpp"
+#include "stool/include/io.hpp"
 #include "../main/common.hpp"
+#include "../test/naive_algorithms.hpp"
+#include "../src/minimal_substrings/minimal_substring_iterator.hpp"
+
+/*
+#include "../../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
+#include "../test/old_postorder_maximal_substrings.hpp"
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
 #include "../postorder_suffix_tree_intervals.hpp"
-#include "../test/naive_algorithms.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
-#include "../src/minimal_substrings/minimal_substring_iterator.hpp"
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
 #include "../forward_bwt.hpp"
+*/
+using namespace std;
+using CHAR = uint8_t;
+using INDEX = uint64_t;
+
 
 template <typename T, typename U>
 bool super_equal_check(const T &vec1, const U &vec2)
@@ -49,39 +54,13 @@ bool super_equal_check(const T &vec1, const U &vec2)
   return true;
 }
 
-template <typename T, typename U>
-void lcp_interval_test(vector<char> &text, vector<INDEX> &correct_sa, T &test_sa, U &test_lcp, string test_name)
-{
-  std::cout << "LCP interval test: " << test_name << std::flush;
-  vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_lcp_intervals<char, INDEX>(text, correct_sa);
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderSuffixTreeIntervals<INDEX, T, U>::compute_lcp_intervals(test_sa, test_lcp);
-  stool::sort_in_preorder(test_intervals);
-  stool::equal_check(correct_intervals, test_intervals);
-  std::cout << "[OK!]" << std::endl;
-}
-template <typename T, typename U, typename BWT_TEST>
-void maximal_interval_test(vector<char> &text, vector<INDEX> &correct_sa, T &test_sa, U &test_lcp, BWT_TEST &test_bwt, string test_name)
-{
-
-  std::cout << "Maximal substring interval test: " << test_name << std::flush;
-  using BWT = stool::esaxx::ForwardBWT<char, std::vector<char>, std::vector<INDEX>>;
-  BWT bwt(&text, &correct_sa);
-  vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, INDEX>(text, correct_sa);
-
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::PostorderMaximalSubstringIntervals<char, INDEX, U, BWT_TEST>::compute_maximal_substrings(test_lcp, test_bwt);
-  stool::sort_in_preorder(test_intervals);
-
-  stool::equal_check(correct_intervals, test_intervals);
-
-  std::cout << "[OK!]" << std::endl;
-}
-
 void minimal_substring_test(std::string filename)
 {
   std::cout << "minimal substring intervals test";
 
-  //vector<uint8_t> text = stool::load_text_from_file(filename, true); // input text
-  vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
+  vector<char> text;
+  stool::IO::load(filename, text); // input text
+  //vector<char> text = stool::load_char_vec_from_file(filename, true); // input text
   bool is_contained_minus_character = stool::esaxx::check_test(text);
   if (is_contained_minus_character)
   {
@@ -91,7 +70,7 @@ void minimal_substring_test(std::string filename)
   std::vector<INDEX> sa = stool::esaxx::construct_naive_SA_with_uint64<char, INDEX>(text);
   std::vector<INDEX> lcpArray = stool::constructLCP<char, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings_with_uint64<char, INDEX>(text, sa);
-  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_minimal_substrings<char, INDEX>(text, sa, lcpArray);
+  vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::MinimalSubstringIntervals<>::compute_minimal_substrings<char, INDEX>(text, sa, lcpArray);
   stool::sort_in_preorder(test_intervals);
 
   for (auto &it : correct_intervals)
@@ -156,6 +135,9 @@ int main(int argc, char *argv[])
     std::cout << "This text contains minus character!" << std::endl;
   }
 
+  minimal_substring_test("test");
+
+    /*
   using SA_PLAIN = std::vector<INDEX>;
   using SA_SDSL = sdsl::csa_sada<>;
   using LCP_PLAIN = std::vector<INDEX>;
@@ -189,5 +171,5 @@ int main(int argc, char *argv[])
 
   maximal_interval_test(text, sa_naive, sa_sdsl, lcp_sdsl, sa_sdsl.bwt, "SDSL");
   maximal_interval_test(text, sa_naive, *sa_pointer, lcp_sdsl, bwt_rlbwt, "RLBWT");
-
+    */
 }

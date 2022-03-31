@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "stool/src/io.hpp"
-#include "stool/src/debug.hpp"
-#include "stool/src/sa_bwt_lcp.hpp"
+#include "stool/include/io.hpp"
+#include "stool/include/debug.hpp"
+#include "stool/include/sa_bwt_lcp.hpp"
 
 #include <stack>
 
