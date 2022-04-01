@@ -268,7 +268,7 @@ namespace stool
                 int64_t dollar = text[text.size() - 1];
                 if (text.size() > 1)
                 {
-                    for (int64_t i = 0; i < text.size() - 2; i++)
+                    for (int64_t i = 0; i < (int64_t)text.size() - 2; i++)
                     {
                         if (text[i] < dollar)
                         {

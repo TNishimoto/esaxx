@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include "stool/include/cmdline.h"
-#include "common.hpp"
+#include "../include/common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
 #include "../forward_bwt.hpp"

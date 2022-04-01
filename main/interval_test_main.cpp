@@ -15,7 +15,7 @@ using namespace std;
 using CHAR = uint8_t;
 using INDEX = uint64_t;
 #include "../test/old_postorder_maximal_substrings.hpp"
-#include "../main/common.hpp"
+#include "../include/common.hpp"
 #include <sdsl/suffix_arrays.hpp>
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>

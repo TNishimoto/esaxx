@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
-#include "../test/old_postorder_maximal_substrings.hpp"
+#include "stool/include/cmdline.h"
 #include "libdivsufsort/sa.hpp"
-#include "../postorder_maximal_substring_intervals.hpp"
+#include "../../include/test/old_postorder_maximal_substrings.hpp"
+#include "../../include/postorder_maximal_substring_intervals.hpp"
 #include "../../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
-#include "../forward_bwt.hpp"
+#include "../../forward_bwt.hpp"
 using namespace std;
 using CHAR = char;
 using INDEX = uint64_t;

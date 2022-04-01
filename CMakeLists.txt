@@ -64,6 +64,8 @@ include_directories(~/include)
 
 # STOOL submodule
 FILE(GLOB STOOL_SOURCES module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
+#FILE(GLOB SOURCES lib/debug/*.cpp)
+
 INCLUDE_DIRECTORIES(module)
 
 
@@ -75,19 +77,19 @@ add_library(fn2 STATIC ${STOOL_SOURCES})
 target_link_libraries(fn2 sdsl divsufsort divsufsort64)
 
 
-add_executable(enumMaximalSubstring.out src/main/enumMaximalSubstring.cpp)
+add_executable(enumMaximalSubstring.out main/enumMaximalSubstring.cpp)
 target_link_libraries(enumMaximalSubstring.out fn2)
 
-add_executable(enumMaximalSubstring_input_bwt.out src/main/enumMaximalSubstring_input_bwt.cpp)
+add_executable(enumMaximalSubstring_input_bwt.out main/enumMaximalSubstring_input_bwt.cpp)
 target_link_libraries(enumMaximalSubstring_input_bwt.out fn2)
 
-add_executable(test.out src/debug/minimal_substring_test_main.cpp)
+add_executable(test.out main/minimal_substring_test_main.cpp)
 target_link_libraries(test.out fn2)
 
 
 else()
-add_library(esaxx STATIC ${SOURCES})
-target_link_libraries(esaxx sdsl divsufsort divsufsort64 stool)
+#add_library(esaxx STATIC ${SOURCES})
+#target_link_libraries(esaxx sdsl divsufsort divsufsort64 stool)
 endif()
 
 

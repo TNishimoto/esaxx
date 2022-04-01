@@ -1,7 +1,7 @@
 #pragma once
 #include "minimal_substring_candidates.hpp"
 #include "stool/include/print.hpp"
-#include "../main/common.hpp"
+#include "../common.hpp"
 
 namespace stool
 {

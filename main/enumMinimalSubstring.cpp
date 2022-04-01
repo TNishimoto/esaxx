@@ -13,7 +13,7 @@
 //#include "../minimal_substrings/naive_minimal_substrings.hpp"
 //#include "../minimal_substrings/minimal_substring_tree.hpp"
 #include "stool/include/sa_bwt_lcp.hpp"
-#include "common.hpp"
+#include "../include/common.hpp"
 
 using namespace std;
 using INDEXTYPE = uint64_t;

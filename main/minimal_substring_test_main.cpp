@@ -11,9 +11,9 @@
 #include "stool/include/cmdline.h"
 #include "stool/include/debug.hpp"
 #include "stool/include/io.hpp"
-#include "../main/common.hpp"
-#include "../test/naive_algorithms.hpp"
-#include "../src/minimal_substrings/minimal_substring_iterator.hpp"
+#include "../include/common.hpp"
+#include "../include/test/naive_algorithms.hpp"
+#include "../include/minimal_substrings/minimal_substring_iterator.hpp"
 
 using namespace std;
 using CHAR = uint8_t;

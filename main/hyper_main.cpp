@@ -22,7 +22,7 @@ using namespace stool::rlbwt;
 //#include "hpp/fmindex.hpp"
 #include "../beller/beller_debug.hpp"
 #include "../hyper/application.hpp"
-#include "../main/common.hpp"
+#include "../include/common.hpp"
 #include "../test/naive_algorithms.hpp"
 #include "../postorder_maximal_substring_intervals.hpp"
 #include "../forward_bwt.hpp"

@@ -1,7 +1,3 @@
-// License: MIT http://opensource.org/licenses/MIT
-/*
-  This code was copied from https://takeda25.hatenablog.jp/entry/20101202/1291269994 and I modified it.
-*/
 
 #include <iostream>
 #include <fstream>
@@ -13,141 +9,131 @@
 #include <sdsl/lcp_support_sada.hpp>
 
 #include "stool/include/cmdline.h"
-#include "common.hpp"
+#include "stool/include/debug.hpp"
+
+#include "../include/common.hpp"
 #include "libdivsufsort/sa.hpp"
-#include "../postorder_maximal_substring_intervals.hpp"
-#include "../forward_bwt.hpp"
+#include "../include/postorder_maximal_substring_intervals.hpp"
+#include "../include/forward_bwt.hpp"
+#include "../include/test/bwt_decompress.hpp"
 
-//#include "../test/old_postorder_maximal_substrings.hpp"
-//#include "../../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
 using namespace std;
-using CHAR = char;
-using INDEX = uint64_t;
-
-/*
-void iterateMSwithSDSL(){
-
-}
-*/
-
+using CHAR = uint8_t;
+using INDEX = uint32_t;
 uint64_t input_text_size = 0;
 std::vector<std::pair<std::string, uint64_t>> execution_time_messages;
 
-std::vector<char> construct_bwt_using_sdsl(string filename, string text, bool usingMemory)
+std::vector<CHAR> decompress_bwt2(std::vector<uint8_t> &bwt, std::vector<INDEX> &lcpArray)
 {
-  sdsl::csa_sada<> sa;
-  if (usingMemory)
-  {
-    construct_im(sa, text, 1);
-  }
-  else
-  {
-    construct(sa, filename, 1);
-  }
+  std::vector<INDEX> sa;
+  std::vector<INDEX> isa;
 
-  std::vector<char> p;
-  p.resize(sa.size(), 0);
-  for (uint64_t i = 0; i < sa.bwt.size(); i++)
-  {
-    p[i] = sa.bwt[i];
-  }
-  return p;
-}
-uint64_t iterateMSWithSDSL(string filename, std::ofstream &out, bool usingMemory)
-{
+  std::vector<uint64_t> FreqArr, C;
+  FreqArr.resize(256, 0);
+  C.resize(256, 0);
 
-  std::string text;
-  if (usingMemory)
+  //int_vector<> iv;
+  //iv.resize(bwt.size());
+
+  uint8_t minChar = 255;
+  //uint64_t minCharMinOcc = UINT64_MAX;
+  std::vector<INDEX> selectArray;
+
+  uint64_t minCharPos = 0;
+  selectArray.resize(bwt.size());
+  sa.resize(bwt.size());
+  isa.resize(bwt.size());
+
+  for (uint64_t i = 0; i < bwt.size(); i++)
   {
-    std::vector<char> tmp;
-    stool::IO::load(filename, tmp);
-    text.resize(tmp.size());
-    for(uint64_t i=0;i<tmp.size();i++){
-      text[i] = tmp[i];
+    //iv[i] = bwt[i];
+    selectArray[i] = FreqArr[bwt[i]];
+    if (bwt[i] < minChar)
+    {
+      minChar = bwt[i];
+      minCharPos = i;
     }
-    //text.swap(tmp);
+    FreqArr[bwt[i]]++;
   }
-  using BWT = std::vector<char>;
-  auto start_sa = std::chrono::system_clock::now();
-  BWT bwt = construct_bwt_using_sdsl(filename, text, usingMemory);
-  /*
-  sdsl::csa_sada<> sa;
-  
-  if(usingMemory){
-    construct_im(sa, text, 1);
-  }else{
-    construct(sa, filename, 1);
-  }
-  */
-  auto end_sa = std::chrono::system_clock::now();
-  auto sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("SA Construction time\t\t", sa_construction_time));
 
-  input_text_size = bwt.size();
-
-  auto start_lcp = std::chrono::system_clock::now();
-  sdsl::lcp_dac<> lcpArray;
-  if (usingMemory)
+  for (uint64_t i = 1; i < FreqArr.size(); i++)
   {
-    construct_im(lcpArray, text, 1);
+    C[i] = C[i - 1] + FreqArr[i - 1];
   }
-  else
-  {
-    construct(lcpArray, filename, 1);
-  }
-  text.resize(0);
-  text.shrink_to_fit();
+  //wt_gmr<> wt;
+  //construct_im(wt, iv);
 
-  //construct_im(lcpArray, filename, 1);
-  auto end_lcp = std::chrono::system_clock::now();
-  double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
+  std::vector<CHAR> outputText;
+  int64_t x = bwt.size() - 1;
+  std::vector<bool> checker;
+  checker.resize(bwt.size(), false);
+  outputText.resize(bwt.size(), 0);
+  uint64_t p = minCharPos;
 
-  auto start_ms = std::chrono::system_clock::now();
-  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, sdsl::lcp_dac<>, BWT> pmsi;
-  pmsi.construct(&lcpArray, &bwt);
-  uint64_t count = 0;
-  for (auto it : pmsi)
+  while (x >= 0)
   {
-    out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
-    ++count;
+    uint64_t v = (x +1) == (int64_t)bwt.size() ? 0 : x+1;
+    sa[p] = v;
+    isa[sa[p]] = p;
+    outputText[x] = bwt[p];
+    if (checker[p])
+    {
+      std::cout << "Error!" << std::endl;
+      throw -1;
+    }
+    else
+    {
+      checker[p] = true;
+    }
+    x--;
+    p = selectArray[p] + C[bwt[p]];
   }
-  auto end_ms = std::chrono::system_clock::now();
-  double ms_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_ms - start_ms).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("MS Construction time\t\t", ms_construction_time));
-  return count;
+
+
+  std::vector<INDEX> tmplcpArray = stool::constructLCP<CHAR, INDEX>(outputText, sa, isa);
+  lcpArray.swap(tmplcpArray);
+  return outputText;
 }
 
 uint64_t iterateMS(string filename, std::ofstream &out)
 {
-  vector<CHAR> T;
-  stool::IO::load(filename, T); // input text
-  T.push_back(0);
-  input_text_size = T.size();
+  // Load BWT
+  std::vector<uint8_t> bwt2;
+  stool::bwt::load(filename, bwt2);
+  input_text_size = bwt2.size();
 
   // Construction Suffix Array
+  std::vector<INDEX> lcpArray;
+
   auto start_sa = std::chrono::system_clock::now();
-  std::vector<INDEX> sa = stool::construct_suffix_array(T);
+  std::vector<CHAR> T = decompress_bwt2(bwt2, lcpArray);
+
+  //std::vector<uint8_t> bwt2;
+  /*
+  std::vector<CHAR> outputText;
+  std::vector<INDEX> outputSA;
+  stool::bwt::decompress_bwt(bwt2, outputText, outputSA);
+  std::vector<INDEX> sa2 = stool::construct_suffix_array(outputText);
+  std::vector<INDEX> lcpArray2 = stool::constructLCP<CHAR, INDEX>(outputText, sa2);
+  */
+
+  
+
   auto end_sa = std::chrono::system_clock::now();
   double sa_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("SA construction time\t\t", sa_construction_time));
 
-  // Construction BWT
-  using BWT = stool::esaxx::ForwardBWT<CHAR, std::vector<CHAR>, std::vector<INDEX>>;
-  BWT bwt(&T, &sa);
-
   // Construction LCP Array
-  auto start_lcp = std::chrono::system_clock::now();
-  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
-  auto end_lcp = std::chrono::system_clock::now();
-  double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
-  execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
-
+  //auto start_lcp = std::chrono::system_clock::now();
+  //std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
+  //auto end_lcp = std::chrono::system_clock::now();
+  //double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
+  //execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
 
   // Enumerating maximal substring
   auto start_ms = std::chrono::system_clock::now();
-  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, std::vector<INDEX>, BWT> pmsi;
-  pmsi.construct(&lcpArray, &bwt);
+  stool::esaxx::PostorderMaximalSubstringIntervals<CHAR, INDEX, std::vector<INDEX>, std::vector<uint8_t>> pmsi;
+  pmsi.construct(&lcpArray, &bwt2);
 
   uint64_t count = 0;
   for (auto it : pmsi)

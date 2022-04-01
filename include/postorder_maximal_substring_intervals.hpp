@@ -8,7 +8,7 @@
 #include <exception>
 #include "stool/include/io.hpp"
 #include "stool/include/print.hpp"
-#include "main/common.hpp"
+#include "./common.hpp"
 
 #include "stool/include/sa_bwt_lcp.hpp"
 
