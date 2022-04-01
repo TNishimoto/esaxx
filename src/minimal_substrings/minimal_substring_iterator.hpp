@@ -338,25 +338,16 @@ namespace stool
     };
 
     template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
-    static std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray)
+    static std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray, bool needCheckText)
     {
-      // stool::Printer::print(text);
-      // std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
+      if(needCheckText){
+        stool::esaxx::check_dollar_text(text);
+      }
       std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
       std::vector<LCPInterval<INDEX>> r;
 
       MinimalSubstringIntervals<CHAR, INDEX, SA, LCP, std::vector<CHAR>> msi;
       msi.construct(&sa, &lcpArray, &bwt);
-      /*
-      for(auto it = msi.begin();it != msi.end();++it){
-        r.push_back(*it);
-      }
-      */
-      /*
-      for(auto it : msi){
-        r.push_back(it);
-      }
-      */
 
       auto it = msi.begin();
 
