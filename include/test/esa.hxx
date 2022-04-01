@@ -1,3 +1,4 @@
+#pragma once
 /*
  * esa.hxx
  * Copyright (c) 2010 Daisuke Okanohara All Rights Reserved.
