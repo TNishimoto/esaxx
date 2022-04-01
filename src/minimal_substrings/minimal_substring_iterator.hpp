@@ -161,71 +161,6 @@ namespace stool
         {
           return this->counter_i;
         }
-        // template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
-        static std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(const BWT &bwt, const SA &sa, const LCP &lcpArray)
-        {
-          std::vector<LCPInterval<INDEX>> r;
-          // using PSSTI = PostorderSpecialSuffixTreeIntervals<SA, LCP, std::vector<CHAR>>;
-          /*
-        if(bwt.size() == 0) return std::vector<LCPInterval<INDEX>>();
-        assert(bwt.size() == sa.size());
-        assert(bwt.size() == lcpArray.size());
-        PSSTI pssti;
-        pssti.construct(sa, lcpArray, bwt);
-
-        using SSTL = PostorderSSTIterator<CHAR, INDEX, typename PostorderSuffixTreeIntervals<INDEX, SA, LCP>::template iterator<decltype(sa.begin()), decltype(lcpArray.begin())>  >;
-        SSTL sst = stool::esaxx::PostorderSSTIterator<CHAR, INDEX>::template constructIterator<SA, LCP>(bwt, sa, lcpArray);
-        stool::esaxx::MinimalSubstringIterator<CHAR, INDEX, SSTL> msi(bwt, sst);
-        if(bwt.size() > 100000)std::cout << "Conputing minimal substrings" << std::flush;
-        stool::Counter counter;
-        while (!msi.isEnded())
-        {
-          stool::LCPInterval<INDEX> p = *msi;
-          r.push_back(stool::LCPInterval<INDEX>(p.i, p.j, p.lcp));
-
-          if(bwt.size() > 100000)counter.increment();
-
-    #ifdef DEBUG
-          for (uint64_t x = p.i; x <= p.j; x++)
-          {
-            if(p.lcp != 0){
-            INDEX occ = sa[x];
-            if (occ + p.lcp - 1 >= bwt.size())
-            {
-              std::cout << occ << std::endl;
-              std::cout << p.to_string() << std::endl;
-            }
-            assert(occ + p.lcp - 1 < bwt.size());
-            }
-          }
-    #endif
-
-          ++msi;
-        }
-        if(bwt.size() > 100000)std::cout << "[END]"<< std::endl;
-
-
-
-        std::sort(
-            r.begin(),
-            r.end(),
-            stool::LCPIntervalPreorderComp<INDEX>());
-            */
-
-          return r;
-        }
-        static void getKMinimalSubstrings(std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength)
-        {
-          std::vector<LCPInterval<INDEX>> r;
-          for (uint64_t i = 0; i < intervals.size(); i++)
-          {
-            if (intervals[i].lcp <= limitLength)
-            {
-              r.push_back(intervals[i]);
-            }
-          }
-          intervals.swap(r);
-        }
 
         static std::vector<INDEX> constructMSIntervalParents(const std::vector<LCPInterval<INDEX>> &intervals)
         {
@@ -337,16 +272,26 @@ namespace stool
       }
     };
 
-    template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
-    static std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray, bool needCheckText)
+    template <typename INDEX = uint64_t>
+    void getKMinimalSubstrings(std::vector<LCPInterval<INDEX>> &intervals, uint64_t limitLength)
     {
-      if(needCheckText){
-        stool::esaxx::check_dollar_text(text);
+      std::vector<LCPInterval<INDEX>> r;
+      for (uint64_t i = 0; i < intervals.size(); i++)
+      {
+        if (intervals[i].lcp <= limitLength)
+        {
+          r.push_back(intervals[i]);
+        }
       }
-      std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
+      intervals.swap(r);
+    }
+
+    template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+    std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings_using_bwt(std::vector<CHAR> &bwt, SA &sa, LCP &lcpArray)
+    {
       std::vector<LCPInterval<INDEX>> r;
 
-      MinimalSubstringIntervals<CHAR, INDEX, SA, LCP, std::vector<CHAR>> msi;
+      stool::esaxx::MinimalSubstringIntervals<CHAR, INDEX, SA, LCP, std::vector<CHAR>> msi;
       msi.construct(&sa, &lcpArray, &bwt);
 
       auto it = msi.begin();
@@ -356,9 +301,30 @@ namespace stool
         r.push_back(*it);
         ++it;
       }
-
       return r;
     }
 
+    template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+    std::vector<stool::LCPInterval<INDEX>> compute_minimal_substrings(std::vector<CHAR> &text, SA &sa, LCP &lcpArray, bool needCheckText)
+    {
+      if (needCheckText)
+      {
+        stool::esaxx::check_dollar_text(text);
+      }
+      std::vector<CHAR> bwt = stool::esaxx::constructBWT<CHAR, INDEX, SA>(text, sa);
+      return compute_minimal_substrings_using_bwt(bwt, sa, lcpArray);
+    }
+    // template <typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX> >
+    template <typename CHAR = uint8_t, typename INDEX = uint64_t, typename SA = std::vector<INDEX>, typename LCP = std::vector<INDEX>>
+    std::vector<LCPInterval<INDEX>> constructSortedMinimalSubstrings(std::vector<CHAR> &bwt, SA &sa, LCP &lcpArray)
+    {
+      std::vector<LCPInterval<INDEX>> r = compute_minimal_substrings_using_bwt(bwt, sa, lcpArray);
+
+      std::sort(
+          r.begin(),
+          r.end(),
+          stool::LCPIntervalPreorderComp<INDEX>());
+      return r;
+    }
   } // namespace esaxx
 } // namespace stool
