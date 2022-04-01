@@ -63,11 +63,12 @@ include_directories(~/include)
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
-FILE(GLOB STOOL_SOURCES module/rlbwt_iterator/module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
+FILE(GLOB STOOL_SOURCES module/rlbwt_iterator/module/OnlineRlbwt/module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
 #FILE(GLOB SOURCES lib/debug/*.cpp)
 
 INCLUDE_DIRECTORIES(module)
 INCLUDE_DIRECTORIES(module/rlbwt_iterator/module/)
+INCLUDE_DIRECTORIES(module/rlbwt_iterator/module/OnlineRlbwt/module)
 
 
 
