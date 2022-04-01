@@ -38,8 +38,8 @@ endif ()
 
 #### Modules
 
-if(NOT TARGET stool)
-add_subdirectory(module/stool)
+if(NOT TARGET rlbwt_iterator)
+add_subdirectory(module/rlbwt_iterator)
 endif()
 
 #set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
@@ -63,10 +63,11 @@ include_directories(~/include)
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
-FILE(GLOB STOOL_SOURCES module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
+FILE(GLOB STOOL_SOURCES module/rlbwt_iterator/module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
 #FILE(GLOB SOURCES lib/debug/*.cpp)
 
 INCLUDE_DIRECTORIES(module)
+INCLUDE_DIRECTORIES(module/rlbwt_iterator/module/)
 
 
 
