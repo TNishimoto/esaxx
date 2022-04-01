@@ -17,7 +17,7 @@ endif(CPP_STATIC)
 set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
-set(ROOT_PROJECT  "esaxx")
+#set(ROOT_PROJECT  "esaxx")
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     message("Release Mode")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -28,8 +28,12 @@ endif()
 # handled automatically for CMake >= 3.21.
 if (CMAKE_VERSION VERSION_LESS 3.21)
     if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+        message("SET PROJECT_IS_TOP_LEVEL ON IN ${PROJECT_NAME}")
         set (PROJECT_IS_TOP_LEVEL ON)
-    endif ()
+    else()
+        message("SET PROJECT_IS_TOP_LEVEL OFF IN ${PROJECT_NAME}")
+    set (PROJECT_IS_TOP_LEVEL OFF)    
+    endif()
 endif ()
 
 #### Modules
@@ -65,6 +69,8 @@ INCLUDE_DIRECTORIES(module)
 
 
 if (PROJECT_IS_TOP_LEVEL)
+message("TOP LEVEL IS ${PROJECT_NAME}")
+
 add_library(fn2 STATIC ${STOOL_SOURCES})
 target_link_libraries(fn2 sdsl divsufsort divsufsort64)
 
