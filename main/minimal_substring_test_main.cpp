@@ -8,9 +8,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
-#include "stool/include/io.hpp"
+#include "stool/include/light_stool.hpp"
 #include "../include/common.hpp"
 #include "../include/test/naive_algorithms.hpp"
 #include "../include/minimal_substrings/minimal_substring_iterator.hpp"
@@ -19,15 +17,23 @@ using namespace std;
 using CHAR = uint8_t;
 using INDEX = uint64_t;
 
+template <typename INDEX = uint64_t>
+void sort_in_preorder(std::vector<stool::LCPInterval<INDEX>> &items){
+    std::sort(
+        items.begin(),
+        items.end(),
+        stool::LCPIntervalPreorderComp<INDEX>());
+}
+
 void minimal_substring_test(std::vector<uint8_t> &text)
 {
   std::vector<INDEX> sa = stool::esaxx::construct_naive_SA_with_uint64<uint8_t, INDEX>(text);
-  std::vector<INDEX> lcpArray = stool::constructLCP<uint8_t, INDEX>(text, sa);
+  std::vector<INDEX> lcpArray = stool::ArrayConstructor::construct_LCP_array<uint8_t, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_minimal_substrings_with_uint64<uint8_t, INDEX>(text, sa);
   vector<stool::LCPInterval<INDEX>> test_intervals = stool::esaxx::compute_minimal_substrings(text, sa, lcpArray, true);
-  stool::sort_in_preorder(test_intervals);
+  sort_in_preorder(test_intervals);
 
-  stool::equal_check(correct_intervals, test_intervals);
+  stool::EqualChecker::equal_check(correct_intervals, test_intervals);
 }
 
 int main(int argc, char *argv[])

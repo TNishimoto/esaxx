@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/light_stool.hpp"
+
 
 namespace stool
 {
@@ -63,10 +63,10 @@ namespace stool
 
             for (uint64_t i = 0; i < intervals.size(); i++)
             {
-                std::string line = intervals[i].getCSVLine(i, text, sa);
+                std::string line = intervals[i].get_CSV_line(i, text, sa);
                 if (line.size() < 255)
                 {
-                    std::cout << intervals[i].getCSVLine(i, text, sa) << std::endl;
+                    std::cout << intervals[i].get_CSV_line(i, text, sa) << std::endl;
                 }
                 else
                 {

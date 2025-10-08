@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <queue>
 
-#include "stool/src/debug.hpp"
-#include "stool/src/elias_fano_vector.hpp"
+#include "stool/include/light_stool.hpp"
+
 #include "../../beller/char_interval.hpp"
 #include <sdsl/rmq_support.hpp> // include header for range minimum queries
 namespace stool

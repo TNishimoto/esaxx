@@ -1,10 +1,39 @@
 #pragma once
 #include "minimal_substring_candidates.hpp"
-#include "stool/include/print.hpp"
+#include "stool/include/light_stool.hpp"
+
 #include "../common.hpp"
 
 namespace stool
 {
+  class Counter{
+    char c = '.';
+    uint64_t baseline = 2;
+    uint64_t i = 2;
+  
+    public:
+    Counter(){
+  
+    }
+    Counter(uint64_t _baseline) : baseline(_baseline), i(_baseline){
+      
+    }
+    Counter(char _c, uint64_t _baseline) : c(_c), baseline(_baseline), i(_baseline){
+      
+    }
+  
+    void increment(){
+      if(this->i==0){
+        this->baseline *= 2;
+        this->i = this->baseline;
+        std::cout << this->c << std::flush;
+      }else{
+        --this->i;
+      }
+  
+    }
+  
+  };
   namespace esaxx
   {
 

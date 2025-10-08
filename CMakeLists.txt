@@ -8,9 +8,9 @@ project(esaxx CXX)
 #endif(APPLE)
 
 if(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -pthread -Wextra -static")
+set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -pthread -Wextra -static")
 else(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -pthread -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++17 -m64 -Wall -pthread -Wextra")
 endif(CPP_STATIC)
 
 #set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG -DDEBUG_PRINT")
@@ -38,9 +38,9 @@ endif ()
 
 #### Modules
 
-if(NOT TARGET rlbwt_iterator)
-add_subdirectory(module/rlbwt_iterator)
-endif()
+#if(NOT TARGET rlbwt_iterator)
+#add_subdirectory(module/rlbwt_iterator)
+#endif()
 
 #set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
 #set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
@@ -63,7 +63,7 @@ include_directories(~/include)
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
-FILE(GLOB STOOL_SOURCES module/rlbwt_iterator/module/OnlineRlbwt/module/stool/lib/*.cpp module/libdivsufsort/sa.cpp)
+FILE(GLOB STOOL_SOURCES module/libdivsufsort/sa.cpp)
 #FILE(GLOB SOURCES lib/debug/*.cpp)
 
 INCLUDE_DIRECTORIES(module)
@@ -75,18 +75,25 @@ INCLUDE_DIRECTORIES(module/rlbwt_iterator/module/OnlineRlbwt/module)
 if (PROJECT_IS_TOP_LEVEL)
 message("TOP LEVEL IS ${PROJECT_NAME}")
 
-add_library(fn2 STATIC ${STOOL_SOURCES})
-target_link_libraries(fn2 sdsl divsufsort divsufsort64)
+#add_library(fn2 STATIC ${STOOL_SOURCES})
+#target_link_libraries(fn2 sdsl divsufsort divsufsort64)
 
 
-add_executable(enumMaximalSubstring.out main/enumMaximalSubstring.cpp)
-target_link_libraries(enumMaximalSubstring.out fn2)
+add_executable(enumMaximalSubstring.out main/enumMaximalSubstring.cpp ${STOOL_SOURCES})
+target_link_libraries(enumMaximalSubstring.out sdsl divsufsort divsufsort64)
 
-add_executable(enumMaximalSubstring_input_bwt.out main/enumMaximalSubstring_input_bwt.cpp)
-target_link_libraries(enumMaximalSubstring_input_bwt.out fn2)
+add_executable(enumMaximalSubstring_input_bwt.out main/enumMaximalSubstring_input_bwt.cpp ${STOOL_SOURCES})
+target_link_libraries(enumMaximalSubstring_input_bwt.out sdsl divsufsort divsufsort64)
 
-add_executable(test.out main/minimal_substring_test_main.cpp)
-target_link_libraries(test.out fn2)
+add_executable(test.out main/minimal_substring_test_main.cpp ${STOOL_SOURCES})
+target_link_libraries(test.out sdsl divsufsort divsufsort64)
+
+#add_executable(enumSubstring.out main/enumSubstring.cpp ${STOOL_SOURCES})
+#target_link_libraries(enumSubstring.out sdsl divsufsort divsufsort64)
+
+
+add_executable(print.out main/print.cpp ${STOOL_SOURCES})
+target_link_libraries(print.out sdsl divsufsort divsufsort64)
 
 
 else()

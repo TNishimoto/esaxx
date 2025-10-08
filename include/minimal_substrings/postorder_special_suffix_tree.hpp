@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/light_stool.hpp"
+
 
 #include <stack>
 #include "../postorder_suffix_tree_intervals.hpp"

@@ -7,7 +7,8 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "stool/src/elias_fano_vector.hpp"
+#include "stool/include/light_stool.hpp"
+
 
 namespace stool
 {

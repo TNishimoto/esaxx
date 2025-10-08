@@ -5,14 +5,9 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
-#include "stool/include/cmdline.h"
 #include <exception>
-#include "stool/include/io.hpp"
-#include "stool/include/print.hpp"
+#include "stool/include/light_stool.hpp"
 #include "./common.hpp"
-
-#include "stool/include/sa_bwt_lcp.hpp"
-
 //#include "minimal_substrings/postorder_special_suffix_tree.hpp"
 #include "postorder_lcp_intervals.hpp"
 namespace stool

@@ -4,13 +4,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
 #include "esa.hxx"
 #include <exception>
-#include "stool/src/io.hpp"
-#include "stool/src/print.hpp"
+#include "stool/include/light_stool.hpp"
 
-#include "stool/src/sa_bwt_lcp.hpp"
 
 namespace stool
 {

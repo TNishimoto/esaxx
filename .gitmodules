@@ -4,3 +4,6 @@
 [submodule "module/rlbwt_iterator"]
 	path = module/rlbwt_iterator
 	url = https://github.com/TNishimoto/rlbwt_iterator.git
+[submodule "module/stool"]
+	path = module/stool
+	url = https://github.com/TNishimoto/stool.git

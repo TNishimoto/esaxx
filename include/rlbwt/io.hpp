@@ -7,13 +7,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
-//#include "common/io.h"
-//#include "common/print.hpp"
-//#include "other_functions.hpp"
-//#include "OnlineRlbwt/online_rlbwt.hpp"
-//#include "rlbwt.hpp"
-//#include "stool/src/elias_fano_vector.hpp"
-#include "stool/src/io.h"
+#include "stool/include/light_stool.hpp"
+
 
 namespace stool
 {

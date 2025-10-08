@@ -212,10 +212,12 @@ public:
     }
     PostorderLCPIntervals(const PostorderLCPIntervals &obj)
     {
+        /*
         if (obj._SA != nullptr)
         {
             throw std::logic_error("PostorderSuffixTree instances cannot call the copy constructor.");
         }
+        */
     }
 
     void construct(const LCP *__lcp)

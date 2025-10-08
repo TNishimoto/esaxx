@@ -8,8 +8,7 @@
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
 
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
+#include "stool/include/light_stool.hpp"
 
 #include "../include/common.hpp"
 #include "libdivsufsort/sa.hpp"
@@ -90,7 +89,7 @@ std::vector<CHAR> decompress_bwt2(std::vector<uint8_t> &bwt, std::vector<INDEX> 
   }
 
 
-  std::vector<INDEX> tmplcpArray = stool::constructLCP<CHAR, INDEX>(outputText, sa, isa);
+  std::vector<INDEX> tmplcpArray = stool::ArrayConstructor::construct_LCP_array<CHAR, INDEX>(outputText, sa, isa);
   lcpArray.swap(tmplcpArray);
   return outputText;
 }

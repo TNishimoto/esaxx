@@ -12,7 +12,7 @@
 #include <sdsl/lcp_dac.hpp>
 #include <sdsl/lcp_support_sada.hpp>
 
-#include "stool/include/cmdline.h"
+#include "stool/include/light_stool.hpp"
 #include "../include/common.hpp"
 #include "libdivsufsort/sa.hpp"
 #include "../include/postorder_maximal_substring_intervals.hpp"
@@ -138,7 +138,7 @@ uint64_t iterateMS(string filename, std::ofstream &out)
 
   // Construction LCP Array
   auto start_lcp = std::chrono::system_clock::now();
-  std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(T, sa);
+  std::vector<INDEX> lcpArray = stool::ArrayConstructor::construct_LCP_array<CHAR, INDEX>(T, sa);
   auto end_lcp = std::chrono::system_clock::now();
   double lcp_array_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_lcp - start_lcp).count();
   execution_time_messages.push_back(std::pair<std::string, uint64_t>("LCP array construction time\t", lcp_array_construction_time));
