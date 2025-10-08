@@ -284,7 +284,8 @@ namespace stool
             }
         }
 
-        bool check_test(std::vector<char> &text)
+        
+        inline bool check_test(std::vector<char> &text)
         {
             for (auto &it : text)
             {
@@ -296,6 +297,7 @@ namespace stool
             }
             return false;
         }
+        
 
     } // namespace esaxx
 } // namespace stool
